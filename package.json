@@ -1,0 +1,26 @@
+{
+  "name": "tokeninc-smart-contracts",
+  "version": "0.1.0",
+  "description": "Smart Contracts for Token, Inc.",
+  "main": "./dist/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "truffle test"
+  },
+  "keywords": [
+    "Token",
+    "Ethereum",
+    "USD",
+    "Banking",
+    "Blockchain",
+    "Finance"
+  ],
+  "author": "Ryan Tate <ryan.michael.tate@gmail.com>",
+  "license": "SEE LICENSE IN LICENSE.md",
+  "dependencies": {
+    "ethereumjs-util": "^5.1.5",
+    "web3": "^1.0.0-beta.34"
+  }
+}
