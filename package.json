@@ -20,6 +20,7 @@
   "author": "Ryan Tate <ryan.michael.tate@gmail.com>",
   "license": "SEE LICENSE IN LICENSE.md",
   "dependencies": {
+    "bluebird": "^3.5.1",
     "ethereumjs-util": "^5.1.5",
     "web3": "^1.0.0-beta.34"
   }
