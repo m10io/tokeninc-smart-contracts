@@ -26,7 +26,3 @@ contract MultiSig {
     }
 
 }
-
-
-// Step 1: Deploy Storage Contract
-// Step 2: Deploy MultiSig Contract w/ Storage Contract Address

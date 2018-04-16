@@ -5,13 +5,16 @@ contract('Storage', function(accounts) {
 
   it("It should deploy the storage contract, and ensure the owner is set.", async () => {
 
-    const key = web3.utils.soliditySha3("storage.allowed",accounts[0])
+    // Set Contract
+    const storage = await Storage.deployed();
 
-    let storage = await Storage.deployed();
+    // Set Keys
+    const STORAGE_ALLOWED_KEY = web3.utils.soliditySha3("storage.allowed", accounts[0])
 
-    let STEP_1_RESULT = await storage.getBool.call(key)
+    // Step 1
+    const STEP_1_RESULT = await storage.getBool.call(STORAGE_ALLOWED_KEY)
     assert.equal(STEP_1_RESULT, true, "Assert the owner was set in the contract");
-    
+
   })
 
 });
