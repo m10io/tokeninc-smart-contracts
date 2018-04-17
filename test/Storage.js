@@ -3,7 +3,7 @@ var Storage = artifacts.require("./Storage.sol");
 
 contract('Storage', function(accounts) {
 
-  it("It should deploy the storage contract, and ensure the owner is set.", async () => {
+  it("Should deploy the storage contract, and ensure the owner is set.", async () => {
 
     // Set Contract
     const storage = await Storage.deployed();

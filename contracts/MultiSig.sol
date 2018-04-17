@@ -5,24 +5,17 @@ import "./StorageInterface.sol";
 
 contract MultiSig {
 
-    StorageInterface public _storage;
-    address private _admin;
+    StorageInterface private _storage;
 
     function MultiSig(StorageInterface storageContract) public {
         _storage = StorageInterface(storageContract);
-        _admin = msg.sender;
     }
 
-    function initializeOwners(address[5] _initialOwners) public onlyAdmin returns (bool) {
-        for (uint owner = 0; owner < _initialOwners.length; owner++) {
-            _storage.setBool(keccak256("multisig.owner", _initialOwners[owner]), true);
+    function initialize(address[] owners) public returns (bool) {
+        for (uint owner = 0; owner < owners.length; owner++) {
+            _storage.setBool(keccak256("multisig.owner", owners[owner]), true);
         }
         return true;
-    }
-
-    modifier onlyAdmin() {
-        require(_admin == msg.sender);
-        _;
     }
 
 }
