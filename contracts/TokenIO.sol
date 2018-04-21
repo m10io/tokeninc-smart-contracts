@@ -1,91 +1,66 @@
-pragma solidity 0.4.21;
+pragma solidity 0.4.23;
 
-import "./StorageInterface.sol";
+import "./TokenIOLib.sol";
 import "./SafeMath.sol";
-
 
 contract TokenIO {
 
     using SafeMath for uint;
-    using SafeMath for uint[];
 
-    StorageInterface public _storage;
-    string _name;
-    string _symbol;
-    string _currencyTLA;
+    using TokenIOLib for TokenIOLib.Account;
+    using TokenIOLib for TokenIOLib.Data;
+    using TokenIOLib for TokenIOLib.DailySpending;
+    using TokenIOLib for TokenIOLib.Credit;
+    TokenIOLib.Data tokenIO;
 
-    event Transfer(address indexed owner, address indexed to, uint256 amount);
-    event Approval(address indexed owner, address indexed spender, uint256 amount);
+    constructor() public {
 
-    function TokenIO(StorageInterface storageContract) public {
-        _storage = StorageInterface(storageContract);
-        // Set Global Variables
-        _name = "USD by token.io";
-        _symbol = "USD+";
-        _currencyTLA = "USD";
+        // 1,000,000,000,000 => 1 Trillion USD
+        tokenIO.totalSupply = 1000000000000 * 10**5;
+
+        // Initial Daily Limit .001% of totalSupply, represented as basis points
+        uint initDailyLimit = (tokenIO.totalSupply.mul(1)).div(10000);
+
+        uint accNum = 1;
+
+        uint[3] memory dailyValues;
+        dailyValues[uint(TokenIOLib.DailySpending.Limit)] = initDailyLimit;
+        dailyValues[uint(TokenIOLib.DailySpending.Remainder)] = initDailyLimit;
+        dailyValues[uint(TokenIOLib.DailySpending.Period)] = now;
+
+        uint[2] memory creditValues;
+        creditValues[uint(TokenIOLib.Credit.Limit)] = 0;
+        creditValues[uint(TokenIOLib.Credit.Drawdown)] = 0;
+
+        tokenIO.accountNumber[msg.sender] = accNum; // Msg.sender is CB, CB == 1
+        tokenIO.accountDetails[accNum] = TokenIOLib.Account({
+            equity: tokenIO.totalSupply,
+            creditValues: creditValues,
+            dailyValues: dailyValues,
+            parentID: accNum, // CB has no parents; set to itself;
+            childBalances: 0, // CB has not extended any credit balances to children
+            firstSender: accNum
+        });
     }
 
-    /** ERC20 Methods **/
-    function totalSupply() public view returns (uint256) {
-        return _storage.getUint(keccak256("token.supply"));
+    function transfer(address to, uint value) public returns (bool) {
+        return tokenIO.transferFunds(msg.sender, to, value);
     }
 
-    function decimals() public view returns (uint256) {
-        return _storage.getUint(keccak256("token.decimals"));
+    function transferCredit(address to, uint value) public returns (bool) {
+        return tokenIO.transferCredit(msg.sender, to, value);
     }
 
-    function name() public view returns (string) {
-        return _name;
+    function netBalanceOf(address account) public view returns (int) {
+        return tokenIO.netBalanceOf(account);
     }
 
-    function symbol() public view returns (string) {
-        return _symbol;
+    function balanceOf(address account) public view returns (uint) {
+        return tokenIO.balanceOf(account);
     }
 
-    function balanceOf(address owner) public view returns (uint256) {
-        return _storage.getUint(keccak256("token.balance", owner));
+    function creditLineDrawdownOf(address account) public view returns (uint) {
+        return tokenIO.creditLineDrawdownOf(account);
     }
-
-    function allowance(address owner, address spender) public view returns (uint256) {
-        return _storage.getUint(keccak256("token.allowance", owner, spender));
-    }
-
-    function transfer(address to, uint256 amount) public returns (bool) {
-        require(_storage.setUint(
-            keccak256("token.balance", msg.sender),
-            _storage.getUint(keccak256("token.balance", msg.sender)).sub(amount)
-        ));
-        require(_storage.setUint(
-            keccak256("token.balance", to),
-            _storage.getUint(keccak256("token.balance", to)).add(amount)
-        ));
-        Transfer(msg.sender, to, amount);
-        return true;
-    }
-
-    function transferFrom(address owner, address to, uint256 amount) public returns (bool) {
-        require(_storage.setUint(
-            keccak256("token.allowance", owner, msg.sender),
-            _storage.getUint(keccak256("token.allowance", owner, msg.sender)).sub(amount)
-        ));
-        require(_storage.setUint(
-            keccak256("token.balance", owner),
-            _storage.getUint(keccak256("token.balance", owner)).sub(amount)
-        ));
-        require(_storage.setUint(
-            keccak256("token.balance", to),
-            _storage.getUint(keccak256("token.balance", to)).add(amount)
-        ));
-        Transfer(owner, to, amount);
-        return true;
-    }
-
-    function approve(address spender, uint256 amount) public returns (bool) {
-        /* Check if allowance is already set to zero before setting a new allowance */
-        Approval(msg.sender, spender, amount);
-        return _storage.setUint(keccak256("token.allowance", msg.sender, spender), amount);
-    }
-
-
 
 }
