@@ -9,13 +9,14 @@ contract TokenIO {
 
     using TokenIOLib for TokenIOLib.Account;
     using TokenIOLib for TokenIOLib.Data;
-    using TokenIOLib for TokenIOLib.Spending;
-    using TokenIOLib for TokenIOLib.Credit;
+    using TokenIOLib for TokenIOLib.AccountSummary;
     using TokenIOLib for TokenIOLib.Durations;
     using TokenIOLib for TokenIOLib.Fees;
     using TokenIOLib for TokenIOLib.KYC;
 
     TokenIOLib.Data tokenIO;
+
+    event LogNewAccount(address parentAddress, address accountAddress, bool isAdmin);
 
     constructor() public {
 
@@ -54,36 +55,38 @@ contract TokenIO {
         tokenIO.feeValues[uint(TokenIOLib.Fees.AddKYC)] = 25 * 10**(tokenIO.decimals - 2); // $.25
 
 
-        uint[4] memory spending;
-        spending[uint(TokenIOLib.Spending.Limit)] = initDailyLimit;
-        spending[uint(TokenIOLib.Spending.Remainder)] = initDailyLimit;
-        spending[uint(TokenIOLib.Spending.Period)] = now;
-        spending[uint(TokenIOLib.Spending.Duration)] =
+        uint[9] memory summary;
+        summary[uint(TokenIOLib.AccountSummary.SpendingLimit)] = initDailyLimit;
+        summary[uint(TokenIOLib.AccountSummary.SpendingRemainder)] = initDailyLimit;
+        summary[uint(TokenIOLib.AccountSummary.SpendingPeriod)] = now;
+        summary[uint(TokenIOLib.AccountSummary.SpendingDuration)] =
             tokenIO.durations[uint(TokenIOLib.Durations.Day)];
 
+        summary[uint(TokenIOLib.AccountSummary.CreditLimit)] = 0;
+        summary[uint(TokenIOLib.AccountSummary.CreditDrawdown)] = 0;
 
-        uint[2] memory credit;
-        credit[uint(TokenIOLib.Credit.Limit)] = 0;
-        credit[uint(TokenIOLib.Credit.Drawdown)] = 0;
+        summary[uint(TokenIOLib.AccountSummary.Balance)] = tokenIO.totalSupply;
+        summary[uint(TokenIOLib.AccountSummary.ChildBalance)] = 0;
+        summary[uint(TokenIOLib.AccountSummary.FrozenBalance)] = 0;
 
 
         // Establish contract as the first Account holder; This is not CB, this is contract itself
-        require(tokenIO.newAccount(msg.sender, address(this)));
+        require(tokenIO.newAccount(msg.sender, address(this), true));
 
         // Set new account and CB equal to self
-        require(tokenIO.newAccount(msg.sender, msg.sender));
+        require(tokenIO.newAccount(msg.sender, msg.sender, true));
+
+        // Set Global Central Bank Address to msg.sender;
+        tokenIO.centralBank = msg.sender;
 
         tokenIO.accountNumber[msg.sender] = tokenIO.accountNumber[msg.sender]; // Msg.sender is CB, CB == 1
 
         TokenIOLib.Account storage CB = tokenIO.accountDetails[tokenIO.accountNumber[msg.sender]];
 
-        // Set initial values for CB;
-        CB.equity = tokenIO.totalSupply;
-        CB.credit = credit;
-        CB.spending = spending;
+        CB.summary = summary;
         CB.parentID = tokenIO.accountNumber[msg.sender];
-        CB.childBalances = 0;
-        CB.firstSender = tokenIO.accountNumber[msg.sender];
+        /* CB.childBalances = 0; */
+        // CB.firstSender = tokenIO.accountNumber[msg.sender];
         CB.kyc[uint(TokenIOLib.KYC.Required)] = false;
     }
 
@@ -99,8 +102,14 @@ contract TokenIO {
         return tokenIO.setCreditLimit(msg.sender, account, limit);
     }
 
-    function newAccount(address account) public returns (bool) {
-        return tokenIO.newAccount(msg.sender, account);
+    function newAccount(address parentAddress, address accountAddress) public returns (bool) {
+        require(tokenIO.newAccount(parentAddress, accountAddress, false));
+        emit LogNewAccount(parentAddress, accountAddress, false);
+        return true;
+    }
+
+    function approveAccount(address accountAddress) public returns (bool) {
+        return tokenIO.approveAccount(msg.sender, accountAddress);
     }
 
     function addKYCAttribute(address account, TokenIOLib.KYC attribute) public returns (bool) {
@@ -127,6 +136,9 @@ contract TokenIO {
         return tokenIO.decimals;
     }
 
+    function centralBank() public view returns (address) {
+        return tokenIO.centralBank;
+    }
 
     /*  */
 

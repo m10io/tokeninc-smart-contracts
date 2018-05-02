@@ -7,16 +7,16 @@ library TokenIOLib {
 
     using SafeMath for uint;
 
-    enum Spending {
-        Limit, // Does not change, unless set by admin
-        Remainder, // Updated during each daily period
-        Period,
-        Duration
-    }
-
-    enum Credit {
-        Limit,
-        Drawdown
+    enum AccountSummary {
+        SpendingLimit,
+        SpendingRemainder,
+        SpendingPeriod,
+        SpendingDuration,
+        Balance,
+        ChildBalance,
+        CreditLimit,
+        CreditDrawdown,
+        FrozenBalance
     }
 
     enum Durations {
@@ -40,6 +40,7 @@ library TokenIOLib {
     }
 
     // NOTE: Discuss which attributes should be documented
+    // NOTE:
     enum KYC {
         Name,
         Phone,
@@ -54,14 +55,12 @@ library TokenIOLib {
     }
 
     struct Account {
-        uint equity;
-        uint[2] credit;
-        uint[4] spending;
+        uint[9] summary;
         // uint[2] fee; // NOTE: Necessary as part of account structure, or just transaction?
         mapping(address => bool) allowed;
+        bool approved; // NOTE: Approval comes from bank or CB;
         uint parentID;
-        uint childBalances;
-        uint firstSender;
+        // uint firstSender; // NOTE: Is this typically the parent?
         bool[11] kyc;
         uint8 numKYCAttributes;
     }
@@ -70,9 +69,11 @@ library TokenIOLib {
         uint totalSupply;
         uint decimals;
         uint accountNumbers;
+        uint totalFrozen;
         string symbol;
         string name;
         string currencyTLA;
+        address centralBank;
         mapping(address => uint) accountNumber;
         mapping(uint => Account) accountDetails;
         uint[5] durations;
@@ -81,7 +82,7 @@ library TokenIOLib {
 
     function balanceOf(Data storage self, address account) internal view returns (uint) {
         Account storage user = self.accountDetails[self.accountNumber[account]];
-        return user.equity;
+        return user.summary[uint(AccountSummary.Balance)];
     }
 
     function netBalanceOf(Data storage self, address account) internal view returns (int) {
@@ -98,27 +99,32 @@ library TokenIOLib {
         // equity == checking/saving/deposit/money accounts
         // liability == credit line / auto
 
-        if (user.credit[uint(Credit.Drawdown)] > user.equity.add(user.childBalances)) {
-            return (int(user.credit[uint(Credit.Drawdown)].sub(user.equity.add(user.childBalances))) * -1);
+        uint drawdown = user.summary[uint(AccountSummary.CreditDrawdown)];
+
+        // NOTE: Add Frozen balance to netBalanceOf method or add a second method just for frozen funds.
+        uint totalBalance = user.summary[uint(AccountSummary.Balance)].add(user.summary[uint(AccountSummary.ChildBalance)]);
+
+        if (drawdown > totalBalance) {
+            return (int(drawdown.sub(totalBalance)) * -1);
         } else {
-            return int(user.equity.add(user.childBalances).sub(user.credit[uint(Credit.Drawdown)]));
+            return int(totalBalance.sub(drawdown));
         }
     }
 
     function creditLineDrawdownOf(Data storage self, address account) internal view returns (uint) {
         Account storage user = self.accountDetails[self.accountNumber[account]];
-        return user.credit[uint(Credit.Drawdown)];
+        return user.summary[uint(AccountSummary.CreditDrawdown)];
     }
 
     function updateCredit(Data storage self, address to, uint creditAmount) internal returns (bool) {
         Account storage receiver = self.accountDetails[self.accountNumber[to]];
 
-        require(receiver.credit[uint(Credit.Limit)] > 0);
+        require(receiver.summary[uint(AccountSummary.CreditLimit)] > 0);
 
-        require(receiver.credit[uint(Credit.Drawdown)].add(creditAmount) <= receiver.credit[uint(Credit.Limit)]);
+        require(receiver.summary[uint(AccountSummary.CreditDrawdown)].add(creditAmount) <= receiver.summary[uint(AccountSummary.CreditLimit)]);
 
         // Increase receiver creditLineDrawdown value;
-        receiver.credit[uint(Credit.Drawdown)] = receiver.credit[uint(Credit.Drawdown)].add(creditAmount);
+        receiver.summary[uint(AccountSummary.CreditDrawdown)] = receiver.summary[uint(AccountSummary.CreditDrawdown)].add(creditAmount);
 
         return true;
 
@@ -128,26 +134,28 @@ library TokenIOLib {
         Account storage sender = self.accountDetails[self.accountNumber[from]];
 
         // Spend limit must be non-zero to transfer any amount
-        require(sender.spending[uint(Spending.Limit)] > 0);
+        require(sender.summary[uint(AccountSummary.SpendingLimit)] > 0);
 
         // Check if the Spending Duration has expired
         if (
-            now.sub(sender.spending[uint(Spending.Period)]) >
-            sender.spending[uint(Spending.Duration)]
+            now.sub(sender.summary[uint(AccountSummary.SpendingPeriod)]) >
+            sender.summary[uint(AccountSummary.SpendingDuration)]
         ) {
             // Set the updated period to current time
-            sender.spending[uint(Spending.Period)] = now;
+            // TODO: Determine the new time to reset the period to.
+            // See https://github.com/EmergentFinancial/tokeninc-smart-contracts/issues/2
+            sender.summary[uint(AccountSummary.SpendingPeriod)] = now;
 
             // Reset Remainder balance back to limit;
-            sender.spending[uint(Spending.Remainder)] = sender.spending[uint(Spending.Limit)];
+            sender.summary[uint(AccountSummary.SpendingRemainder)] = sender.summary[uint(AccountSummary.SpendingLimit)];
         }
 
         // Ensure the Remainder amount is greater than or equal to the amount sending
-        require(sender.spending[uint(Spending.Remainder)] >= amount);
+        require(sender.summary[uint(AccountSummary.SpendingRemainder)] >= amount);
 
         // Decrease Spending Remainder
-        sender.spending[uint(Spending.Remainder)] =
-            sender.spending[uint(Spending.Remainder)].sub(amount);
+        sender.summary[uint(AccountSummary.SpendingRemainder)] =
+            sender.summary[uint(AccountSummary.SpendingRemainder)].sub(amount);
 
         return true;
     }
@@ -157,7 +165,7 @@ library TokenIOLib {
         // Account storage receiver = self.accountDetails[self.accountNumber[to]];
 
         // Ensure the sender has enough funds to extend credit
-        require(sender.equity > amount);
+        require(sender.summary[uint(AccountSummary.Balance)] > amount);
 
         // Ensure the sender's parent has not exceeded credit line?
 
@@ -169,10 +177,10 @@ library TokenIOLib {
 
 
         // Subtract equity from the sender's amount
-        sender.equity = sender.equity.sub(amount);
+        sender.summary[uint(AccountSummary.Balance)] = sender.summary[uint(AccountSummary.Balance)].sub(amount);
 
         // Add amount to sender's child balances
-        sender.childBalances = sender.childBalances.add(amount);
+        sender.summary[uint(AccountSummary.ChildBalance)] = sender.summary[uint(AccountSummary.ChildBalance)].add(amount);
 
         return true;
     }
@@ -183,10 +191,10 @@ library TokenIOLib {
 
         Account storage sender = self.accountDetails[self.accountNumber[from]];
         Account storage receiver = self.accountDetails[self.accountNumber[to]];
-        Account storage vault = self.accountDetails[self.accountNumber[address(this)]];
+        Account storage receiverParent = self.accountDetails[receiver.parentID];
 
         // Ensure sender has enough funds to transfer amount
-        require(sender.equity > amount);
+        require(sender.summary[uint(AccountSummary.Balance)] > amount);
 
         // Ensure spending amounts are updated for sender
         require(updateSpending(self, from, amount));
@@ -194,14 +202,14 @@ library TokenIOLib {
         // TODO: Calculate fees; Transfer amount net of fees; Fees are held by the contract
         uint fee = calculateFeeAmount(self, from, to, amount);
 
-        // Send Fees to this contract's (vault) address
-        vault.equity = vault.equity.add(fee);
+        // NOTE: Fees should be sent to "first sender" or receiver parent address
+        receiverParent.summary[uint(AccountSummary.Balance)] = receiverParent.summary[uint(AccountSummary.Balance)].add(fee);
 
         // Subtract equity from the sender's amount
-        sender.equity = sender.equity.sub(amount);
+        sender.summary[uint(AccountSummary.Balance)] = sender.summary[uint(AccountSummary.Balance)].sub(amount);
 
         // Add equity to the receiver's amount
-        receiver.equity = receiver.equity.add(amount.sub(fee));
+        receiver.summary[uint(AccountSummary.Balance)] = receiver.summary[uint(AccountSummary.Balance)].add(amount.sub(fee));
 
         return true;
     }
@@ -214,13 +222,13 @@ library TokenIOLib {
         require(sender.allowed[admin]);
 
         // Ensure the parent credit limit is greater than the child limit ?
-        // require(parent.credit[uint(Credit.Limit)] > limit);
+        // require(parent.summary[uint(AccountSummary.CreditLimit)] > limit);
 
         // Ensure the limit set is not lower than the current credit drawdown; ?
-        require(sender.credit[uint(Credit.Drawdown)] < limit);
+        require(sender.summary[uint(AccountSummary.CreditDrawdown)] < limit);
 
         //
-        sender.credit[uint(Credit.Limit)] = limit;
+        sender.summary[uint(AccountSummary.CreditLimit)] = limit;
 
         return true;
     }
@@ -241,9 +249,14 @@ library TokenIOLib {
         return true;
     }
 
-    function newAccount(Data storage self, address admin, address accountAddress) internal returns (bool) {
+    function newAccount(Data storage self, address parentAccount, address accountAddress, bool isAdmin) internal returns (bool) {
         // Ensure the account does not already exist
         require(self.accountNumber[accountAddress] == 0);
+
+        // Ensure Parent Account Exists if not admin
+        if (!isAdmin) {
+            require(self.accountNumber[parentAccount] != 0);
+        }
 
         // Increment the account number for the new account;
         self.accountNumber[accountAddress] = ++self.accountNumbers;
@@ -252,21 +265,43 @@ library TokenIOLib {
         Account storage account = self.accountDetails[self.accountNumber[accountAddress]];
 
         // Set the parentID of the account to the admin's accountNumber
-        account.parentID = self.accountNumber[admin];
+        account.parentID = self.accountNumber[parentAccount];
 
         // account.firstSender = self.accountNumber[admin]; Could just be parent?
 
         // Ensure the admin is allowed to make changes for the account;
-        account.allowed[admin] = true;
+        account.allowed[parentAccount] = true;
+
+        if (isAdmin) {
+            // Initially Set Approved to true if new account is Admin; defaults to false;
+            account.approved = true;
+        }
 
         // Initially Establish that KYC is required & attributes are 0
         account.kyc[uint(KYC.Required)] = true;
         account.numKYCAttributes = 0;
 
         // Establish an Initial Spending Limit
-        account.spending[uint(Spending.Limit)] = 5000 * 10**5;
+        account.summary[uint(AccountSummary.SpendingLimit)] = 5000 * 10**self.decimals;
+
+        // Emit LogNewAccount Event To Alert
 
         return true;
+    }
+
+    function approveAccount(Data storage self, address admin, address accountAddress) internal returns (bool) {
+        Account storage account = self.accountDetails[self.accountNumber[accountAddress]];
+
+        // Require the approval comes from an allowed admin;
+        require(account.allowed[admin]);
+
+        // Ensure the account is currently not approved;
+        require(!account.approved);
+
+        account.approved = true;
+
+        return true;
+
     }
 
     function addKYCAttribute(Data storage self, address admin, address accountAddress, KYC attribute) internal returns (bool) {
@@ -291,7 +326,7 @@ library TokenIOLib {
             // Determine fee schedule based on KYC attributes
             if (account.numKYCAttributes == 0) {
                 return self.feeValues[uint(Fees.CoreMax)];
-            } else if(account.numKYCAttributes < 7) {
+            } else if (account.numKYCAttributes < 7) {
                 return self.feeValues[uint(Fees.CoreBps)];
             } else {
                 return self.feeValues[uint(Fees.CoreMin)];
@@ -326,7 +361,7 @@ library TokenIOLib {
 
     function getSpendingLimit(Data storage self, address accountAddress) internal view returns (uint) {
         Account storage account = self.accountDetails[self.accountNumber[accountAddress]];
-        return account.spending[uint(Spending.Limit)];
+        return account.summary[uint(AccountSummary.SpendingLimit)];
     }
 
 
