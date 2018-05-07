@@ -4,83 +4,83 @@ pragma solidity 0.4.23;
 // found here: https://github.com/rocket-pool/rocketpool/blob/master/contracts/RocketStorage.sol
 // And this medium article: https://medium.com/rocket-pool/upgradable-solidity-contract-design-54789205276d
 
-contract TokenIOStorage {
+import "./Ownable.sol";
 
-    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
+contract TokenIOStorage is Ownable {
+
 
     // Mappings for Primitive Data Types
     //
-    mapping(bytes32 => uint256)    private uIntStorage;
-    mapping(bytes32 => string)     private stringStorage;
-    mapping(bytes32 => address)    private addressStorage;
-    mapping(bytes32 => bytes)      private bytesStorage;
-    mapping(bytes32 => bool)       private boolStorage;
-    mapping(bytes32 => int256)     private intStorage;
+    mapping(bytes32 => uint256)    internal uIntStorage;
+    mapping(bytes32 => string)     internal stringStorage;
+    mapping(bytes32 => address)    internal addressStorage;
+    mapping(bytes32 => bytes)      internal bytesStorage;
+    mapping(bytes32 => bool)       internal boolStorage;
+    mapping(bytes32 => int256)     internal intStorage;
 
     constructor() public {
-        // Ensure msg.sender / admin has ability to set values in the storage
-        // contract directly.
-        boolStorage[keccak256('owner', msg.sender)] = true;
+        owner[msg.sender] = true;
     }
 
     // Set Methods
-    function setAddress(bytes32 _key, address _value) public onlyPermissioned returns (bool) {
+    function setAddress(bytes32 _key, address _value) public onlyOwner returns (bool) {
         addressStorage[_key] = _value;
         return true;
     }
 
-    function setUint(bytes32 _key, uint _value) public onlyPermissioned returns (bool) {
+    function setUint(bytes32 _key, uint _value) public onlyOwner returns (bool) {
         uIntStorage[_key] = _value;
         return true;
     }
 
-    function setString(bytes32 _key, string _value) public onlyPermissioned returns (bool) {
+    function setString(bytes32 _key, string _value) public onlyOwner returns (bool) {
         stringStorage[_key] = _value;
         return true;
     }
 
-    function setBytes(bytes32 _key, bytes _value) public onlyPermissioned returns (bool) {
+    function setBytes(bytes32 _key, bytes _value) public onlyOwner returns (bool) {
         bytesStorage[_key] = _value;
         return true;
     }
 
-    function setBool(bytes32 _key, bool _value) public onlyPermissioned returns (bool) {
+    function setBool(bytes32 _key, bool _value) public onlyOwner returns (bool) {
         boolStorage[_key] = _value;
         return true;
     }
 
-    function setInt(bytes32 _key, int _value) public onlyPermissioned returns (bool) {
+    function setInt(bytes32 _key, int _value) public onlyOwner returns (bool) {
         intStorage[_key] = _value;
         return true;
     }
 
     // Delete Methods
-    function deleteAddress(bytes32 _key) public onlyPermissioned returns (bool) {
+    function deleteAddress(bytes32 _key) public onlyOwner returns (bool) {
         delete addressStorage[_key];
         return true;
     }
 
-    function deleteUint(bytes32 _key) public onlyPermissioned returns (bool) {
+    function deleteUint(bytes32 _key) public onlyOwner returns (bool) {
         delete uIntStorage[_key];
         return true;
     }
 
-    function deleteString(bytes32 _key) public onlyPermissioned returns (bool) {
+    function deleteString(bytes32 _key) public onlyOwner returns (bool) {
         delete stringStorage[_key];
         return true;
     }
 
-    function deleteBytes(bytes32 _key) public onlyPermissioned returns (bool) {
+    function deleteBytes(bytes32 _key) public onlyOwner returns (bool) {
         delete bytesStorage[_key];
         return true;
     }
 
-    function deleteBool(bytes32 _key) public onlyPermissioned returns (bool) {
+    function deleteBool(bytes32 _key) public onlyOwner returns (bool) {
         delete boolStorage[_key];
         return true;
     }
 
-    function deleteInt(bytes32 _key) public onlyPermissioned returns (bool) {
+    function deleteInt(bytes32 _key) public onlyOwner returns (bool) {
         delete intStorage[_key];
         return true;
     }
@@ -108,30 +108,6 @@ contract TokenIOStorage {
 
     function getInt(bytes32 _key) public view returns (int) {
         return intStorage[_key];
-    }
-
-    function transferOwnership(address newOwner) public onlyOwner returns (bool) {
-        require(newOwner != address(0));
-        emit OwnershipTransferred(msg.sender, newOwner);
-        // Add new owner to contract;
-        boolStorage[keccak256('owner', newOwner)] = true;
-        // Remove existing owner from list;
-        boolStorage[keccak256('owner', msg.sender)] = false;
-
-        return true;
-    }
-
-    modifier onlyOwner() {
-        require(boolStorage[keccak256('owner', msg.sender)]);
-        _;
-    }
-
-    modifier onlyPermissioned() {
-      require(
-        boolStorage[keccak256('owner', msg.sender)] ||
-        uIntStorage[keccak256('allowedUntil', msg.sender)] > now
-      );
-      _;
     }
 
 }

@@ -7,7 +7,7 @@ import "./SafeMath.sol";
 
 contract TokenIOUpgraded {
 
-    using SafeMath for uint;
+    /* using SafeMath for uint;
 
     TokenIO public defaultToken;
 
@@ -44,6 +44,6 @@ contract TokenIOUpgraded {
 
         return true;
 
-    }
+    } */
 
 }
