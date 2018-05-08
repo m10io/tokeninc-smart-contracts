@@ -1,4 +1,3 @@
-const Web3 = require('web3')
 const Promise = require('bluebird')
 const fork = require('child_process').fork
 

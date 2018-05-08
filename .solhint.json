@@ -3,6 +3,7 @@
     "rules": {
       "avoid-throw": false,
       "avoid-suicide": "error",
-      "avoid-sha3": "warn"
+      "avoid-sha3": "warn",
+	  "indent": false
     }
   }

@@ -3,13 +3,11 @@
 ---
 ## Storage.sol Contract
 
-#### Purpose
-#### Ownership & Roles
+The storage contract provides a persistent layer for other contracts in the event that a contract's code must be upgraded or redeployed.
 
+The storage contract is owned and managed by a multi-signature contract. The multi-signature contract also stores data inside the storage.sol contract and grants additional smart contracts (e.g. the Token contract) access to updating the storage contract for specific keys (e.g. balance, allowance, and other erc20 methods).
 
-
-#### Deployment Process
-#### Architecture Diagrams
+The storage contract also maintains the values for modifiers and authorization guards used by other contracts.
 
 ---
 VERSION: v0.1.0
