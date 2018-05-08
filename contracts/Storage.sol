@@ -1,4 +1,4 @@
-pragma solidity 0.4.21;
+pragma solidity 0.4.23;
 
 // NOTE: This contract is inspired by the RocketPool Storage Contract,
 // found here: https://github.com/rocket-pool/rocketpool/blob/master/contracts/RocketStorage.sol
@@ -15,19 +15,19 @@ contract Storage {
     mapping(bytes32 => bool)       private boolStorage;
     mapping(bytes32 => int256)     private intStorage;
 
-    function Storage() public {
+    constructor() public {
 
 
         // Set original contract creator as owner to prevent external changes
-        boolStorage[keccak256("storage.allowed", msg.sender)] = true;
+        /* boolStorage[keccak256("storage.allowed", msg.sender)] = true; */
 
-        uIntStorage[keccak256("token.decimals")] = 5; // millicents
+        /* uIntStorage[keccak256("token.decimals")] = 5; // millicents */
 
         // Ensure supply & fixed fees are represented as expanded representation based on decimals
-        uIntStorage[keccak256("token.supply")] = 2343200000; // 23432 * 5**10;
+        /* uIntStorage[keccak256("token.supply")] = 2343200000; // 23432 * 5**10; */
 
         // Set the full balance to creator of the contract
-        uIntStorage[keccak256("token.balance", msg.sender)] = 2343200000;
+        /* uIntStorage[keccak256("token.balance", msg.sender)] = 2343200000; */
 
         /* uIntStorage[keccak256("fee.min")] = */
         /* uIntStorage[keccak256("fee.max")] = */
@@ -35,13 +35,13 @@ contract Storage {
         /* uIntStorage[keccak256("fee.flat")] = */
 
         // Fees are fixed costs
-        uIntStorage[keccak256("fee.kyc")] = 110000; // 1.10 * 5**10
-        uIntStorage[keccak256("fee.account")] = 50000; // .50 * 5**10
+        /* uIntStorage[keccak256("fee.kyc")] = 110000; // 1.10 * 5**10 */
+        /* uIntStorage[keccak256("fee.account")] = 50000; // .50 * 5**10 */
 
         //
-        uIntStorage[keccak256("fee.multiplier.max")] = 4;
-        uIntStorage[keccak256("fee.multiplier.mid")] = 2;
-        uIntStorage[keccak256("fee.multiplier.min")] = 1;
+        /* uIntStorage[keccak256("fee.multiplier.max")] = 4; */
+        /* uIntStorage[keccak256("fee.multiplier.mid")] = 2; */
+        /* uIntStorage[keccak256("fee.multiplier.min")] = 1; */
 
     }
 

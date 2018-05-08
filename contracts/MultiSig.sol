@@ -1,11 +1,9 @@
-pragma solidity 0.4.21;
-
-import "./StorageInterface.sol";
+pragma solidity 0.4.23;
 
 
 contract MultiSig {
 
-    StorageInterface private _storage;
+    /* StorageInterface private _storage;
 
     function MultiSig(StorageInterface storageContract) public {
         _storage = StorageInterface(storageContract);
@@ -16,6 +14,6 @@ contract MultiSig {
             _storage.setBool(keccak256("multisig.owner", owners[owner]), true);
         }
         return true;
-    }
+    } */
 
 }

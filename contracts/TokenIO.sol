@@ -1,175 +1,315 @@
 pragma solidity 0.4.23;
 
-import "./TokenIOLib.sol";
-import "./SafeMath.sol";
 
-contract TokenIO {
+import "./SafeMath.sol";
+import "./TokenIOStorage.sol";
+import "./Ownable.sol";
+
+
+contract TokenIO is Ownable, TokenIOStorage {
 
     using SafeMath for uint;
 
-    using TokenIOLib for TokenIOLib.Account;
-    using TokenIOLib for TokenIOLib.Data;
-    using TokenIOLib for TokenIOLib.AccountSummary;
-    using TokenIOLib for TokenIOLib.Durations;
-    using TokenIOLib for TokenIOLib.Fees;
-    using TokenIOLib for TokenIOLib.KYC;
+    event Transfer(address indexed from, address indexed to, uint amount);
+    event Approval(address indexed owner, address indexed spender, uint amount);
+    event Withdraw(address indexed owner, uint amount);
+    event Deposit(address indexed owner, uint amount);
+    event Forbid(address indexed account, bool isForbidden);
 
-    TokenIOLib.Data tokenIO;
+    constructor(address admin) public {
+        owner[admin] = true;
+				owner[msg.sender] = true;
 
-    event LogNewAccount(address parentAddress, address accountAddress, bool isAdmin);
+				// Set Global Variables;
+        super.setString(keccak256('token.name'), "USD by token.io");
+        super.setString(keccak256('token.symbol'), "USD+");
+        super.setString(keccak256('token.currencyTLA'), "USD");
+        super.setString(keccak256('token.version'), "v0.0.1");
+        super.setString(keccak256('globalMessage'), "");
 
-    constructor() public {
+        super.setUint(keccak256('token.decimals'), 2);
+        super.setUint(keccak256('token.totalSupply'), 0);
 
+        super.setBool(keccak256('paused', address(this)), false);
 
-        tokenIO.name = "USD by token.io";
-        tokenIO.symbol = "USD+";
-        tokenIO.currencyTLA = "USD";
-        tokenIO.decimals = 5;
-        tokenIO.totalSupply = 23432 * 10**tokenIO.decimals;
+        // Set the default contract
+        super.setAddress(keccak256('defaultContract'), address(this));
 
-        // Initial Daily Limit .001% of totalSupply, represented as basis points
-        uint initDailyLimit = (tokenIO.totalSupply.mul(1000)).div(10000);
+        // Send fees to feeAccount
+        super.setAddress(keccak256('feeAccount'), msg.sender);
 
-        // Set durations in seconds
-        tokenIO.durations[uint(TokenIOLib.Durations.Day)] = 86400;
-        tokenIO.durations[uint(TokenIOLib.Durations.Week)] = 604800;
-        tokenIO.durations[uint(TokenIOLib.Durations.Month)] = 2419200;
-        tokenIO.durations[uint(TokenIOLib.Durations.Quarter)] = 7257600;
-        tokenIO.durations[uint(TokenIOLib.Durations.Year)] = 29030400;
-
-        // All "Core" fees are denominated in terms of basis points
-        tokenIO.feeValues[uint(TokenIOLib.Fees.CoreMin)] = 25;
-        tokenIO.feeValues[uint(TokenIOLib.Fees.CoreMax)] = 500;
-        tokenIO.feeValues[uint(TokenIOLib.Fees.CoreBps)] = 250; // What should Bps Be?
-
-        // Absolute Fee for Core Flat -- Is this a max fee?
-        tokenIO.feeValues[uint(TokenIOLib.Fees.Flat)] = 50 * 10**tokenIO.decimals; // $50
-
-        // Fee Multiplier Values
-        tokenIO.feeValues[uint(TokenIOLib.Fees.MultiplierHigh)] = 4;
-        tokenIO.feeValues[uint(TokenIOLib.Fees.MultiplierMedium)] = 2;
-        tokenIO.feeValues[uint(TokenIOLib.Fees.MultiplierLow)] = 1;
-
-        // Fees for KYC, Linking Account (Denominated in absolute cents)
-        tokenIO.feeValues[uint(TokenIOLib.Fees.LinkAccount)] = 50 * 10**(tokenIO.decimals - 2); // $.50
-        tokenIO.feeValues[uint(TokenIOLib.Fees.AddKYC)] = 25 * 10**(tokenIO.decimals - 2); // $.25
-
-
-        uint[9] memory summary;
-        summary[uint(TokenIOLib.AccountSummary.SpendingLimit)] = initDailyLimit;
-        summary[uint(TokenIOLib.AccountSummary.SpendingRemainder)] = initDailyLimit;
-        summary[uint(TokenIOLib.AccountSummary.SpendingPeriod)] = now;
-        summary[uint(TokenIOLib.AccountSummary.SpendingDuration)] =
-            tokenIO.durations[uint(TokenIOLib.Durations.Day)];
-
-        summary[uint(TokenIOLib.AccountSummary.CreditLimit)] = 0;
-        summary[uint(TokenIOLib.AccountSummary.CreditDrawdown)] = 0;
-
-        summary[uint(TokenIOLib.AccountSummary.Balance)] = tokenIO.totalSupply;
-        summary[uint(TokenIOLib.AccountSummary.ChildBalance)] = 0;
-        summary[uint(TokenIOLib.AccountSummary.FrozenBalance)] = 0;
-
-
-        // Establish contract as the first Account holder; This is not CB, this is contract itself
-        require(tokenIO.newAccount(msg.sender, address(this), true));
-
-        // Set new account and CB equal to self
-        require(tokenIO.newAccount(msg.sender, msg.sender, true));
-
-        // Set Global Central Bank Address to msg.sender;
-        tokenIO.centralBank = msg.sender;
-
-        tokenIO.accountNumber[msg.sender] = tokenIO.accountNumber[msg.sender]; // Msg.sender is CB, CB == 1
-
-        TokenIOLib.Account storage CB = tokenIO.accountDetails[tokenIO.accountNumber[msg.sender]];
-
-        CB.summary = summary;
-        CB.parentID = tokenIO.accountNumber[msg.sender];
-        /* CB.childBalances = 0; */
-        // CB.firstSender = tokenIO.accountNumber[msg.sender];
-        CB.kyc[uint(TokenIOLib.KYC.Required)] = false;
+        super.setUint(keccak256('fee.min'), 0); // min fee 0 USD);
+        super.setUint(keccak256('fee.max'), 100 * 10**2); // max fee 100 USD
+        super.setUint(keccak256('fee.bps'), 20); // bps 0.2%
+        super.setUint(keccak256('fee.flat'), 2); // $.02 USD flat fee;
     }
 
-    function transfer(address to, uint value) public returns (bool) {
-        return tokenIO.transferFunds(msg.sender, to, value);
-    }
+    function calculateFees(uint amount) public view returns (uint) {
+        uint flatFee = super.getUint(keccak256('fee.flat'));
+        uint maxFee = super.getUint(keccak256('fee.max'));
+        uint bpsFee = super.getUint(keccak256('fee.bps'));
+        uint fees = ((amount.mul(bpsFee)).div(10000)).add(flatFee);
 
-    function transferCredit(address to, uint value) public returns (bool) {
-        return tokenIO.transferCredit(msg.sender, to, value);
-    }
-
-    function setCreditLimit(address account, uint limit) public returns (bool) {
-        return tokenIO.setCreditLimit(msg.sender, account, limit);
-    }
-
-    function newAccount(address parentAddress, address accountAddress) public returns (bool) {
-        require(tokenIO.newAccount(parentAddress, accountAddress, false));
-        emit LogNewAccount(parentAddress, accountAddress, false);
-        return true;
-    }
-
-    function approveAccount(address accountAddress) public returns (bool) {
-        return tokenIO.approveAccount(msg.sender, accountAddress);
-    }
-
-    function addKYCAttribute(address account, TokenIOLib.KYC attribute) public returns (bool) {
-        return tokenIO.addKYCAttribute(msg.sender, account, attribute);
-    }
-
-    function linkAccount(address accountAddress, address newAccountAddress) public returns (bool) {
-        return tokenIO.linkAccount(msg.sender, accountAddress, newAccountAddress);
+        if (fees > maxFee) {
+            return maxFee;
+        } else {
+            return fees;
+        }
     }
 
     function totalSupply() public view returns (uint) {
-        return tokenIO.totalSupply;
+        return super.getUint(keccak256('token.totalSupply'));
     }
 
     function name() public view returns (string) {
-        return tokenIO.name;
+        return super.getString(keccak256('token.name'));
+    }
+
+    function symbol() public view returns (string) {
+        return super.getString(keccak256('token.symbol'));
     }
 
     function currencyTLA() public view returns (string) {
-        return tokenIO.currencyTLA;
+        return super.getString(keccak256('token.currencyTLA'));
     }
 
-    function decimals() public view returns (uint) {
-        return tokenIO.decimals;
-    }
-
-    function centralBank() public view returns (address) {
-        return tokenIO.centralBank;
-    }
-
-    /*  */
-
-    function netBalanceOf(address account) public view returns (int) {
-        return tokenIO.netBalanceOf(account);
-    }
-
-    function balanceOf(address account) public view returns (uint) {
-        return tokenIO.balanceOf(account);
-    }
-
-    function creditLineDrawdownOf(address account) public view returns (uint) {
-        return tokenIO.creditLineDrawdownOf(account);
-    }
-
-    function getAccountNumber(address account) public view returns (uint) {
-        return tokenIO.accountNumber[account];
-    }
-
-    function calculateFeeAmount(address to, uint amount) public view returns (uint) {
-        return tokenIO.calculateFeeAmount(msg.sender, to, amount);
-    }
-
-    function getFeeSchedule(address account) public view returns (uint) {
-        return tokenIO.getFeeSchedule(account);
-    }
-
-    function getSpendingLimit(address account) public view returns (uint) {
-        return tokenIO.getSpendingLimit(account);
+    function decimals() public view returns (uint256) {
+        return super.getUint(keccak256('token.decimals'));
     }
 
 
+    function transfer(address to, uint amount) public notPaused validateAccount(to) returns (bool) {
+        // Handle logic locally;
+        // Ensure value is not being transferred to a null account;
+        require(address(to) != 0x0);
+
+        // Calculate Fees based on amount
+        uint fees = calculateFees(amount);
+
+        // Update the Sender's Balance in the storage contract
+        // Transaction will fail if user balance < amount + fees
+        uIntStorage[keccak256('balance', msg.sender)] =
+					super.getUint(keccak256('balance', msg.sender)).sub(amount.add(fees));
+
+        // Update the Receiver's Balance in the storage contract
+        uIntStorage[keccak256('balance', to)] =
+					super.getUint(keccak256('balance', to)).add(amount);
+
+        // Send fees to feeAccount
+        address feeAccount = super.getAddress(keccak256('feeAccount'));
+        uIntStorage[keccak256('balance', feeAccount)] =
+        	super.getUint(keccak256('balance', feeAccount)).add(fees);
+
+        emit Transfer(msg.sender, to, amount);
+
+        return true;
+
+    }
+
+    function transferFrom(address from, address to, uint amount) public notPaused validateAccount(from) validateAccount(to) returns (bool) {
+        // Handle logic locally;
+        // Ensure value is not being transferred to a null account;
+        require(address(to) != 0x0);
+
+        // Calculate Fees based on amount
+        uint fees = calculateFees(amount);
+
+        // Update the Sender's Balance in the storage contract
+        uIntStorage[keccak256('balance', from)] =
+        	super.getUint(keccak256('balance', from)).sub(amount.add(fees));
+
+        // Update the Receiver's Balance in the storage contract
+        uIntStorage[keccak256('balance', to)] =
+        	super.getUint(keccak256('balance', to)).add(amount);
+
+        // Update the "Spender's" allowance; msg.sender == spender
+        // Transaction will fail if allowance is not set for account;
+        uIntStorage[keccak256('allowance', from, msg.sender)] =
+        	super.getUint(keccak256('allowance', from, msg.sender)).sub(amount);
+
+        // Send fees to feeAccount
+        address feeAccount = super.getAddress(keccak256('feeAccount'));
+        uIntStorage[keccak256('balance', feeAccount)] =
+        	super.getUint(keccak256('balance', feeAccount)).add(fees);
+
+
+        emit Transfer(from, to, amount);
+        return true;
+    }
+
+    function approve(address spender, uint amount) public notPaused validateAccount(spender) returns (bool) {
+
+        // Ensure initial allowance begins at 0 before setting allowance or allow
+        // amount to be set to 0 for resetting allowance;
+        require(super.getUint(keccak256('allowance', msg.sender, spender)) == 0 || amount == 0);
+
+        // Ensure cannot approve greater than current balance;
+        require(super.getUint(keccak256('balance', msg.sender)) >= amount);
+
+        uIntStorage[keccak256('allowance', msg.sender, spender)] =
+            super.getUint(keccak256('allowance', msg.sender, spender)).add(amount);
+
+        emit Approval(msg.sender, spender, amount);
+        return true;
+    }
+
+    function allowance(address owner, address spender) public view returns (uint) {
+        return super.getUint(keccak256('allowance', owner, spender));
+    }
+
+    function balanceOf(address owner) public view returns (uint) {
+        return super.getUint(keccak256('balance', owner));
+    }
+
+    function frozenBalanceOf(address owner) public view returns (uint) {
+        return super.getUint(keccak256('frozenBalance', owner));
+    }
+
+    function requestedFundsOf(address owner) public view returns (uint) {
+        return super.getUint(keccak256('requestedFunds', owner));
+    }
+
+
+    function deposit(uint amount) public notPaused validateAccount(msg.sender) returns (bool) {
+        // Ensure any prior requested funds have been settled;
+        require(super.getUint(keccak256('requestedFunds', msg.sender)) == 0);
+
+        // Increase the requested funds amount; Will be transferred to balance after approved.
+        uIntStorage[keccak256('requestedFunds', msg.sender)] =
+        	super.getUint(keccak256('requestedFunds', msg.sender)).add(amount);
+
+        emit Deposit(msg.sender, amount);
+        return true;
+    }
+
+    function approveDeposit(address owner, uint amount) public onlyOwner notPaused validateAccount(owner) returns (bool) {
+
+        // Ensure approval is for amount requested;
+        require(super.getUint(keccak256('requestedFunds', owner)) == amount);
+
+        // Reduce Requested Funds Amount
+        uIntStorage[keccak256('requestedFunds', owner)] =
+        	super.getUint(keccak256('requestedFunds', owner)).sub(amount);
+
+        // Increase Balance of owner
+        uIntStorage[keccak256('balance', owner)] =
+        	super.getUint(keccak256('balance', owner)).add(amount);
+
+        // Increase the total supply by the amount withdrawn
+        uIntStorage[keccak256('token.totalSupply')] =
+        super.getUint(keccak256('token.totalSupply')).add(amount);
+
+        return true;
+    }
+
+
+    function withdraw(address owner, uint amount) public onlyOwner notPaused validateAccount(owner) returns (bool) {
+
+        // Ensure the owner has greater than or equal to the amount being deposited off chain.
+        require(super.getUint(keccak256('balance', owner)) >= amount);
+
+        uIntStorage[keccak256('balance', owner)] =
+            super.getUint(keccak256('balance', owner)).sub(amount);
+
+        // Decrease the total supply by the amount deposited
+        uIntStorage[keccak256('token.totalSupply')] =
+            super.getUint(keccak256('token.totalSupply')).sub(amount);
+
+        emit Withdraw(owner, amount);
+
+        return true;
+    }
+
+    function forceTransfer(address from, address to, uint amount) public onlyOwner returns (bool) {
+
+        // Handle logic locally;
+        // Ensure value is not being transferred to a null account;
+        require(address(to) != 0x0);
+
+        // Update the Sender's Balance in the storage contract
+        // Transaction will fail if user balance < amount + fees
+        uIntStorage[keccak256('balance', from)] =
+        	super.getUint(keccak256('balance', from)).sub(amount);
+
+        // Update the Receiver's Balance in the storage contract
+        uIntStorage[keccak256('balance', to)] =
+        	super.getUint(keccak256('balance', to)).add(amount);
+
+        emit Transfer(from, to, amount);
+        return true;
+    }
+
+    function freeze(address owner, uint amount) public onlyOwner notPaused returns (bool) {
+
+        // Ensure amount frozen is equal to or less than the balance of the account;
+        require(super.getUint(keccak256('balance', owner)) >= amount);
+
+        // Increase the frozenBalances of the owner account;
+        uIntStorage[keccak256('frozenBalance', owner)] =
+            super.getUint(keccak256('frozenBalance', owner)).add(amount);
+
+        // Decrease the balance from the owner account on chain;
+        uIntStorage[keccak256('balance', owner)] =
+            super.getUint(keccak256('balance', owner)).sub(amount);
+
+        // Increase total amount frozen;
+        uIntStorage[keccak256('totalFrozen')] =
+            super.getUint(keccak256('totalFrozen')).add(amount);
+
+        return true;
+    }
+
+    function unfreeze(address owner, uint amount) public onlyOwner notPaused validateAccount(owner) returns (bool) {
+
+        // Ensure amount to unfreeze is less than or equal to amount frozen;
+        // NOTE: this is also checked by SafeMath when subtracting amounts;
+        require(super.getUint(keccak256('frozenBalance', owner)) <= amount);
+
+        // Decrease the frozenBalances of the owner account;
+        uIntStorage[keccak256('frozenBalance', owner)] =
+            super.getUint(keccak256('frozenBalance', owner)).sub(amount);
+
+        // Increase the balance from the owner account on chain;
+        uIntStorage[keccak256('balance', owner)] =
+            super.getUint(keccak256('balance', owner)).add(amount);
+
+        // Decrease total amount frozen;
+        uIntStorage[keccak256('totalFrozen')] =
+            super.getUint(keccak256('totalFrozen')).sub(amount);
+
+        return true;
+    }
+
+    function forbid(address account, bool isForbidden) public onlyOwner notPaused returns (bool) {
+        super.setBool(keccak256('forbidden', account), isForbidden);
+
+        // Log Forbid event for account
+        emit Forbid(account, isForbidden);
+        return true;
+    }
+
+    function checkForbidden(address account) public view returns (bool) {
+        return super.getBool(keccak256('forbidden', account));
+    }
+
+    function setPaused(bool isPaused) public onlyOwner returns (bool) {
+        super.setBool(keccak256('paused', address(this)), isPaused);
+
+        return true;
+    }
+
+    function checkPaused() public view returns (bool) {
+        return super.getBool(keccak256('paused', address(this)));
+    }
+
+    modifier notPaused() {
+        require(!checkPaused());
+        _;
+    }
+
+    modifier validateAccount(address account) {
+        require(!super.getBool(keccak256('forbidden', account)));
+        _;
+    }
 
 }
