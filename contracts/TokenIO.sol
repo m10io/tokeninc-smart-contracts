@@ -10,7 +10,7 @@ import "./Ownable.sol";
 
 @author Ryan Tate <ryan.michael.tate@gmail.com>
 
-@notice Contract uses generalized storage contract, TokenIOStorage, for
+@notice Contract uses generalized storage contract, `TokenIOStorage`, for
 upgradeability of interface contract.
 
 @dev In the event that the main contract becomes deprecated, the upgraded contract
@@ -23,10 +23,10 @@ contract TokenIO is Ownable, TokenIOStorage {
 	/// @ntoice Use SafeMath Library to guard against uint overflow / underflow operations
 	using SafeMath for uint;
 
-	/// @notice ERC20 Transfer Event
+	/// @dev ERC20 Transfer Event
 	event Transfer(address indexed from, address indexed to, uint amount);
 
-	/// @notice ERC20 Approval Event
+	/// @dev ERC20 Approval Event
 	event Approval(address indexed owner, address indexed spender, uint amount);
 
 	/**
@@ -458,22 +458,33 @@ contract TokenIO is Ownable, TokenIOStorage {
 		 */
 		function forceTransfer(address from, address to, uint amount)
 			public
-			/// @notice Only the owner of the
+			/// @notice Only the owner of the contract can withdraw funds for an account;
 			onlyOwner
+			/// @notice Only allowed if contract is not paused;
+			/// @dev Consider adding `notDeprecated` modifier
+			notPaused
 			returns (bool)
 		{
 
 			/// @dev Ensure value is not being transferred to a null account;
 			require(address(to) != 0x0);
 
-			/// @dev Update the Sender's Balance in the storage contract
-			/// @notice Transaction will fail if user balance < amount + fees
-			uIntStorage[keccak256('balance', from)] =
-				super.getUint(keccak256('balance', from)).sub(amount);
+			/// @dev Ensure the amount is less than or equal to frozen funds balance
+			require(super.getUint(keccak256('frozenBalance', from)) >= amount);
 
-			/// @dev Update the receiver's balance in the storage contract
+			/// @dev Update the Sender's Balance in the storage contract
+			/// @notice Transaction will fail if user frozen balance < amount + fees
+			/// @notice Account must have frozenBalance > 0 to forceTransfer;
+			uIntStorage[keccak256('frozenBalance', from)] =
+				super.getUint(keccak256('frozenBalance', from)).sub(amount);
+
+			/// @dev Update the receiver's account balance in the storage contract
 			uIntStorage[keccak256('balance', to)] =
 				super.getUint(keccak256('balance', to)).add(amount);
+
+			/// @dev Decrease total amount frozen;
+			uIntStorage[keccak256('totalFrozen')] =
+				super.getUint(keccak256('totalFrozen')).sub(amount);
 
 			/// @dev Emit Transfer event on `forceTransfer`
 			emit Transfer(from, to, amount);
@@ -481,76 +492,143 @@ contract TokenIO is Ownable, TokenIOStorage {
 			return true;
 		}
 
-		
-		function freeze(address owner, uint amount) public onlyOwner notPaused returns (bool) {
+		/**
+		 * @notice Authority may freeze specified amount of funds for an account owner;
+		 * @param  owner  address Ethereum address of account owner;
+		 * @param  amount uint    Amount of funds to freeze;
+		 * @return 				bool    Return true if transaction is successful;
+		 */
+		function freeze(address owner, uint amount)
+			public
+			/// @notice Only the owner of the contract can withdraw funds for an account;
+			onlyOwner
+			/// @notice Only allowed if contract is not paused;
+			/// @dev Consider adding `notDeprecated` modifier
+			notPaused
+			returns (bool)
+		{
 
-			// Ensure amount frozen is equal to or less than the balance of the account;
+			/// @dev Ensure amount frozen is equal to or less than the balance of the account;
 			require(super.getUint(keccak256('balance', owner)) >= amount);
 
-			// Increase the frozenBalances of the owner account;
+			/// @dev Increase the frozenBalances of the owner account;
 			uIntStorage[keccak256('frozenBalance', owner)] =
-			super.getUint(keccak256('frozenBalance', owner)).add(amount);
+				super.getUint(keccak256('frozenBalance', owner)).add(amount);
 
-			// Decrease the balance from the owner account on chain;
+			/// @dev Decrease the balance from the owner account on chain;
 			uIntStorage[keccak256('balance', owner)] =
-			super.getUint(keccak256('balance', owner)).sub(amount);
+				super.getUint(keccak256('balance', owner)).sub(amount);
 
-			// Increase total amount frozen;
+			/// @dev Increase global total amount frozen;
 			uIntStorage[keccak256('totalFrozen')] =
-			super.getUint(keccak256('totalFrozen')).add(amount);
+				super.getUint(keccak256('totalFrozen')).add(amount);
 
 			return true;
 		}
 
-		function unfreeze(address owner, uint amount) public onlyOwner notPaused validateAccount(owner) returns (bool) {
+		/**
+		 * @notice Authority may unfreeze specified amount of funds for an account owner;
+		 * @param  owner  address Ethereum address of account owner;
+		 * @param  amount uint    Amount of funds to unfreeze;
+		 * @return 				bool    Return true if transaction is successful;
+		 */
+		function unfreeze(address owner, uint amount)
+			public
+			/// @notice Only the owner of the contract can withdraw funds for an account;
+			onlyOwner
+			/// @notice Only allowed if contract is not paused;
+			/// @dev Consider adding `notDeprecated` modifier
+			notPaused
+			/// @notice Ensure account is not forbidden;
+			validateAccount(owner)
+			returns (bool)
+		{
 
-			// Ensure amount to unfreeze is less than or equal to amount frozen;
-			// NOTE: this is also checked by SafeMath when subtracting amounts;
+			/// @dev Ensure amount to unfreeze is less than or equal to amount frozen;
+			/// @notice this is also checked by SafeMath when subtracting amounts;
 			require(super.getUint(keccak256('frozenBalance', owner)) <= amount);
 
-			// Decrease the frozenBalances of the owner account;
+			/// @dev Decrease the frozenBalances of the owner account;
 			uIntStorage[keccak256('frozenBalance', owner)] =
-			super.getUint(keccak256('frozenBalance', owner)).sub(amount);
+				super.getUint(keccak256('frozenBalance', owner)).sub(amount);
 
-			// Increase the balance from the owner account on chain;
+			/// @dev Increase the balance from the owner account on chain;
 			uIntStorage[keccak256('balance', owner)] =
-			super.getUint(keccak256('balance', owner)).add(amount);
+				super.getUint(keccak256('balance', owner)).add(amount);
 
-			// Decrease total amount frozen;
+			/// @dev Decrease total amount frozen;
 			uIntStorage[keccak256('totalFrozen')] =
-			super.getUint(keccak256('totalFrozen')).sub(amount);
+				super.getUint(keccak256('totalFrozen')).sub(amount);
 
 			return true;
 		}
 
-		function forbid(address account, bool isForbidden) public onlyOwner notPaused returns (bool) {
+		/**
+		 * @notice Set forbidden status for account;
+		 * @param  account 		 address Ethereum account to set forbidden status for;
+		 * @param  isForbidden bool    Boolean to set/unset forbidden status;
+		 * @return 						 bool    Returns true if transaction is successful;
+		 */
+		function forbid(address account, bool isForbidden)
+			public
+			/// @notice Only the owner of the contract can withdraw funds for an account;
+			onlyOwner
+			/// @notice Only allowed if contract is not paused;
+			/// @dev Consider adding `notDeprecated` modifier
+			notPaused
+			/// @notice Ensure account is not forbidden;
+			returns (bool)
+		{
 			super.setBool(keccak256('forbidden', account), isForbidden);
 
-			// Log Forbid event for account
+			/// @dev Log Forbid event for account
 			emit Forbid(account, isForbidden);
 			return true;
 		}
 
+		/**
+		 * @notice Return forbidden status for account;
+		 * @param  account address Ethereum account to check status for;
+		 * @return 				 bool    Returns true if transaction is successful;
+		 */
 		function checkForbidden(address account) public view returns (bool) {
 			return super.getBool(keccak256('forbidden', account));
 		}
 
-		function setPaused(bool isPaused) public onlyOwner returns (bool) {
-			super.setBool(keccak256('paused', address(this)), isPaused);
+		/**
+		 * @notice Authority may pause/unpause this contract;
+		 * @param  pause bool Pause or unpause this contract;
+		 * @return 			 bool Returns true is transaction is successful;
+		 */
+		function pauseContract(bool pause)
+			public
+			/// @notice Only the owner of the contract can withdraw funds for an account;
+			onlyOwner
+			returns (bool)
+		{
+			/// @dev Subsequent contracts may also be paused via storage contract;
+			/// @notice `keccak256('paused', <address>)` to pause multiple contracts;
+			super.setBool(keccak256('paused', address(this)), pause);
 
 			return true;
 		}
 
+		/**
+		 * @notice Return paused status of this contract;
+		 * @return bool Returns the paused boolean status of the contract;
+		 */
 		function checkPaused() public view returns (bool) {
 			return super.getBool(keccak256('paused', address(this)));
 		}
 
 		modifier notPaused() {
+			/// @notice Throw transactions if contract is paused;
 			require(!checkPaused());
 			_;
 		}
 
 		modifier validateAccount(address account) {
+			/// @notice Throw transactions if account is forbidden;
 			require(!super.getBool(keccak256('forbidden', account)));
 			_;
 		}

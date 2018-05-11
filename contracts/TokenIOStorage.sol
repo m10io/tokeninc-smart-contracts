@@ -1,17 +1,48 @@
 pragma solidity 0.4.23;
 
-// NOTE: This contract is inspired by the RocketPool Storage Contract,
-// found here: https://github.com/rocket-pool/rocketpool/blob/master/contracts/RocketStorage.sol
-// And this medium article: https://medium.com/rocket-pool/upgradable-solidity-contract-design-54789205276d
-
 import "./Ownable.sol";
 
+/**
+@title TokenIOStorage - Serves as derived contract for TokenIO contract and
+is used to upgrade interfaces in the event of deprecating the main contract.
 
+@author Ryan Tate <ryan.michael.tate@gmail.com>
+
+@notice Storage contract
+
+@dev In the event that the main contract becomes deprecated, the upgraded contract
+will be set as the owner of this contract, and use this contract's storage to
+maintain data consistency between contract.
+
+@notice NOTE: This contract is based on the RocketPool Storage Contract,
+found here: https://github.com/rocket-pool/rocketpool/blob/master/contracts/RocketStorage.sol
+And this medium article: https://medium.com/rocket-pool/upgradable-solidity-contract-design-54789205276d
+
+Changes:
+ - setting primitive mapping view to internal;
+ - setting method views to public;
+
+ @dev NOTE: When deprecating the main TokenIO contract, the upgraded contract
+ must take ownership of the TokenIO contract, it will require using the public methods
+ to update changes to the underlying data. The updated contract must use a
+ standard call to original TokenIO contract such that the  request is made from
+ the upgraded contract and not the transaction origin (tx.origin) of the signing
+ account.
+
+
+ @dev NOTE: The reasoning for using the storage contract is to abstract the interface
+ from the data of the contract on chain, limiting the need to migrate data to
+ new contracts.
+
+*/
 contract TokenIOStorage is Ownable {
 
 
-    // Mappings for Primitive Data Types
-    //
+    /// @dev mapping for Primitive Data Types;
+		/// @notice primitive data mappings have `internal` view;
+		/// @dev only the derived contract can use the internal methods;
+		/// @dev key == `keccak256(param1, param2...)`
+		/// @dev Nested mapping can be achieved using multiple params in keccak256 hash;
     mapping(bytes32 => uint256)    internal uIntStorage;
     mapping(bytes32 => string)     internal stringStorage;
     mapping(bytes32 => address)    internal addressStorage;
@@ -20,10 +51,13 @@ contract TokenIOStorage is Ownable {
     mapping(bytes32 => int256)     internal intStorage;
 
     constructor() public {
+				/// @notice owner is set to msg.sender by default
+				/// @dev consider removing in favor of setting ownership in inherited
+				/// contract
         owner[msg.sender] = true;
     }
 
-    // Set Methods
+    /// @dev Set Key Methods
     function setAddress(bytes32 _key, address _value) public onlyOwner returns (bool) {
         addressStorage[_key] = _value;
         return true;
@@ -54,7 +88,9 @@ contract TokenIOStorage is Ownable {
         return true;
     }
 
-    // Delete Methods
+    /// @dev Delete Key Methods
+		/// @dev delete methods may be unnecessary; Use set methods to set values
+		/// to default?
     function deleteAddress(bytes32 _key) public onlyOwner returns (bool) {
         delete addressStorage[_key];
         return true;
@@ -85,7 +121,7 @@ contract TokenIOStorage is Ownable {
         return true;
     }
 
-    // Get Methods
+    /// @dev Get Key Methods
     function getAddress(bytes32 _key) public view returns (address) {
         return addressStorage[_key];
     }
