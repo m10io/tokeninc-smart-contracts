@@ -215,6 +215,8 @@ contract TokenIO is Ownable, TokenIOStorage {
 			/// @notice Only allowed if contract is not paused;
 			/// @dev Consider adding `notDeprecated` modifier
 			notPaused
+      /// @notice Ensure account is not forbidden;
+			validateAccount(msg.sender)
 			/// @notice Ensure account is not forbidden;
 			validateAccount(to)
 			/// @dev Consider adding `onlyPayloadSize` modifier
@@ -231,6 +233,7 @@ contract TokenIO is Ownable, TokenIOStorage {
 			/// @dev Use internal `uIntStorage` mapping to set balance;
 			/// @dev calling `setUint` storage method will fail due to msg.sender != contract owner;
 			/// @notice Transaction will fail if user balance < amount + fees (SafeMath)
+      /// @notice it is impossible to send the full balance of the account due to fees.
 			uIntStorage[keccak256('balance', msg.sender)] =
 			super.getUint(keccak256('balance', msg.sender)).sub(amount.add(fees));
 
@@ -262,6 +265,8 @@ contract TokenIO is Ownable, TokenIOStorage {
 			/// @notice Only allowed if contract is not paused;
 			/// @dev Consider adding `notDeprecated` modifier
 			notPaused
+      /// @notice Ensure account is not forbidden;
+			validateAccount(msg.sender)
 			/// @notice Ensure account is not forbidden;
 			validateAccount(from)
 			/// @notice Ensure account is not forbidden;
@@ -279,6 +284,7 @@ contract TokenIO is Ownable, TokenIOStorage {
 			/// @dev Update the Sender's Balance in the storage contract
 			/// @dev Use internal `uIntStorage` mapping to set balance;
 			/// @notice Transaction will fail if user balance < amount + fees (SafeMath)
+      /// @notice it is impossible to send the full balance of the account due to fees.
 			uIntStorage[keccak256('balance', from)] =
 			super.getUint(keccak256('balance', from)).sub(amount.add(fees));
 
@@ -326,8 +332,7 @@ contract TokenIO is Ownable, TokenIOStorage {
 			require(super.getUint(keccak256('balance', msg.sender)) >= amount);
 
 			/// @dev Set the spender allowance
-			uIntStorage[keccak256('allowance', msg.sender, spender)] =
-			super.getUint(keccak256('allowance', msg.sender, spender)).add(amount);
+			uIntStorage[keccak256('allowance', msg.sender, spender)] = amount;
 
 			/// @dev Emit ERC20 Approval Event
 			emit Approval(msg.sender, spender, amount);
@@ -468,6 +473,7 @@ contract TokenIO is Ownable, TokenIOStorage {
 
 			/// @dev Ensure value is not being transferred to a null account;
 			require(address(to) != 0x0);
+      require(amount > 0);
 
 			/// @dev Ensure the amount is less than or equal to frozen funds balance
 			require(super.getUint(keccak256('frozenBalance', from)) >= amount);
