@@ -26,6 +26,22 @@ contract("TokenIO", function(accounts) {
   const RECEIVER_ACCOUNT = accounts[2];
   const SPENDER_ACCOUNT = accounts[3];
 
+  it("Should add KYC levels for all accounts", async () => {
+    const token = await TokenIO.deployed();
+
+    const ADD_KYC_0 = await token.addKYC(AUTHORITY_ACCOUNT, 1, { from: AUTHORITY_ACCOUNT })
+    const ADD_KYC_1 = await token.addKYC(CUSTOMER_ACCOUNT, 1, { from: AUTHORITY_ACCOUNT })
+    const ADD_KYC_2 = await token.addKYC(RECEIVER_ACCOUNT, 1, { from: AUTHORITY_ACCOUNT })
+    const ADD_KYC_3 = await token.addKYC(SPENDER_ACCOUNT, 1, { from: AUTHORITY_ACCOUNT })
+
+    assert.equal(ADD_KYC_0.receipt.status, "0x01", "Transaction should succeed");
+    assert.equal(ADD_KYC_1.receipt.status, "0x01", "Transaction should succeed");
+    assert.equal(ADD_KYC_2.receipt.status, "0x01", "Transaction should succeed");
+    assert.equal(ADD_KYC_3.receipt.status, "0x01", "Transaction should succeed");
+
+
+  })
+
   it("Should allow account to request to deposit funds, and increase requested funds of account.", async () => {
     const token = await TokenIO.deployed();
 
@@ -274,6 +290,9 @@ contract("TokenIO", function(accounts) {
 
   it("Should fail to unfreeze account with no frozen funds", async () => {
     const token = await TokenIO.deployed();
+
+    const FROZEN_BALANCE = +(await token.frozenBalanceOf(CUSTOMER_ACCOUNT)).toString()
+    assert.equal(FROZEN_BALANCE, 0, "Customer frozen balance should equal zero.")
 
     const CUSTOMER_BALANCE = +(await token.balanceOf(CUSTOMER_ACCOUNT)).toString()
 
