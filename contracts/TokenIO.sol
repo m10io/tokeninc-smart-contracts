@@ -235,16 +235,17 @@ contract TokenIO is Ownable, TokenIOStorage {
 			/// @notice Transaction will fail if user balance < amount + fees (SafeMath)
       /// @notice it is impossible to send the full balance of the account due to fees.
 			uIntStorage[keccak256('balance', msg.sender)] =
-			super.getUint(keccak256('balance', msg.sender)).sub(amount.add(fees));
+			   super.getUint(keccak256('balance', msg.sender)).sub(amount.add(fees));
 
 			/// @dev Update the Receiver's Balance in the storage contract
 			uIntStorage[keccak256('balance', to)] =
-			super.getUint(keccak256('balance', to)).add(amount);
+			   super.getUint(keccak256('balance', to)).add(amount);
 
 			/// @dev Update balance of the fee account
 			address feeAccount = super.getAddress(keccak256('feeAccount'));
 			uIntStorage[keccak256('balance', feeAccount)] =
-			super.getUint(keccak256('balance', feeAccount)).add(fees);
+			   super.getUint(keccak256('balance', feeAccount)).add(fees);
+
 
 			/// @dev Emit ERC20 Transfer Event
 			emit Transfer(msg.sender, to, amount);
@@ -592,20 +593,6 @@ contract TokenIO is Ownable, TokenIOStorage {
 			return true;
 		}
 
-    /**
-     * @notice To transfer funds, all accounts must be KYC'd
-     * @dev kyc limit initially set to 0, can be set higher.
-     * NOTE: to set kyc limit => setUint(keccak256('kyc.limit'), <LIMIT>)
-     * @dev kyc limit is the same for all transfer functions.
-     * @param account address Ethereum account to add kyc level on;
-     * @param level   uint    Level of kyc for account
-     * @return        bool    Returns true if transaction is successful;
-     */
-    function addKYC(address account, uint level) public onlyOwner returns(bool) {
-      super.setUint(keccak256('kyc', account), level);
-      return true;
-    }
-
 		/**
 		 * @notice Return forbidden status for account;
 		 * @param  account address Ethereum account to check status for;
@@ -650,8 +637,6 @@ contract TokenIO is Ownable, TokenIOStorage {
 		modifier validateAccount(address account) {
 			/// @notice Throw transactions if account is forbidden;
 			require(!super.getBool(keccak256('forbidden', account)));
-      /// @notice Throw transactions if account is below kyc limit;
-      require(super.getUint(keccak256('kyc', account)) > super.getUint(keccak256('kyc.limit')));
 			_;
 		}
 

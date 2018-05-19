@@ -26,22 +26,6 @@ contract("TokenIO", function(accounts) {
   const RECEIVER_ACCOUNT = accounts[2];
   const SPENDER_ACCOUNT = accounts[3];
 
-  it("Should add KYC levels for all accounts", async () => {
-    const token = await TokenIO.deployed();
-
-    const ADD_KYC_0 = await token.addKYC(AUTHORITY_ACCOUNT, 1, { from: AUTHORITY_ACCOUNT })
-    const ADD_KYC_1 = await token.addKYC(CUSTOMER_ACCOUNT, 1, { from: AUTHORITY_ACCOUNT })
-    const ADD_KYC_2 = await token.addKYC(RECEIVER_ACCOUNT, 1, { from: AUTHORITY_ACCOUNT })
-    const ADD_KYC_3 = await token.addKYC(SPENDER_ACCOUNT, 1, { from: AUTHORITY_ACCOUNT })
-
-    assert.equal(ADD_KYC_0.receipt.status, "0x01", "Transaction should succeed");
-    assert.equal(ADD_KYC_1.receipt.status, "0x01", "Transaction should succeed");
-    assert.equal(ADD_KYC_2.receipt.status, "0x01", "Transaction should succeed");
-    assert.equal(ADD_KYC_3.receipt.status, "0x01", "Transaction should succeed");
-
-
-  })
-
   it("Should allow account to request to deposit funds, and increase requested funds of account.", async () => {
     const token = await TokenIO.deployed();
 
