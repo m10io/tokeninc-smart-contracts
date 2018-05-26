@@ -1,4 +1,4 @@
-pragma solidity 0.4.23;
+pragma solidity 0.4.24;
 
 
 import "./SafeMath.sol";
@@ -37,10 +37,8 @@ contract TokenIO is Ownable, TokenIOStorage {
 	event Withdraw(address indexed owner, uint amount);
 
 	/**
-	* @dev Deposit Event emitted when account holder requests funds to be
-	* deposited to the contract by the approved authority. Event is listened for
-	* by approved authority (contract owner) who will response by calling the
-	* `approveDeposit()` method.
+	* @dev Deposit Event emitted when funds have been deposited by the contract
+  * owner.
 	*/
 	event Deposit(address indexed owner, uint amount);
 
@@ -52,10 +50,23 @@ contract TokenIO is Ownable, TokenIOStorage {
 
 	/**
 	* @notice Constructor method for TokenIO contract
-	* @param authority  address Establish authority as contract owner;
-	* @param feeAccount address Establish account to send tx fees to;
+	* @param authority     address Establish authority as contract owner;
+	* @param feeAccount    address Establish account to send tx fees to;
+  * @param tokenName     string  Name of the TokenIO contract;
+  * @param tokenSymbol   string  Symbol of the TokenIO contract;
+  * @param tokenTLA      string  Three letter abbreviated currency code;
+  * @param tokenVersion  string  Semantic versioning of TokenIO contract;
+  * @param tokenDecimals uint    Decimal place representation of values;
 	*/
-	constructor(address authority, address feeAccount) public {
+	constructor(
+    address authority,
+    address feeAccount,
+    string tokenName,
+    string tokenSymbol,
+    string tokenTLA,
+    string tokenVersion,
+    uint tokenDecimals
+  ) public {
 
 		/**
 		* @dev Authority Address is Multi-Signature Contract in production
@@ -69,17 +80,17 @@ contract TokenIO is Ownable, TokenIOStorage {
 		owner[msg.sender] = true;
 
 		/// @dev Set Global Variables using storage setters;
-		super.setString(keccak256('token.name'), "USD by token.io");
-		super.setString(keccak256('token.symbol'), "USDx");
-		super.setString(keccak256('token.currencyTLA'), "USD");
-		super.setString(keccak256('token.version'), "v0.0.1");
+		super.setString(keccak256('token.name'), tokenName);
+		super.setString(keccak256('token.symbol'), tokenSymbol);
+		super.setString(keccak256('token.currencyTLA'), tokenTLA);
+		super.setString(keccak256('token.version'), tokenVersion);
 
 		/**
 		* @dev Decimal places for contract are 2
 		* NOTE: Increase this back to millicent (5 decimals places)?
 		* Will allow for bps fees to be set on values less than 3
 		*/
-		super.setUint(keccak256('token.decimals'), 2);
+		super.setUint(keccak256('token.decimals'), tokenDecimals);
 
 		/// @notice Total supply is 0; Increases when funds are deposited to contract
 		super.setUint(keccak256('token.totalSupply'), 0);
@@ -98,8 +109,8 @@ contract TokenIO is Ownable, TokenIOStorage {
 		* NOTE: Consider removing fee.min ?
 		*/
 		super.setUint(keccak256('fee.min'), 0); // min fee 0 USD);
-		super.setUint(keccak256('fee.max'), 100 * 10**2); // max fee 100 USD
-		super.setUint(keccak256('fee.bps'), 20); // bps 0.2%
+		super.setUint(keccak256('fee.max'), 100 * 10**tokenDecimals); // max fee 100 USD
+		super.setUint(keccak256('fee.bps'), 2); // bps 0.02%
 		super.setUint(keccak256('fee.flat'), 2); // $.02 USD flat fee;
 	}
 
@@ -126,7 +137,7 @@ contract TokenIO is Ownable, TokenIOStorage {
 
 		/// @dev Return maxFee if calculated fees exceed max value;
 		if (fees > maxFee) {
-			return maxFee;
+			  return maxFee;
 			} else {
 				return fees;
 			}
@@ -351,50 +362,12 @@ contract TokenIO is Ownable, TokenIOStorage {
 		}
 
 		/**
-		 * @notice Return the requested funds of an account;
-		 * @param  owner address Ethereum address of account owner;
-		 * @return uint          Return the requested funds of an account;
-		 */
-		function requestedFundsOf(address owner) public view returns (uint) {
-			return super.getUint(keccak256('requestedFunds', owner));
-		}
-
-		/**
-		 * @notice Request funds to be deposited to smart contract account balance;
-		 * @param  amount uint Amount of funds requested to be deposited;
-		 * @return bool      	 Return true if account is successful;
-		 */
-		function deposit(uint amount)
-			public
-			/// @notice Only allowed if contract is not paused;
-			/// @dev Consider adding `notDeprecated` modifier
-			notPaused
-			/// @notice Ensure account is not forbidden and has kyc;
-			validateAccount(msg.sender)
-			returns (bool)
-		{
-			/// @dev Ensure any prior requested funds have been settled;
-			require(super.getUint(keccak256('requestedFunds', msg.sender)) == 0);
-
-			/// @dev Increase the requested funds amount; Will be transferred to balance after approved;
-			/// @notice funds are incremented in a `requestedFunds` balance;
-			uIntStorage[keccak256('requestedFunds', msg.sender)] =
-			super.getUint(keccak256('requestedFunds', msg.sender)).add(amount);
-
-			/// @dev Emit Deposit Event
-			/// @notice Deposit event is listened to by authority (contract owner) for deposit approval;
-			emit Deposit(msg.sender, amount);
-
-			return true;
-		}
-
-		/**
 		 * @notice Contract owner uses to approve deposit funds for account;
 		 * @param  owner  address Ethereum address of owner account to approve deposit for;
 		 * @param  amount uint    Amount to approve for deposit;
 		 * @return bool           Return true if contract transaction is successful;
 		 */
-		function approveDeposit(address owner, uint amount)
+		function deposit(address owner, uint amount)
 			public
 			/// @notice Only the owner of the contract can approve deposits;
 			onlyOwner
@@ -406,13 +379,6 @@ contract TokenIO is Ownable, TokenIOStorage {
 			returns (bool)
 		{
 
-			/// @dev Ensure approval is for exact amount requested;
-			require(super.getUint(keccak256('requestedFunds', owner)) == amount);
-
-			/// @dev Reduce requested funds amount;
-			uIntStorage[keccak256('requestedFunds', owner)] =
-			super.getUint(keccak256('requestedFunds', owner)).sub(amount);
-
 			/// @dev Increase the balance of owner;
 			uIntStorage[keccak256('balance', owner)] =
 			super.getUint(keccak256('balance', owner)).add(amount);
@@ -420,6 +386,10 @@ contract TokenIO is Ownable, TokenIOStorage {
 			/// @dev Increase the total supply by the amount deposited;
 			uIntStorage[keccak256('token.totalSupply')] =
 			super.getUint(keccak256('token.totalSupply')).add(amount);
+
+      /// @dev Emit Deposit event;
+			/// @notice Alerts owner when amount has been deposited;
+      emit Deposit(owner, amount);
 
 			return true;
 		}
@@ -586,7 +556,8 @@ contract TokenIO is Ownable, TokenIOStorage {
 			/// @notice Ensure account is not forbidden and has kyc;
 			returns (bool)
 		{
-			super.setBool(keccak256('forbidden', account), isForbidden);
+      bytes32 fba = keccak256(abi.encodePacked('forbidden', account));
+      super.setBool(fba, isForbidden);
 
 			/// @dev Log Forbid event for account
 			emit Forbid(account, isForbidden);
@@ -599,7 +570,8 @@ contract TokenIO is Ownable, TokenIOStorage {
 		 * @return 				 bool    Returns true if transaction is successful;
 		 */
 		function checkForbidden(address account) public view returns (bool) {
-			return super.getBool(keccak256('forbidden', account));
+      bytes32 fba = keccak256(abi.encodePacked('forbidden', account));
+      return super.getBool(fba);
 		}
 
 		/**
@@ -636,7 +608,8 @@ contract TokenIO is Ownable, TokenIOStorage {
 
 		modifier validateAccount(address account) {
 			/// @notice Throw transactions if account is forbidden;
-			require(!super.getBool(keccak256('forbidden', account)));
+      bytes32 fba = keccak256(abi.encodePacked('forbidden', account));
+      require(!super.getBool(fba));
 			_;
 		}
 

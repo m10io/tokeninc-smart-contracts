@@ -26,20 +26,20 @@ contract("TokenIO", function(accounts) {
   const RECEIVER_ACCOUNT = accounts[2];
   const SPENDER_ACCOUNT = accounts[3];
 
-  it("Should allow account to request to deposit funds, and increase requested funds of account.", async () => {
-    const token = await TokenIO.deployed();
-
-    const DEPOSIT_TX = await token.deposit(INITIAL_DEPOSIT_AMOUNT, { from: CUSTOMER_ACCOUNT })
-    const DEPOSIT_LOGGED_AMOUT = +DEPOSIT_TX.logs[0].args.amount.toString()
-    const DEPOSIT_LOGGED_OWNER = DEPOSIT_TX.logs[0].args.owner
-    const REQUESTED_FUNDS = +(await token.requestedFundsOf(CUSTOMER_ACCOUNT)).toString()
-
-    assert.equal(DEPOSIT_TX.receipt.status, "0x01", "Transaction should succeed");
-    assert.equal(DEPOSIT_LOGGED_OWNER, CUSTOMER_ACCOUNT, "Expected deposit by customer account");
-    assert.equal(DEPOSIT_LOGGED_AMOUT, INITIAL_DEPOSIT_AMOUNT, "Expected deposited amount to equal deposit amount");
-    assert.equal(REQUESTED_FUNDS, INITIAL_DEPOSIT_AMOUNT, "Expected requested funds to equal deposit amount");
-
-  })
+  // it("Should allow account to request to deposit funds, and increase requested funds of account.", async () => {
+  //   const token = await TokenIO.deployed();
+  //
+  //   const DEPOSIT_TX = await token.deposit(INITIAL_DEPOSIT_AMOUNT, { from: CUSTOMER_ACCOUNT })
+  //   const DEPOSIT_LOGGED_AMOUT = +DEPOSIT_TX.logs[0].args.amount.toString()
+  //   const DEPOSIT_LOGGED_OWNER = DEPOSIT_TX.logs[0].args.owner
+  //   const REQUESTED_FUNDS = +(await token.requestedFundsOf(CUSTOMER_ACCOUNT)).toString()
+  //
+  //   assert.equal(DEPOSIT_TX.receipt.status, "0x01", "Transaction should succeed");
+  //   assert.equal(DEPOSIT_LOGGED_OWNER, CUSTOMER_ACCOUNT, "Expected deposit by customer account");
+  //   assert.equal(DEPOSIT_LOGGED_AMOUT, INITIAL_DEPOSIT_AMOUNT, "Expected deposited amount to equal deposit amount");
+  //   assert.equal(REQUESTED_FUNDS, INITIAL_DEPOSIT_AMOUNT, "Expected requested funds to equal deposit amount");
+  //
+  // })
 
   it("Should approve deposit amount for customer and increase the balance of the account and increase total supply.", async () => {
 
@@ -48,14 +48,12 @@ contract("TokenIO", function(accounts) {
     const TOTAL_SUPPLY_BEGINNING = +(await token.totalSupply()).toString()
     assert.equal(TOTAL_SUPPLY_BEGINNING, 0, "Total supply should equal zero before any funds are approved for deposit.")
 
-    const APPROVE_DEPOSIT_TX = await token.approveDeposit(CUSTOMER_ACCOUNT, INITIAL_DEPOSIT_AMOUNT, { from: AUTHORITY_ACCOUNT })
+    const APPROVE_DEPOSIT_TX = await token.deposit(CUSTOMER_ACCOUNT, INITIAL_DEPOSIT_AMOUNT, { from: AUTHORITY_ACCOUNT })
     const CUSTOMER_BALANCE = +(await token.balanceOf(CUSTOMER_ACCOUNT)).toString()
-    const REQUESTED_FUNDS = +(await token.requestedFundsOf(CUSTOMER_ACCOUNT)).toString()
     const TOTAL_SUPPLY_END = +(await token.totalSupply()).toString()
 
     assert.equal(APPROVE_DEPOSIT_TX.receipt.status, "0x01", "Transaction should succeed");
     assert.equal(CUSTOMER_BALANCE, INITIAL_DEPOSIT_AMOUNT, "Customer balanace should equal amount deposited.");
-    assert.equal(REQUESTED_FUNDS, 0, "Requested funds for customer should be reset to zero after deposit is approved.")
     assert.equal(TOTAL_SUPPLY_END, INITIAL_DEPOSIT_AMOUNT, "Total supply should equal amount deposited")
 
   })
@@ -204,7 +202,9 @@ contract("TokenIO", function(accounts) {
     const ALLOWANCE = +(await token.allowance(CUSTOMER_ACCOUNT, SPENDER_ACCOUNT)).toString()
 
     token.transferFrom(CUSTOMER_ACCOUNT, RECEIVER_ACCOUNT, ALLOWANCE, { from: SPENDER_ACCOUNT })
-      .then(() => { asser.throw("Transaction should fail.") })
+      .then(() => {
+        assert.throw("Transaction should fail.")
+      })
       .catch((error) => {
         assert.equal(1, error.message.match(RegExp('revert')).length, "Transaction should revert")
       })

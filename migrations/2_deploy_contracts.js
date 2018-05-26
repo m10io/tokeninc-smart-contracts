@@ -6,8 +6,16 @@ var SafeMath = artifacts.require("./SafeMath.sol");
 // seem to be cached between each migration run.
 // TODO: Report issue on truffle github
 
-const { mode, development, production } = require('../token.config.js');
+const { mode, development, production, tokenDetails } = require('../token.config.js');
 const { admin, feeAccount } = mode == 'production' ? production : development;
+
+const {
+  tokenName,
+  tokenSymbol,
+  tokenTLA,
+  tokenVersion,
+  tokenDecimals
+} = tokenDetails
 
 module.exports = async function(deployer, network) {
 	var token, storage;
@@ -17,7 +25,16 @@ module.exports = async function(deployer, network) {
 		return deployer.link(SafeMath, [ TokenIO ]);
 	}).then(() => {
 		// Deploy TokenIO
-		return deployer.deploy(TokenIO, admin, feeAccount)
+		return deployer.deploy(
+      TokenIO,
+      admin,
+      feeAccount,
+      tokenName,
+      tokenSymbol,
+      tokenTLA,
+      tokenVersion,
+      tokenDecimals
+    )
 	}).then((_token) => {
 		token = _token
 	}).catch((error) => {
