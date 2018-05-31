@@ -11,8 +11,8 @@ module.exports = {
   mode: 'development',
   tokenDetails: USDx,
   development: {
-    admin: "0x627306090abab3a6e1400e9345bc60c78a8bef57",
-  	feeAccount: "0x5aeda56215b167893e80b4fe645ba6d5bab767de",
+    admin: "0x8cb2cebb0070b231d4ba4d3b747acaebdfbbd142",
+  	feeAccount: "0x8cb2cebb0070b231d4ba4d3b747acaebdfbbd142",
   },
   production: {
     admin: "0xc444Ca35CBA4a71Ad75325C34428B5e7348a7EE0",
@@ -20,3 +20,13 @@ module.exports = {
 
   }
 }
+
+
+// CSV
+// "0x8cb2cebb0070b231d4ba4d3b747acaebdfbbd142",
+// "0x8cb2cebb0070b231d4ba4d3b747acaebdfbbd142",
+// "USD by token.io",
+// "USDx",
+// "USD",
+// "v0.1.1",
+// 2

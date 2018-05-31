@@ -26,6 +26,9 @@ contract TokenIO is Ownable, TokenIOStorage {
   /// @dev ERC20 Transfer Event
   event Transfer(address indexed from, address indexed to, uint amount);
 
+  /// @dev Transfer With Data
+  event TransferWithData(address indexed from, address indexed to, uint amount, bytes data);
+
   /// @dev ERC20 Approval Event
   event Approval(address indexed owner, address indexed spender, uint amount);
 
@@ -266,6 +269,59 @@ contract TokenIO is Ownable, TokenIOStorage {
       }
 
       /**
+      * @notice ERC20 Standard transfer with arbitrary data;
+      * @dev transfer interface using storage contract;
+      * @dev NOTE: Consider adding `bytes data` param for ERC827 compliance;
+      * @param  to 		 address Ethereum address to transfer tokens to;
+      * @param  amount uint 	 Amount of tokens to transfer in expanded decimal form;
+      * @param  data   bytes   Arbitrary data to send with transaction;
+      * @return bool 					Returns true if transaction is successful;
+      */
+      function transfer(address to, uint amount, bytes data)
+      public
+      /// @notice Only allowed if contract is not paused;
+      /// @dev Consider adding `notDeprecated` modifier
+      notPaused
+      /// @notice Ensure account is not forbidden and has kyc;
+      validateAccount(msg.sender)
+      /// @notice Ensure account is not forbidden and has kyc;
+      validateAccount(to)
+      /// @dev Consider adding `onlyPayloadSize` modifier
+      returns (bool)
+      {
+
+        /// @dev Ensure value is not being transferred to a null account;
+        require(address(to) != 0x0);
+
+        /// @notice Calculate Fees based on amount
+        uint fees = calculateFees(amount);
+
+        /// @dev Update the Sender's Balance in the storage contract;
+        /// @dev Use internal `uIntStorage` mapping to set balance;
+        /// @dev calling `setUint` storage method will fail due to msg.sender != contract owner;
+        /// @notice Transaction will fail if user balance < amount + fees (SafeMath)
+        /// @notice it is impossible to send the full balance of the account due to fees.
+        uIntStorage[keccak256('balance', msg.sender)] =
+        super.getUint(keccak256('balance', msg.sender)).sub(amount.add(fees));
+
+        /// @dev Update the Receiver's Balance in the storage contract
+        uIntStorage[keccak256('balance', to)] =
+        super.getUint(keccak256('balance', to)).add(amount);
+
+        /// @dev Update balance of the fee account
+        address feeAccount = super.getAddress(keccak256('feeAccount'));
+        uIntStorage[keccak256('balance', feeAccount)] =
+        super.getUint(keccak256('balance', feeAccount)).add(fees);
+
+
+        /// @dev Emit ERC20 Transfer Event
+        emit TransferWithData(msg.sender, to, amount, data);
+
+        return true;
+
+      }
+
+      /**
       * @notice ERC20 Compliant `transferFrom` method;
       * @param  from 	address Ethereum address to transfer value from;
       * @param  to 		address Ethereum address to transfer value to;
@@ -316,6 +372,62 @@ contract TokenIO is Ownable, TokenIOStorage {
 
         /// @dev Emit ERC20 Transfer Event
         emit Transfer(from, to, amount);
+
+        return true;
+      }
+
+      /**
+      * @notice ERC20 Compliant `transferFrom` method with data;
+      * @param  from 	address Ethereum address to transfer value from;
+      * @param  to 		address Ethereum address to transfer value to;
+      * @param  amount uint    Amount of tokens to transfer;
+      * @param  data  bytes   Arbitrary data to send with transaction;
+      * @return bool         	Return true if transaction is successful;
+      */
+      function transferFrom(address from, address to, uint amount, bytes data)
+      public
+      /// @notice Only allowed if contract is not paused;
+      /// @dev Consider adding `notDeprecated` modifier
+      notPaused
+      /// @notice Ensure account is not forbidden and has kyc;
+      validateAccount(msg.sender)
+      /// @notice Ensure account is not forbidden and has kyc;
+      validateAccount(from)
+      /// @notice Ensure account is not forbidden and has kyc;
+      validateAccount(to)
+      /// @dev Consider adding `onlyPayloadSize` modifier
+      returns (bool)
+      {
+
+        /// @dev Ensure value is not being transferred to a null account;
+        require(address(to) != 0x0);
+
+        /// @notice Calculate Fees based on amount
+        uint fees = calculateFees(amount);
+
+        /// @dev Update the Sender's Balance in the storage contract
+        /// @dev Use internal `uIntStorage` mapping to set balance;
+        /// @notice Transaction will fail if user balance < amount + fees (SafeMath)
+        /// @notice it is impossible to send the full balance of the account due to fees.
+        uIntStorage[keccak256('balance', from)] =
+        super.getUint(keccak256('balance', from)).sub(amount.add(fees));
+
+        /// @dev Update the Receiver's Balance in the storage contract
+        uIntStorage[keccak256('balance', to)] =
+        super.getUint(keccak256('balance', to)).add(amount);
+
+        /// @dev Update the spender allowance; msg.sender == spender
+        /// @notice Transaction will fail if allowance is insufficient for account;
+        uIntStorage[keccak256('allowance', from, msg.sender)] =
+        super.getUint(keccak256('allowance', from, msg.sender)).sub(amount);
+
+        /// @dev Send fees to feeAccount
+        address feeAccount = super.getAddress(keccak256('feeAccount'));
+        uIntStorage[keccak256('balance', feeAccount)] =
+        super.getUint(keccak256('balance', feeAccount)).add(fees);
+
+        /// @dev Emit ERC20 Transfer Event
+        emit TransferWithData(from, to, amount, data);
 
         return true;
       }
@@ -430,9 +542,10 @@ contract TokenIO is Ownable, TokenIOStorage {
       * @param  from   address Ethereum address of account to transfer funds from;
       * @param  to     address Ethereum address of account to transfer funds to;
       * @param  amount uint    Amount to transfer funds;
+      * @param  data   bytes   Arbitrary data (e.g. reason) for force transfer
       * @return        bool    Transaction returns true if successful;
       */
-      function forceTransfer(address from, address to, uint amount)
+      function forceTransfer(address from, address to, uint amount, bytes data)
       public
       /// @notice Only the owner of the contract can withdraw funds for an account;
       onlyOwner
@@ -464,7 +577,7 @@ contract TokenIO is Ownable, TokenIOStorage {
         super.getUint(keccak256('totalFrozen')).sub(amount);
 
         /// @dev Emit Transfer event on `forceTransfer`
-        emit Transfer(from, to, amount);
+        emit TransferWithData(from, to, amount, data);
 
         return true;
       }
