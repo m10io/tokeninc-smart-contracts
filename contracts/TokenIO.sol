@@ -26,9 +26,6 @@ contract TokenIO is Ownable, TokenIOStorage {
   /// @dev ERC20 Transfer Event
   event Transfer(address indexed from, address indexed to, uint amount);
 
-  /// @dev Transfer With Data
-  event TransferWithData(address indexed from, address indexed to, uint amount, bytes data);
-
   /// @dev ERC20 Approval Event
   event Approval(address indexed owner, address indexed spender, uint amount);
 
@@ -37,13 +34,13 @@ contract TokenIO is Ownable, TokenIOStorage {
   * receives an out-of-bound request to withdraw funds from the contract by
   * an account holder.
   */
-  event Withdraw(address indexed owner, uint amount);
+  event Withdraw(address indexed account, uint amount);
 
   /**
   * @dev Deposit Event emitted when funds have been deposited by the contract
   * owner.
   */
-  event Deposit(address indexed owner, uint amount);
+  event Deposit(address indexed account, uint amount);
 
   /**
   * @dev Forbid event emitted when approved authority (contract owner)
@@ -188,21 +185,21 @@ contract TokenIO is Ownable, TokenIOStorage {
 
       /**
       * @notice Return allowance of spender for account;
-      * @param  owner 	 address Ethereum address of owner account;
+      * @param  account 	 address Ethereum address of owner account;
       * @param  spender address Ethereum address of spending account;
       * @return uint						 Return allowance of spender for owner account;
       */
-      function allowance(address owner, address spender) public view returns (uint) {
+      function allowance(address account, address spender) public view returns (uint) {
         /// @dev Return allowance limit for spender from storage getter;
         return super.getUint(keccak256('allowance', owner, spender));
       }
 
       /**
       * @notice Return balance of account owner;
-      * @param  owner address Ethereum address of account owner;
+      * @param  account address Ethereum address of account;
       * @return uint          Retun the balance of the account;
       */
-      function balanceOf(address owner) public view returns (uint) {
+      function balanceOf(address account) public view returns (uint) {
         /// @dev Return balance of account from storage getter;
         return super.getUint(keccak256('balance', owner));
       }
@@ -225,59 +222,6 @@ contract TokenIO is Ownable, TokenIOStorage {
       * @return bool 					Returns true if transaction is successful;
       */
       function transfer(address to, uint amount)
-      public
-      /// @notice Only allowed if contract is not paused;
-      /// @dev Consider adding `notDeprecated` modifier
-      notPaused
-      /// @notice Ensure account is not forbidden and has kyc;
-      validateAccount(msg.sender)
-      /// @notice Ensure account is not forbidden and has kyc;
-      validateAccount(to)
-      /// @dev Consider adding `onlyPayloadSize` modifier
-      returns (bool)
-      {
-
-        /// @dev Ensure value is not being transferred to a null account;
-        require(address(to) != 0x0);
-
-        /// @notice Calculate Fees based on amount
-        uint fees = calculateFees(amount);
-
-        /// @dev Update the Sender's Balance in the storage contract;
-        /// @dev Use internal `uIntStorage` mapping to set balance;
-        /// @dev calling `setUint` storage method will fail due to msg.sender != contract owner;
-        /// @notice Transaction will fail if user balance < amount + fees (SafeMath)
-        /// @notice it is impossible to send the full balance of the account due to fees.
-        uIntStorage[keccak256('balance', msg.sender)] =
-        super.getUint(keccak256('balance', msg.sender)).sub(amount.add(fees));
-
-        /// @dev Update the Receiver's Balance in the storage contract
-        uIntStorage[keccak256('balance', to)] =
-        super.getUint(keccak256('balance', to)).add(amount);
-
-        /// @dev Update balance of the fee account
-        address feeAccount = super.getAddress(keccak256('feeAccount'));
-        uIntStorage[keccak256('balance', feeAccount)] =
-        super.getUint(keccak256('balance', feeAccount)).add(fees);
-
-
-        /// @dev Emit ERC20 Transfer Event
-        emit Transfer(msg.sender, to, amount);
-
-        return true;
-
-      }
-
-      /**
-      * @notice ERC20 Standard transfer with arbitrary data;
-      * @dev transfer interface using storage contract;
-      * @dev NOTE: Consider adding `bytes data` param for ERC827 compliance;
-      * @param  to 		 address Ethereum address to transfer tokens to;
-      * @param  amount uint 	 Amount of tokens to transfer in expanded decimal form;
-      * @param  data   bytes   Arbitrary data to send with transaction;
-      * @return bool 					Returns true if transaction is successful;
-      */
-      function transfer(address to, uint amount, bytes data)
       public
       /// @notice Only allowed if contract is not paused;
       /// @dev Consider adding `notDeprecated` modifier
@@ -377,62 +321,6 @@ contract TokenIO is Ownable, TokenIOStorage {
       }
 
       /**
-      * @notice ERC20 Compliant `transferFrom` method with data;
-      * @param  from 	address Ethereum address to transfer value from;
-      * @param  to 		address Ethereum address to transfer value to;
-      * @param  amount uint    Amount of tokens to transfer;
-      * @param  data  bytes   Arbitrary data to send with transaction;
-      * @return bool         	Return true if transaction is successful;
-      */
-      function transferFrom(address from, address to, uint amount, bytes data)
-      public
-      /// @notice Only allowed if contract is not paused;
-      /// @dev Consider adding `notDeprecated` modifier
-      notPaused
-      /// @notice Ensure account is not forbidden and has kyc;
-      validateAccount(msg.sender)
-      /// @notice Ensure account is not forbidden and has kyc;
-      validateAccount(from)
-      /// @notice Ensure account is not forbidden and has kyc;
-      validateAccount(to)
-      /// @dev Consider adding `onlyPayloadSize` modifier
-      returns (bool)
-      {
-
-        /// @dev Ensure value is not being transferred to a null account;
-        require(address(to) != 0x0);
-
-        /// @notice Calculate Fees based on amount
-        uint fees = calculateFees(amount);
-
-        /// @dev Update the Sender's Balance in the storage contract
-        /// @dev Use internal `uIntStorage` mapping to set balance;
-        /// @notice Transaction will fail if user balance < amount + fees (SafeMath)
-        /// @notice it is impossible to send the full balance of the account due to fees.
-        uIntStorage[keccak256('balance', from)] =
-        super.getUint(keccak256('balance', from)).sub(amount.add(fees));
-
-        /// @dev Update the Receiver's Balance in the storage contract
-        uIntStorage[keccak256('balance', to)] =
-        super.getUint(keccak256('balance', to)).add(amount);
-
-        /// @dev Update the spender allowance; msg.sender == spender
-        /// @notice Transaction will fail if allowance is insufficient for account;
-        uIntStorage[keccak256('allowance', from, msg.sender)] =
-        super.getUint(keccak256('allowance', from, msg.sender)).sub(amount);
-
-        /// @dev Send fees to feeAccount
-        address feeAccount = super.getAddress(keccak256('feeAccount'));
-        uIntStorage[keccak256('balance', feeAccount)] =
-        super.getUint(keccak256('balance', feeAccount)).add(fees);
-
-        /// @dev Emit ERC20 Transfer Event
-        emit TransferWithData(from, to, amount, data);
-
-        return true;
-      }
-
-      /**
       * @notice ERC20 compliant `approve` method
       * @param  spender address Ethereum address of approved spender
       * @param  amount  uint    Amount of allowance to set in expanded decimal form
@@ -466,20 +354,20 @@ contract TokenIO is Ownable, TokenIOStorage {
 
       /**
       * @notice Return the frozen balance of an account;
-      * @param  owner address Ethereum address of account owner;
+      * @param  account address Ethereum address of account;
       * @return uint          Return frozen balance of account;
       */
-      function frozenBalanceOf(address owner) public view returns (uint) {
+      function frozenBalanceOf(address account) public view returns (uint) {
         return super.getUint(keccak256('frozenBalance', owner));
       }
 
       /**
       * @notice Contract owner uses to approve deposit funds for account;
-      * @param  owner  address Ethereum address of owner account to approve deposit for;
+      * @param  account  address Ethereum address of account to approve deposit for;
       * @param  amount uint    Amount to approve for deposit;
       * @return bool           Return true if contract transaction is successful;
       */
-      function deposit(address owner, uint amount)
+      function deposit(address account, uint amount)
       public
       /// @notice Only the owner of the contract can approve deposits;
       onlyOwner
@@ -507,7 +395,13 @@ contract TokenIO is Ownable, TokenIOStorage {
       }
 
 
-      function withdraw(address owner, uint amount)
+      /**
+      * @notice Contract owner uses to withdraw funds for account;
+      * @param  account  address Ethereum address of account to approve deposit for;
+      * @param  amount   uint    Amount to approve for deposit;
+      * @return bool             Return true if contract transaction is successful;
+       */
+      function withdraw(address account, uint amount)
       public
       /// @notice Only the owner of the contract can withdraw funds for an account;
       onlyOwner
@@ -542,10 +436,9 @@ contract TokenIO is Ownable, TokenIOStorage {
       * @param  from   address Ethereum address of account to transfer funds from;
       * @param  to     address Ethereum address of account to transfer funds to;
       * @param  amount uint    Amount to transfer funds;
-      * @param  data   bytes   Arbitrary data (e.g. reason) for force transfer
       * @return        bool    Transaction returns true if successful;
       */
-      function forceTransfer(address from, address to, uint amount, bytes data)
+      function forceTransfer(address from, address to, uint amount)
       public
       /// @notice Only the owner of the contract can withdraw funds for an account;
       onlyOwner
@@ -577,18 +470,18 @@ contract TokenIO is Ownable, TokenIOStorage {
         super.getUint(keccak256('totalFrozen')).sub(amount);
 
         /// @dev Emit Transfer event on `forceTransfer`
-        emit TransferWithData(from, to, amount, data);
+        emit Transfer(from, to, amount);
 
         return true;
       }
 
       /**
       * @notice Authority may freeze specified amount of funds for an account owner;
-      * @param  owner  address Ethereum address of account owner;
+      * @param  account  address Ethereum address of account;
       * @param  amount uint    Amount of funds to freeze;
       * @return 				bool    Return true if transaction is successful;
       */
-      function freeze(address owner, uint amount)
+      function freeze(address account, uint amount)
       public
       /// @notice Only the owner of the contract can withdraw funds for an account;
       onlyOwner
@@ -618,11 +511,11 @@ contract TokenIO is Ownable, TokenIOStorage {
 
       /**
       * @notice Authority may unfreeze specified amount of funds for an account owner;
-      * @param  owner  address Ethereum address of account owner;
+      * @param  account  address Ethereum address of account;
       * @param  amount uint    Amount of funds to unfreeze;
       * @return 				bool    Return true if transaction is successful;
       */
-      function unfreeze(address owner, uint amount)
+      function unfreeze(address account, uint amount)
       public
       /// @notice Only the owner of the contract can withdraw funds for an account;
       onlyOwner

@@ -28,5 +28,5 @@ module.exports = {
 // "USD by token.io",
 // "USDx",
 // "USD",
-// "v0.1.1",
+// "v0.1.2",
 // 2
