@@ -115,6 +115,19 @@ contract TokenIO is Ownable, TokenIOStorage {
     }
 
     /**
+     * @notice Get Fee Params
+     * @return uint Uint tuple with fee params (min, max, bps, flat)
+     */
+    function getFeeParams() public view returns (uint min, uint max, uint bps, uint flat) {
+      return (
+        super.getUint(keccak256('fee.min')),
+        super.getUint(keccak256('fee.max')),
+        super.getUint(keccak256('fee.bps')),
+        super.getUint(keccak256('fee.flat'))
+      );
+    }
+
+    /**
     * @notice Calculate fees based on amount value;
     * @dev Fee values are set in the constructor, but may be updated via storage
     * methods. `1 USD == 1 * 10**2`
@@ -138,10 +151,10 @@ contract TokenIO is Ownable, TokenIOStorage {
       /// @dev Return maxFee if calculated fees exceed max value;
       if (fees > maxFee) {
         return maxFee;
-        } else {
-          return fees;
-        }
+      } else {
+        return fees;
       }
+    }
 
       /**
       * @notice The total supply of funds deposited to the contract;
@@ -191,7 +204,7 @@ contract TokenIO is Ownable, TokenIOStorage {
       */
       function allowance(address account, address spender) public view returns (uint) {
         /// @dev Return allowance limit for spender from storage getter;
-        return super.getUint(keccak256('allowance', owner, spender));
+        return super.getUint(keccak256('allowance', account, spender));
       }
 
       /**
@@ -201,7 +214,7 @@ contract TokenIO is Ownable, TokenIOStorage {
       */
       function balanceOf(address account) public view returns (uint) {
         /// @dev Return balance of account from storage getter;
-        return super.getUint(keccak256('balance', owner));
+        return super.getUint(keccak256('balance', account));
       }
 
       /**
@@ -259,7 +272,7 @@ contract TokenIO is Ownable, TokenIOStorage {
 
 
         /// @dev Emit ERC20 Transfer Event
-        emit TransferWithData(msg.sender, to, amount, data);
+        emit Transfer(msg.sender, to, amount);
 
         return true;
 
@@ -358,7 +371,7 @@ contract TokenIO is Ownable, TokenIOStorage {
       * @return uint          Return frozen balance of account;
       */
       function frozenBalanceOf(address account) public view returns (uint) {
-        return super.getUint(keccak256('frozenBalance', owner));
+        return super.getUint(keccak256('frozenBalance', account));
       }
 
       /**
@@ -375,13 +388,13 @@ contract TokenIO is Ownable, TokenIOStorage {
       /// @dev Consider adding `notDeprecated` modifier
       notPaused
       /// @notice Ensure account is not forbidden and has kyc;
-      validateAccount(owner)
+      validateAccount(account)
       returns (bool)
       {
 
         /// @dev Increase the balance of owner;
-        uIntStorage[keccak256('balance', owner)] =
-        super.getUint(keccak256('balance', owner)).add(amount);
+        uIntStorage[keccak256('balance', account)] =
+        super.getUint(keccak256('balance', account)).add(amount);
 
         /// @dev Increase the total supply by the amount deposited;
         uIntStorage[keccak256('token.totalSupply')] =
@@ -389,7 +402,7 @@ contract TokenIO is Ownable, TokenIOStorage {
 
         /// @dev Emit Deposit event;
         /// @notice Alerts owner when amount has been deposited;
-        emit Deposit(owner, amount);
+        emit Deposit(account, amount);
 
         return true;
       }
@@ -409,16 +422,16 @@ contract TokenIO is Ownable, TokenIOStorage {
       /// @dev Consider adding `notDeprecated` modifier
       notPaused
       /// @notice Ensure account is not forbidden and has kyc;
-      validateAccount(owner)
+      validateAccount(account)
       returns (bool)
       {
 
         /// @dev Ensure the owner has greater than or equal to the withdraw amount.
-        require(super.getUint(keccak256('balance', owner)) >= amount);
+        require(super.getUint(keccak256('balance', account)) >= amount);
 
         /// @dev Decrease the balance of the owner account by amount to withdraw
-        uIntStorage[keccak256('balance', owner)] =
-        super.getUint(keccak256('balance', owner)).sub(amount);
+        uIntStorage[keccak256('balance', account)] =
+        super.getUint(keccak256('balance', account)).sub(amount);
 
         /// @dev Decrease the total supply by amount to withdraw
         uIntStorage[keccak256('token.totalSupply')] =
@@ -426,7 +439,7 @@ contract TokenIO is Ownable, TokenIOStorage {
 
         /// @dev Emit Withdraw event;
         /// @notice Alerts owner when amount has been withdrawn;
-        emit Withdraw(owner, amount);
+        emit Withdraw(account, amount);
 
         return true;
       }
@@ -492,15 +505,15 @@ contract TokenIO is Ownable, TokenIOStorage {
       {
 
         /// @dev Ensure amount frozen is equal to or less than the balance of the account;
-        require(super.getUint(keccak256('balance', owner)) >= amount);
+        require(super.getUint(keccak256('balance', account)) >= amount);
 
         /// @dev Increase the frozenBalances of the owner account;
-        uIntStorage[keccak256('frozenBalance', owner)] =
-        super.getUint(keccak256('frozenBalance', owner)).add(amount);
+        uIntStorage[keccak256('frozenBalance', account)] =
+        super.getUint(keccak256('frozenBalance', account)).add(amount);
 
         /// @dev Decrease the balance from the owner account on chain;
-        uIntStorage[keccak256('balance', owner)] =
-        super.getUint(keccak256('balance', owner)).sub(amount);
+        uIntStorage[keccak256('balance', account)] =
+        super.getUint(keccak256('balance', account)).sub(amount);
 
         /// @dev Increase global total amount frozen;
         uIntStorage[keccak256('totalFrozen')] =
@@ -523,21 +536,21 @@ contract TokenIO is Ownable, TokenIOStorage {
       /// @dev Consider adding `notDeprecated` modifier
       notPaused
       /// @notice Ensure account is not forbidden and has kyc;
-      validateAccount(owner)
+      validateAccount(account)
       returns (bool)
       {
 
         /// @dev Ensure amount to unfreeze is less than or equal to amount frozen;
         /// @notice this is also checked by SafeMath when subtracting amounts;
-        require(super.getUint(keccak256('frozenBalance', owner)) <= amount);
+        require(super.getUint(keccak256('frozenBalance', account)) <= amount);
 
         /// @dev Decrease the frozenBalances of the owner account;
-        uIntStorage[keccak256('frozenBalance', owner)] =
-        super.getUint(keccak256('frozenBalance', owner)).sub(amount);
+        uIntStorage[keccak256('frozenBalance', account)] =
+        super.getUint(keccak256('frozenBalance', account)).sub(amount);
 
         /// @dev Increase the balance from the owner account on chain;
-        uIntStorage[keccak256('balance', owner)] =
-        super.getUint(keccak256('balance', owner)).add(amount);
+        uIntStorage[keccak256('balance', account)] =
+        super.getUint(keccak256('balance', account)).add(amount);
 
         /// @dev Decrease total amount frozen;
         uIntStorage[keccak256('totalFrozen')] =
