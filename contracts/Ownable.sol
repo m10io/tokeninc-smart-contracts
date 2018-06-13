@@ -40,4 +40,10 @@ contract Ownable {
     owner[msg.sender] = false;
   }
 
+  /// Add Interface Contract to Owners
+  function allowOwnership(address allowed) public onlyOwner returns (bool) {
+    owner[allowed] = true;
+    return true;
+  }
+
 }
