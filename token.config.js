@@ -1,23 +1,34 @@
-const USDx = {
-  tokenName: 'USD by token.io',
-  tokenSymbol: 'USDx',
-  tokenTLA: 'USD',
-  tokenVersion: 'v0.1.0',
-  tokenDecimals: 2
-}
+const USDx = [
+  'USD by token.io', // tokenName
+  'USDx', // tokenSymbol
+  'USD', // tokenTLA
+  'v0.1.3', // tokenVersion
+  2, // tokenDecimals
+  2, // bps fee
+  0, // min fee
+  100, // max fee
+  2, // flat fee
+  "0x8cb2cebb0070b231d4ba4d3b747acaebdfbbd142" // fee account
+]
 
+const AUTHORITY_DETAILS = {
+  firmName: "Token, Inc.",
+  authorityAddress: "0x8cb2cebb0070b231d4ba4d3b747acaebdfbbd142"
+}
 
 module.exports = {
   mode: 'development',
-  tokenDetails: USDx,
   development: {
-    admin: "0x8cb2cebb0070b231d4ba4d3b747acaebdfbbd142",
-  	feeAccount: "0x8cb2cebb0070b231d4ba4d3b747acaebdfbbd142",
+    TOKEN_DETAILS: {
+      USDx
+    },
+    AUTHORITY_DETAILS
   },
   production: {
-    admin: "0xc444Ca35CBA4a71Ad75325C34428B5e7348a7EE0",
-  	feeAccount: "0x00a054ffda97220e9a7483e6e7b87d445e4d6c96",
-
+    TOKEN_DETAILS: {
+      USDx
+    },
+    AUTHORITY_DETAILS
   }
 }
 

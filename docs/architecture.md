@@ -1,9 +1,19 @@
 ###### Token, Inc. Smart Contracts Documentation
 ##### *NOTE: This document is for internal use only. Any external sharing, publication, or distribution with third parties and general audiences without permission and authorization by Token, Inc. is strictly Prohibited.*
 ---
-## Ethereum Smart Contract Architecture
+## Token Smart Money
 
 #### Overview
+
+The Token Smart Money (TSM) System allows for integration with several payment services and platforms. This document covers the Ethereum smart contracts architecture, provides a discussion of TSM services and fees, and discusses associated Ethereum transaction costs.
+
+The purpose of the TSM smart contracts are to provide depository tokens that can be backed 1:1 with fiat currency held by a currency issuer, bank, or other authorized financial institution.
+
+Token fiat currency tokens are ERC20 compliant and have an extensible storage contract to allow for future interoperability with third party systems, and to provide various financial services (e.g. currency exchange, escrow, etc.) through smart contract interfaces.
+
+The TSM system is designed to be peer-to-peer (p2p) and business-to-business (b2b), with limited involvement of third party intermediaries.
+
+The TSM Ethereum contracts will be deployed on the Ethereum main network. Consequentially, to interact with the TSM system on Ethereum, there is a cost that is paid to the network maintainers (i.e. transaction miners). This cost can either be paid directly by the participants in the system (institutions and end-users alike) or the cost can be paid through a proxied signing service that Token will charge a fee for.
 
 
 
@@ -28,10 +38,23 @@ Running the command: `truffle migrate --reset` will deploy the scripts in the se
 
 ###### Production
 
+#### Ethereum Smart Contract Architecture
+
+###### Ownable.sol
+###### TokenIOAuthority.sol
+###### TokenIOStorage.sol
+###### TokenIOLib.sol
+###### TokenIOERC20.sol
+###### TokenIONameSpace.sol
+###### TokenIOCurrencyAuthority.sol
+###### TokenIOFX.sol
+
+
+
 ---
 ##### Footnotes
 <b id="f1">1</b> https://github.com/trufflesuite/truffle/issues/886  [↩](#a1)
 
 ---
-VERSION: v0.1.0
+VERSION: v0.1.3
 DISCLOSURE: This document has been prepared by Emergent Financial LLC on behalf of Token, Inc. This document is intended for notes, documentation, and discussion for how the source code is written at a certain software version. Emergent Financial LLC and Token, Inc. do not guarantee the correctness of this software or the accuracy of this documentation and is not held liable for any misinterpretation, unintentional use or misuse of the software. Emergent Financial LLC and Token, Inc. will actively identify and resolve to the best ability, within reasonable limit, any known software limitations, bugs, or other vulnerabilities that might impact this software.
