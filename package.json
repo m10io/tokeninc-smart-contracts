@@ -4,10 +4,12 @@
   "description": "Smart Contracts for Token, Inc.",
   "main": "./dist/index.js",
   "directories": {
-    "test": "test"
+    "test": "test",
+    "dev": "npx truffle develop"
   },
   "scripts": {
-    "test": "truffle test"
+    "test": "npx truffle test",
+    "dev": "npx truffle develop"
   },
   "keywords": [
     "Token",
@@ -24,5 +26,9 @@
     "ethereumjs-util": "^5.1.5",
     "ethers": "^3.0.15",
     "zeppelin-solidity": "1.8.0"
+  },
+  "devDependencies": {
+    "solc": "^0.4.24",
+    "truffle": "^4.1.12"
   }
 }

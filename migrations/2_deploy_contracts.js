@@ -1,3 +1,5 @@
+var Promise = require('bluebird')
+
 var SafeMath = artifacts.require("./SafeMath.sol");
 var TokenIOLib = artifacts.require("./TokenIOLib.sol");
 var TokenIOStorage = artifacts.require("./TokenIOStorage.sol");
@@ -14,16 +16,16 @@ var TokenIOCurrencyAuthority = artifacts.require("./TokenIOCurrencyAuthority.sol
 const { mode, development, production } = require('../token.config.js');
 const {
   AUTHORITY_DETAILS: { firmName, authorityAddress },
-  TOKEN_DETAILS: { USDx }
+  TOKEN_DETAILS
 } = mode == 'production' ? production : development;
 
 module.exports = function(deployer, network, accounts) {
 	var storage, token, authority, currencyAuthority;
 	// Deploy SafeMath Library
-	deployer.deploy(SafeMath).then(() => {
-		// Link SafeMath library to both TokenIO & TokenIOLib
-		return deployer.link(SafeMath, [ TokenIOLib ]);
-	}).then(() => {
+  deployer.deploy(SafeMath).then(() => {
+	// Link SafeMath library to both TokenIO & TokenIOLib
+	return deployer.link(SafeMath, [ TokenIOLib ]);
+  }).then(() => {
     return deployer.deploy(TokenIOLib)
   }).then(() => {
     return deployer.link(TokenIOLib, [ TokenIOStorage, TokenIOERC20, TokenIOAuthority, TokenIOCurrencyAuthority ]);
@@ -32,21 +34,18 @@ module.exports = function(deployer, network, accounts) {
     return deployer.deploy(TokenIOStorage)
   }).then((_storage) => {
     storage = _storage
-    // Deploy TokenIOERC20
-		return deployer.deploy(TokenIOERC20, storage.address)
-	}).then((_token) => {
-		token = _token
-    // Allow ERC20 contract to use the Storage contract
-    return storage.allowOwnership(token.address)
+    return deployer.deploy(TokenIOERC20, _storage.address)
+    // return deployTokens(deployer, network, accounts, storage, TOKEN_DETAILS)
+}).then((_token) => {
+    token = _token
+    return storage.allowOwnership(_token.address)
   }).then((receipt) => {
-    // console.log('receipt', receipt)
-    // Set ERC20 Params after allowed by Storage
-    return token.setParams(...USDx)
-  }).then((receipt) => {
+    return token.setParams(...Object.keys(TOKEN_DETAILS[0]).map((k) => { return TOKEN_DETAILS[0][k] }))
+}).then((receipt) => {
     // console.log('receipt', receipt)
     // Deploy TokenIOAuthority
     return deployer.deploy(TokenIOAuthority, storage.address)
-  }).then((_authority) => {
+}).then((_authority) => {
     authority = _authority
     // Allow the authority contract to use the Storage contract
     return storage.allowOwnership(authority.address)

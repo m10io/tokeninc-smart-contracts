@@ -41,11 +41,11 @@ contract TokenIOERC20 is Ownable {
         require(lib.setTokenTLA(_tla));
         require(lib.setTokenVersion(_version));
         require(lib.setTokenDecimals(_decimals));
-        require(lib.setTokenFeeBPS(_bps));
-        require(lib.setTokenFeeMin(_min));
-        require(lib.setTokenFeeMax(_max));
-        require(lib.setTokenFeeFlat(_flat));
-        require(lib.setTokenFeeAccount(_feeAccount));
+        require(lib.setFeeBPS(_bps));
+        require(lib.setFeeMin(_min));
+        require(lib.setFeeMax(_max));
+        require(lib.setFeeFlat(_flat));
+        require(lib.setFeeAccount(_feeAccount));
         require(lib.setTokenNameSpace(_symbol));
 
         return true;
@@ -72,38 +72,45 @@ contract TokenIOERC20 is Ownable {
     }
 
     function totalSupply() public view returns (uint) {
-      return lib.getTokenSupply(address(this));
+      return lib.getTokenSupply(lib.getTokenSymbol(address(this)));
     }
 
     function allowance(address account, address spender) public view returns (uint) {
-      return lib.getAllowance(address(this), account, spender);
+      return lib.getTokenAllowance(lib.getTokenSymbol(address(this)), account, spender);
     }
 
     function balanceOf(address account) public view returns (uint) {
-      return lib.getBalance(address(this), account);
+      return lib.getTokenBalance(lib.getTokenSymbol(address(this)), account);
     }
 
-    function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat) {
+    function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, address feeAccount) {
         return (
-            lib.getTokenFeeBPS(address(this)),
-            lib.getTokenFeeMin(address(this)),
-            lib.getTokenFeeMax(address(this)),
-            lib.getTokenFeeFlat(address(this))
+            lib.getFeeBPS(address(this)),
+            lib.getFeeMin(address(this)),
+            lib.getFeeMax(address(this)),
+            lib.getFeeFlat(address(this)),
+            lib.getFeeAccount(address(this))
         );
     }
 
     function transfer(address to, uint amount) public returns (bool) {
-      require(lib.transferERC20(msg.sender, to, amount));
+      string memory currency = lib.getTokenSymbol(address(this));
+      bytes memory data = "0x0";
+
+      require(lib.getKYCApproval(msg.sender));
+      require(lib.getKYCApproval(to));
+      require(lib.transfer(currency, to, amount, data));
+
       return true;
     }
 
     function transferFrom(address from, address to, uint amount) public returns (bool) {
-        require(lib.transferFromERC20(msg.sender, from, to, amount));
+        require(lib.transferFromERC20(from, to, amount));
         return true;
     }
 
     function approve(address spender, uint amount) public returns (bool) {
-        require(lib.approveERC20(msg.sender, spender, amount));
+        require(lib.approveERC20(spender, amount));
         return true;
     }
 

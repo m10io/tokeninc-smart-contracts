@@ -21,14 +21,34 @@ contract TokenIOCurrencyAuthority is Ownable {
         owner[msg.sender] = true;
     }
 
+    function freezeAccount(address account, bool isAllowed, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool) {
+        require(lib.setAccountStatus(account, isAllowed, issuerFirm));
+        return true;
+    }
+
+    function approveKYC(address account, bool isApproved, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool) {
+        require(lib.setKYCApproval(account, isApproved, issuerFirm));
+        require(lib.setAccountStatus(account, isApproved, issuerFirm));
+        return true;
+    }
+
+    function approveKYCAndDeposit(string currency, address account, uint amount, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool) {
+        require(lib.setKYCApproval(account, true, issuerFirm));
+        require(lib.setAccountStatus(account, true, issuerFirm));
+        require(lib.deposit(currency, account, amount, issuerFirm));
+        return true;
+    }
 
     function deposit(string currency, address account, uint amount, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool) {
-        require(lib.deposit(lib.getTokenNameSpace(currency), account, amount, issuerFirm));
+        require(lib.getKYCApproval(account));
+        require(lib.getAccountStatus(account));
+        require(lib.deposit(currency, account, amount, issuerFirm));
         return true;
     }
 
     function withdraw(string currency, address account, uint amount, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool) {
-        require(lib.withdraw(lib.getTokenNameSpace(currency), account, amount, issuerFirm));
+        require(lib.getAccountStatus(account));
+        require(lib.withdraw(currency, account, amount, issuerFirm));
         return true;
     }
 

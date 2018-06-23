@@ -8,13 +8,11 @@ const {
   TOKEN_DETAILS: { USDx }
 } = mode == 'production' ? production : development;
 
-
-
-
 contract("TokenIOAuthority", function(accounts) {
 
   // Global Test Variables;
   const AUTHORITY_ACCOUNT = accounts[0];
+  const AUTHORITY_ACCOUNT_2 = authorityAddress;
   const FIRM_NAME = firmName;
 
   it("Should confirm AUTHORITY_ACCOUNT has been set appropriately", async () => {
@@ -29,6 +27,10 @@ contract("TokenIOAuthority", function(accounts) {
     assert.equal(authorityFirm, FIRM_NAME, "Authority firm should be set to the firmName");
   })
 
-  
+  it("Should confirm non-authority is not authorized", async () => {
+    const authority = await TokenIOAuthority.deployed();
+    const isAuthorized = await authority.isRegisteredAuthority(AUTHORITY_ACCOUNT_2);
+    assert.equal(isAuthorized, false, "Non registered account should not be authorized");
+  })
 
 });
