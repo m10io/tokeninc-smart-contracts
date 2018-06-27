@@ -4,8 +4,7 @@
   "description": "Smart Contracts for Token, Inc.",
   "main": "./dist/index.js",
   "directories": {
-    "test": "test",
-    "dev": "npx truffle develop"
+    "test": "test"
   },
   "scripts": {
     "test": "npx truffle test",

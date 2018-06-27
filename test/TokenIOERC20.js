@@ -5,8 +5,10 @@ var TokenIOERC20 = artifacts.require("./TokenIOERC20.sol");
 const { mode, development, production } = require('../token.config.js');
 const {
   AUTHORITY_DETAILS: { firmName, authorityAddress },
-  TOKEN_DETAILS: { USDx }
+  TOKEN_DETAILS
 } = mode == 'production' ? production : development;
+
+const USDx = TOKEN_DETAILS[0]
 
 
 // [ ] - Should ensure erc20 compliance

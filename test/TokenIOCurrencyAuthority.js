@@ -6,8 +6,10 @@ var TokenIOCurrencyAuthority = artifacts.require("./TokenIOCurrencyAuthority.sol
 const { mode, development, production } = require('../token.config.js');
 const {
   AUTHORITY_DETAILS: { firmName, authorityAddress },
-  TOKEN_DETAILS: { USDx }
+  TOKEN_DETAILS
 } = mode == 'production' ? production : development;
+
+const USDx = TOKEN_DETAILS[0]
 
 contract("TokenIOCurrencyAuthority", function(accounts) {
 
@@ -83,6 +85,6 @@ contract("TokenIOCurrencyAuthority", function(accounts) {
 
   });
 
-  
+
 
 });
