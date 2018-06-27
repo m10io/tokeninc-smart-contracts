@@ -39,6 +39,11 @@ contract TokenIOCurrencyAuthority is Ownable {
         return true;
     }
 
+    function approveForwardedAccount(address originalAccount, address updatedAccount, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool) {
+      require(lib.setForwardedAccount(originalAccount, updatedAccount));
+      return true;
+    }
+
     function deposit(string currency, address account, uint amount, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool) {
         require(lib.getKYCApproval(account));
         require(lib.getAccountStatus(account));

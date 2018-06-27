@@ -49,7 +49,99 @@ Running the command: `truffle migrate --reset` will deploy the scripts in the se
 ###### TokenIOCurrencyAuthority.sol
 ###### TokenIOFX.sol
 
+---
+#### Creating a New Customer Account
 
+```sequence
+StartPage->CreateKey: Cache details of Email, Phone, Name, Picture in device
+CreateKey->BIP39: Show & Confirm 24 word bip39 phrase
+BIP39->SubmitAccount: Send Payload to Server
+```
+
+###### NOTE: private key of Ethereum address are stored in the device secure enclave
+
+```json
+// Payload to send to server on account create
+{
+	"name": "Ryan Tate", // isCCField
+	"email": "Ryan.michael.tate@gmail", // isCCField
+	"ethereumAddress": "0x0...", // created by phone/device
+	"phonePublicKey": "base64->hex", // provided via the secure enclave for the device RSA 2048 Asymm
+	"phoneNumber": "001-555-555-5555",
+	"messageHash": "0x1234...", // Buffered data that is to be signed
+	"signedMessage": "<Signature of message hash>"
+
+}
+```
+
+```sequence
+Customer->Server: `createAccount({accountDetails})` Request
+Server->Customer: Verify Email
+Customer->Server: Email is verified (Clicks confirm)
+Server->Customer: Send user SMS text w/ code
+Customer-Server: Confirm SMS Code
+Server->Database: Validate Details & Save User Information
+Database->Server: Return successful update
+Server->Customer: Account is confirmed, return UUID for account
+```
+
+###### NOTE: Once account is created, allow user to Navigate to home screen on application
+
+```sequence
+Client->Server: linkBankAccount({ beneficiaryDetails })
+
+Server->CurrencyCloud: Create Beneficiary Account for User
+CurrencyCloud->Server: Response
+
+Server->CurrencyAuthorityETHContract: `approveKYC(address account, bool isApproved, string issuerFirm)`
+CurrencyAuthorityETHContract->Server: Tx Receipt
+Server->Database: Update Account Info (beneficiary_id)
+Database->Server: Successful update
+```
+
+###### Request Authorization
+
+```js
+const bearer = request.headers['Authorization'];
+// console.log(bearer) == "Bearer: " + "<base64 signed string>"
+// Use passport http-bearer-strategy
+
+// May not work...
+passport.use(new BearerStrategy((accessToken, cb) => {
+	try {
+		// accessToken == <base64 signed string>
+		const publicKey = key.verify(accessToken, algorithm, { payload })
+
+		const user = await User.findOne({ publicKey })
+	} catch (error) {
+		...
+	}
+}))
+
+```
+
+###### Beneficiary Account Details Object
+
+// For field params, see: https://www.currencycloud.com/developers/docs/item/create-beneficiary/
+
+```json
+{
+	"name": "Ryan Tate", // isCCField
+	"bankAccountHolderName": "Ryan Tate", //isCCField
+	"bankCountry": "US", // isCCField (two-letter abv.)
+	"currency": "USD", // isCCField (Three-letter abv.)
+	"email": "Ryan.michael.tate@gmail", // isCCField
+	"ethereumAddress": "0x0...",
+	"beneficiaryAddress": "612 E. 35th Street",
+	"beneficiaryCountry": "US",
+	"accountNumber": "11235813",
+	"routingCodeType1": "aba",
+	"routingCodeValue1": "13213455",
+	"iban": "XE...", // can we create a virtual Ethereum XE Iban from address?
+	""
+
+}
+```
 
 ---
 ##### Footnotes

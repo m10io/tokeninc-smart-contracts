@@ -62,7 +62,6 @@ function saveTokenDetails(deployed) {
 	})
 }
 
-// This may not work...
 module.exports = async function(done) {
 	try {
 		const deployed = await deployTokens()

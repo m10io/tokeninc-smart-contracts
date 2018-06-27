@@ -86,7 +86,7 @@ library TokenIOLib {
   }
 
   function setKYCApproval(Data storage self, address account, bool isApproved, string issuerFirm) internal returns (bool) {
-      bytes32 id = keccak256(abi.encode('account.kyc', account));
+      bytes32 id = keccak256(abi.encode('account.kyc', getForwardedAccount(self, account)));
       self.Storage.setBool(id, isApproved);
 
       emit LogKYCApproval(account, isApproved, issuerFirm);
@@ -94,20 +94,38 @@ library TokenIOLib {
   }
 
   function setAccountStatus(Data storage self, address account, bool isAllowed, string issuerFirm) internal returns (bool) {
-    bytes32 id = keccak256(abi.encode('account.allowed', account));
+    bytes32 id = keccak256(abi.encode('account.allowed', getForwardedAccount(self, account)));
     self.Storage.setBool(id, isAllowed);
 
     emit LogAccountStatus(account, isAllowed, issuerFirm);
     return true;
   }
 
+  function setForwardedAccount(Data storage self, address originalAccount, address updatedAccount) internal returns (bool) {
+    bytes32 id = keccak256(abi.encode('master.account', updatedAccount));
+    self.Storage.setAddress(id, originalAccount);
+    return true;
+  }
+
+  function getForwardedAccount(Data storage self, address account) internal view returns (address) {
+    bytes32 id = keccak256(abi.encode('master.account', account));
+    address originalAccount = self.Storage.getAddress(id);
+    if (originalAccount != 0x0) {
+      return originalAccount;
+    } else {
+      return account;
+    }
+  }
+
+  /* function migrateAccountDetails() */
+
   function getKYCApproval(Data storage self, address account) internal view returns (bool) {
-      bytes32 id = keccak256(abi.encode('account.kyc', account));
+      bytes32 id = keccak256(abi.encode('account.kyc', getForwardedAccount(self, account)));
       return self.Storage.getBool(id);
   }
 
   function getAccountStatus(Data storage self, address account) internal view returns (bool) {
-    bytes32 id = keccak256(abi.encode('account.allowed', account));
+    bytes32 id = keccak256(abi.encode('account.allowed', getForwardedAccount(self, account)));
     return self.Storage.getBool(id);
   }
 
@@ -173,17 +191,17 @@ library TokenIOLib {
   }
 
   function getTokenAllowance(Data storage self, string currency, address account, address spender) internal view returns (uint) {
-    bytes32 id = keccak256(abi.encode('token.allowance', currency, account, spender));
+    bytes32 id = keccak256(abi.encode('token.allowance', currency, getForwardedAccount(self, account), getForwardedAccount(self, spender)));
     return self.Storage.getUint(id);
   }
 
   function getTokenBalance(Data storage self, string currency, address account) internal view returns (uint) {
-    bytes32 id = keccak256(abi.encode('token.balance', currency, account));
+    bytes32 id = keccak256(abi.encode('token.balance', currency, getForwardedAccount(self, account)));
     return self.Storage.getUint(id);
   }
 
   function getTokenFrozenBalance(Data storage self, string currency, address account) internal view returns (uint) {
-    bytes32 id = keccak256(abi.encode('token.frozen', currency, account));
+    bytes32 id = keccak256(abi.encode('token.frozen', currency, getForwardedAccount(self, account)));
     return self.Storage.getUint(id);
   }
 
@@ -226,8 +244,8 @@ library TokenIOLib {
 
     // string memory currency = getTokenSymbol(self, address(this));
 
-    bytes32 id_a = keccak256(abi.encode('token.balance', currency, msg.sender));
-    bytes32 id_b = keccak256(abi.encode('token.balance', currency, to));
+    bytes32 id_a = keccak256(abi.encode('token.balance', currency, getForwardedAccount(self, msg.sender)));
+    bytes32 id_b = keccak256(abi.encode('token.balance', currency, getForwardedAccount(self, to)));
     bytes32 id_c = keccak256(abi.encode('token.balance', currency, getFeeAccount(self, address(this))));
 
     uint fees = calculateFees(self, address(this), amount);
@@ -247,10 +265,10 @@ library TokenIOLib {
     uint fees = calculateFees(self, address(this), amount);
     string memory currency = getTokenSymbol(self, address(this));
 
-    bytes32 id_a = keccak256(abi.encode('token.balance', currency, from));
-    bytes32 id_b = keccak256(abi.encode('token.balance', currency, to));
+    bytes32 id_a = keccak256(abi.encode('token.balance', currency, getForwardedAccount(self, from)));
+    bytes32 id_b = keccak256(abi.encode('token.balance', currency, getForwardedAccount(self, to)));
     bytes32 id_c = keccak256(abi.encode('token.balance', currency, getFeeAccount(self, address(this))));
-    bytes32 id_d = keccak256(abi.encode('token.allowance', currency, from, msg.sender));
+    bytes32 id_d = keccak256(abi.encode('token.allowance', currency, getForwardedAccount(self, from), getForwardedAccount(self, msg.sender)));
 
     require(self.Storage.setUint(id_d, self.Storage.getUint(id_d).sub(amount)));
     require(self.Storage.setUint(id_a, self.Storage.getUint(id_a).sub(amount.add(fees))));
@@ -264,8 +282,8 @@ library TokenIOLib {
   function approveERC20(Data storage self, address spender, uint amount) internal returns (bool) {
     string memory currency = getTokenSymbol(self, address(this));
 
-    bytes32 id_a = keccak256(abi.encode('token.allowance', currency, msg.sender, spender));
-    bytes32 id_b = keccak256(abi.encode('token.balance', currency, msg.sender));
+    bytes32 id_a = keccak256(abi.encode('token.allowance', currency, getForwardedAccount(self, msg.sender), getForwardedAccount(self, spender)));
+    bytes32 id_b = keccak256(abi.encode('token.balance', currency, getForwardedAccount(self, msg.sender)));
 
     require(self.Storage.getUint(id_a) == 0 || amount == 0);
     require(self.Storage.getUint(id_b) >= amount);
@@ -276,7 +294,7 @@ library TokenIOLib {
   }
 
   function deposit(Data storage self, string currency, address account, uint amount, string issuerFirm) internal returns (bool) {
-    bytes32 id_a = keccak256(abi.encode('token.balance', currency, account));
+    bytes32 id_a = keccak256(abi.encode('token.balance', currency, getForwardedAccount(self, account)));
     bytes32 id_b = keccak256(abi.encode('token.issued', currency, issuerFirm));
     bytes32 id_c = keccak256(abi.encode('token.supply', currency));
 
@@ -292,7 +310,7 @@ library TokenIOLib {
   }
 
   function withdraw(Data storage self, string currency, address account, uint amount, string issuerFirm) internal returns (bool) {
-    bytes32 id_a = keccak256(abi.encode('token.balance', currency, account));
+    bytes32 id_a = keccak256(abi.encode('token.balance', currency, getForwardedAccount(self, account)));
     bytes32 id_b = keccak256(abi.encode('token.issued', currency, issuerFirm)); // possible for issuer to go negative
     bytes32 id_c = keccak256(abi.encode('token.supply', currency));
 
@@ -325,7 +343,7 @@ library TokenIOLib {
   }
 
   function getFirmFromAuthority(Data storage self, address _authority) internal view returns (string) {
-    bytes32 id = keccak256(abi.encode('registered.authority.firm', _authority));
+    bytes32 id = keccak256(abi.encode('registered.authority.firm', getForwardedAccount(self, _authority)));
     return self.Storage.getString(id);
   }
 
@@ -335,12 +353,12 @@ library TokenIOLib {
   }
 
   function isRegisteredToFirm(Data storage self, string _firmName, address _authority) internal view returns (bool) {
-    bytes32 id = keccak256(abi.encode('registered.authority', _firmName, _authority));
+    bytes32 id = keccak256(abi.encode('registered.authority', _firmName, getForwardedAccount(self, _authority)));
     return self.Storage.getBool(id);
   }
 
   function isRegisteredAuthority(Data storage self, address _authority) internal view returns (bool) {
-    bytes32 id = keccak256(abi.encode('registered.authority', getFirmFromAuthority(self, _authority), _authority));
+    bytes32 id = keccak256(abi.encode('registered.authority', getFirmFromAuthority(self, getForwardedAccount(self, _authority)), getForwardedAccount(self, _authority)));
     return self.Storage.getBool(id);
   }
 }
