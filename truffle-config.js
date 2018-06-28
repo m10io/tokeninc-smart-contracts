@@ -5,7 +5,8 @@ module.exports = {
     develop: {
       host: "0.0.0.0",
       port: 9545,
-      network_id: "*" // Match any network id
+      network_id: "*", // Match any network id
+      gasLimit: 7e6
     },
     poa: {
       host: "104.236.47.153",

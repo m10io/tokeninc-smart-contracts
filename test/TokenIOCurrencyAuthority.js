@@ -26,7 +26,7 @@ contract("TokenIOCurrencyAuthority", function(accounts) {
 
       try {
           const { receipt: { status, logs } } = await CA.deposit(CURRENCY_SYMBOL, DEPOSIT_TO_ACCOUNT, DEPOSIT_AMOUNT, FIRM_NAME)
-          assert.equal(status, "0x00", "Transaction should fail.");
+          assert.equal(status, "0x0", "Transaction should fail.");
       } catch (error) {
           assert.equal(error.message.match(RegExp('revert')).length, 1, "Expect transaction to revert due to KYC approval not met");
       }
@@ -37,7 +37,7 @@ contract("TokenIOCurrencyAuthority", function(accounts) {
     const erc20 = await TokenIOERC20.deployed()
 
     const { receipt: { status } } = await CA.approveKYCAndDeposit(CURRENCY_SYMBOL, DEPOSIT_TO_ACCOUNT, DEPOSIT_AMOUNT, FIRM_NAME)
-    assert.equal(status, "0x01", "Transaction receipt status should be 0x01 successful.");
+    assert.equal(status, "0x1", "Transaction receipt status should be 0x1 successful.");
 
     const BALANCE = +(await erc20.balanceOf(DEPOSIT_TO_ACCOUNT)).toString()
     const TOTAL_SUPPLY = +(await erc20.totalSupply()).toString()
@@ -52,7 +52,7 @@ contract("TokenIOCurrencyAuthority", function(accounts) {
       const erc20 = await TokenIOERC20.deployed()
 
       const { receipt: { status, logs } } = await CA.withdraw(CURRENCY_SYMBOL, DEPOSIT_TO_ACCOUNT, DEPOSIT_AMOUNT, FIRM_NAME)
-      assert.equal(status, "0x01", "Transaction receipt status should be 0x01 successful.");
+      assert.equal(status, "0x1", "Transaction receipt status should be 0x1 successful.");
 
       const BALANCE = +(await erc20.balanceOf(DEPOSIT_TO_ACCOUNT)).toString()
       const TOTAL_SUPPLY = +(await erc20.totalSupply()).toString()
@@ -66,11 +66,11 @@ contract("TokenIOCurrencyAuthority", function(accounts) {
     const erc20 = await TokenIOERC20.deployed()
 
     const KYC_TX_RESULT = await CA.freezeAccount(DEPOSIT_TO_ACCOUNT, true, FIRM_NAME);
-    assert.equal(KYC_TX_RESULT.receipt.status, "0x01", "Transaction receipt status should be 0x01 successful.");
+    assert.equal(KYC_TX_RESULT.receipt.status, "0x1", "Transaction receipt status should be 0x1 successful.");
 
     try {
         const { receipt: { status, logs } } = await CA.deposit(CURRENCY_SYMBOL, DEPOSIT_TO_ACCOUNT, DEPOSIT_AMOUNT, FIRM_NAME)
-        assert.equal(status, "0x01", "Transaction receipt status should be 0x01 successful.");
+        assert.equal(status, "0x1", "Transaction receipt status should be 0x1 successful.");
 
         // const TX_FEES = +(await erc20.calculateFees(DEPOSIT_AMOUNT)).toString()
         const BALANCE = +(await erc20.balanceOf(DEPOSIT_TO_ACCOUNT)).toString()

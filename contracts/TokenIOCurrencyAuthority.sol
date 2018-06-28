@@ -51,6 +51,10 @@ contract TokenIOCurrencyAuthority is Ownable {
         return true;
     }
 
+    function getTokenBalance(string currency, address account) public view returns (uint) {
+      return lib.getTokenBalance(currency, account);
+    }
+
     function withdraw(string currency, address account, uint amount, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool) {
         require(lib.getAccountStatus(account));
         require(lib.withdraw(currency, account, amount, issuerFirm));

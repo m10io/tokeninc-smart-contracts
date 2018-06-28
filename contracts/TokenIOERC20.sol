@@ -94,23 +94,22 @@ contract TokenIOERC20 is Ownable {
     }
 
     function transfer(address to, uint amount) public returns (bool) {
-      string memory currency = lib.getTokenSymbol(address(this));
-      bytes memory data = "0x0";
-
       require(lib.getKYCApproval(msg.sender));
       require(lib.getKYCApproval(to));
-      require(lib.transfer(currency, to, amount, data));
+      require(lib.transfer(to, amount, "0x0"));
 
       return true;
     }
 
     function transferFrom(address from, address to, uint amount) public returns (bool) {
-        require(lib.transferFromERC20(from, to, amount));
+        require(lib.getKYCApproval(from));
+        require(lib.getKYCApproval(to));
+        require(lib.transferFrom(from, to, amount));
         return true;
     }
 
     function approve(address spender, uint amount) public returns (bool) {
-        require(lib.approveERC20(spender, amount));
+        require(lib.approve(spender, amount));
         return true;
     }
 

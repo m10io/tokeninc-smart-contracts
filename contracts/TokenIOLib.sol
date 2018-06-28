@@ -12,12 +12,15 @@ library TokenIOLib {
     TokenIOStorage Storage;
   }
 
+  event LogApproval(address indexed owner, address indexed spender, uint amount);
   event LogDeposit(string currency, address indexed account, uint amount, string issuerFirm);
   event LogWithdraw(string currency, address indexed account, uint amount, string issuerFirm);
   event LogTransfer(string currency, address indexed from, address indexed to, uint amount, bytes data);
   event LogKYCApproval(address indexed account, bool status, string issuerFirm);
   event LogAccountStatus(address indexed account, bool status, string issuerFirm);
-
+  event LogExchange(string tokenASymbol,string tokenBSymbol,uint tokenAValue,uint tokenBValue, bytes32 transactionHash);
+  event LogRecover(address indexed recovered);
+  // TODO: event LogNewAuthority()
 
   function setTokenName(Data storage self, string tokenName) internal returns (bool) {
     bytes32 id = keccak256(abi.encode('token.name', address(this)));
@@ -222,27 +225,10 @@ library TokenIOLib {
     }
   }
 
-//   function transferERC20(Data storage self, address to, uint amount) internal returns (bool) {
-//     require(address(to) != 0x0);
-
-//     uint fees = calculateFees(self, address(this), amount);
-//     string memory currency = getTokenSymbol(self, address(this));
-
-//     bytes32 id_a = keccak256(abi.encode('token.balance', currency, msg.sender));
-//     bytes32 id_b = keccak256(abi.encode('token.balance', currency, to));
-//     bytes32 id_c = keccak256(abi.encode('token.balance', currency, getFeeAccount(self, address(this))));
-
-//     require(self.Storage.setUint(id_a, self.Storage.getUint(id_a).sub(amount.add(fees))));
-//     require(self.Storage.setUint(id_b, self.Storage.getUint(id_b).add(amount)));
-//     require(self.Storage.setUint(id_c, self.Storage.getUint(id_c).add(fees)));
-
-//     return true;
-//   }
-
-  function transfer(Data storage self, string currency, address to, uint amount, bytes data) internal returns (bool) {
+  function transfer(Data storage self, address to, uint amount, bytes data) internal returns (bool) {
     require(address(to) != 0x0);
 
-    // string memory currency = getTokenSymbol(self, address(this));
+    string memory currency = getTokenSymbol(self, address(this));
 
     bytes32 id_a = keccak256(abi.encode('token.balance', currency, getForwardedAccount(self, msg.sender)));
     bytes32 id_b = keccak256(abi.encode('token.balance', currency, getForwardedAccount(self, to)));
@@ -259,7 +245,7 @@ library TokenIOLib {
     return true;
   }
 
-  function transferFromERC20(Data storage self, address from, address to, uint amount) internal returns (bool) {
+  function transferFrom(Data storage self, address from, address to, uint amount) internal returns (bool) {
     require(address(to) != 0x0);
 
     uint fees = calculateFees(self, address(this), amount);
@@ -270,16 +256,32 @@ library TokenIOLib {
     bytes32 id_c = keccak256(abi.encode('token.balance', currency, getFeeAccount(self, address(this))));
     bytes32 id_d = keccak256(abi.encode('token.allowance', currency, getForwardedAccount(self, from), getForwardedAccount(self, msg.sender)));
 
-    require(self.Storage.setUint(id_d, self.Storage.getUint(id_d).sub(amount)));
+
     require(self.Storage.setUint(id_a, self.Storage.getUint(id_a).sub(amount.add(fees))));
     require(self.Storage.setUint(id_b, self.Storage.getUint(id_b).add(amount)));
     require(self.Storage.setUint(id_c, self.Storage.getUint(id_c).add(fees)));
+    require(self.Storage.setUint(id_d, self.Storage.getUint(id_d).sub(amount)));
 
+    emit LogTransfer(currency, from, to, amount, "0x0");
 
     return true;
   }
 
-  function approveERC20(Data storage self, address spender, uint amount) internal returns (bool) {
+  function forceTransfer(Data storage self, string currency, address from, address to, uint amount, bytes data) internal returns (bool) {
+    require(address(to) != 0x0);
+
+    bytes32 id_a = keccak256(abi.encode('token.balance', currency, getForwardedAccount(self, from)));
+    bytes32 id_b = keccak256(abi.encode('token.balance', currency, getForwardedAccount(self, to)));
+
+    require(self.Storage.setUint(id_a, self.Storage.getUint(id_a).sub(amount)));
+    require(self.Storage.setUint(id_b, self.Storage.getUint(id_b).add(amount)));
+
+    emit LogTransfer(currency, from, to, amount, data);
+
+    return true;
+  }
+
+  function approve(Data storage self, address spender, uint amount) internal returns (bool) {
     string memory currency = getTokenSymbol(self, address(this));
 
     bytes32 id_a = keccak256(abi.encode('token.allowance', currency, getForwardedAccount(self, msg.sender), getForwardedAccount(self, spender)));
@@ -287,8 +289,9 @@ library TokenIOLib {
 
     require(self.Storage.getUint(id_a) == 0 || amount == 0);
     require(self.Storage.getUint(id_b) >= amount);
-
     require(self.Storage.setUint(id_a, amount));
+
+    emit LogApproval(msg.sender, spender, amount);
 
     return true;
   }
@@ -361,4 +364,51 @@ library TokenIOLib {
     bytes32 id = keccak256(abi.encode('registered.authority', getFirmFromAuthority(self, getForwardedAccount(self, _authority)), getForwardedAccount(self, _authority)));
     return self.Storage.getBool(id);
   }
+
+  function getTxStatus(Data storage self, bytes32 _txHash) internal view returns (bool) {
+    bytes32 id = keccak256(abi.encode('tx.status', _txHash));
+    return self.Storage.getBool(id);
+  }
+
+  function setTxStatus(Data storage self, bytes32 _txHash) internal returns (bool) {
+    bytes32 id = keccak256(abi.encode('tx.status', _txHash));
+    require(self.Storage.setBool(id, true));
+    return true;
+  }
+
+  function execSwap(
+    Data storage self,
+    address requester,
+    string symbolA,
+    string symbolB,
+    uint valueA,
+    uint valueB,
+    uint8 sigV,
+    bytes32 sigR,
+    bytes32 sigS,
+    uint expiration,
+    bytes32 fxTxHash
+  ) internal returns (bool) {
+
+    require(getKYCApproval(self, msg.sender));
+    require(getKYCApproval(self, requester));
+
+    // Ensure transaction has not yet been used;
+    require(!getTxStatus(self, fxTxHash));
+
+    // Immediately set this transaction to be confirmed before updating any params;
+    require(setTxStatus(self, fxTxHash));
+
+    // Ensure contract has not yet expired;
+    require(expiration >= now);
+
+    require(ecrecover(fxTxHash, sigV, sigR, sigS) == requester);
+
+    require(forceTransfer(self, symbolA, msg.sender, requester, valueA, "0x0"));
+    require(forceTransfer(self, symbolB, requester, msg.sender, valueB, "0x0"));
+
+    return true;
+  }
+
+
 }
