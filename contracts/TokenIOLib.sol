@@ -404,8 +404,8 @@ library TokenIOLib {
 
     require(ecrecover(fxTxHash, sigV, sigR, sigS) == requester);
 
-    require(forceTransfer(self, symbolA, msg.sender, requester, valueA, "0x0"));
-    require(forceTransfer(self, symbolB, requester, msg.sender, valueB, "0x0"));
+    /* require(forceTransfer(self, symbolA, msg.sender, requester, valueA, "0x0"));
+    require(forceTransfer(self, symbolB, requester, msg.sender, valueB, "0x0")); */
 
     return true;
   }

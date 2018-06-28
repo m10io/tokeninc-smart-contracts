@@ -33,6 +33,7 @@ contract("TokenIOFX", function(accounts) {
 	const REQUESTER_OFFERED_AMOUNT = 1000000
 	const REQUESTER_DESIRED_AMOUNT = 10000
 
+
 	var TOKEN_A,
 	TOKEN_B,
 	TOKEN_A_SYMBOL,
@@ -49,7 +50,7 @@ contract("TokenIOFX", function(accounts) {
 		await TOKEN_A.setParams(...Object.keys(TOKEN_DETAILS[0]).map((param) => { return TOKEN_DETAILS[0][param] }))
 		await TOKEN_B.setParams(...Object.keys(TOKEN_DETAILS[3]).map((param) => { return TOKEN_DETAILS[3][param] }))
 
-
+		REQUESTER_WALLET = await Wallet.createRandom()
 	})
 
 	it("Should create a wallet for our requester and provide it with an initial balance", async () => {
@@ -63,8 +64,6 @@ contract("TokenIOFX", function(accounts) {
 
 	it("Should Deposit JPYx into REQUESTER_WALLET account", async () => {
 		const CA = await TokenIOCurrencyAuthority.deployed();
-
-		REQUESTER_WALLET = await Wallet.createRandom()
 
 		const APPROVE_REQUESTER = await CA.approveKYC(REQUESTER_WALLET.address, true, "Token, Inc.")
 		const APPROVE_FULFILLER = await CA.approveKYC(accounts[0], true, "Token, Inc.")
@@ -128,7 +127,7 @@ contract("TokenIOFX", function(accounts) {
 		const REQUESTER_BALANCE_A = +(await TOKEN_A.balanceOf(REQUESTER_WALLET.address)).toString()
 		assert.equal(REQUESTER_BALANCE_A, REQUESTER_DESIRED_AMOUNT, "Requester balance should equal desired amount")
 
-		const FULFILLER_BALANCE_B = +(await TOKEN_B.balanceOf(REQUESTER_WALLET.address)).toString()
+		const FULFILLER_BALANCE_B = +(await TOKEN_B.balanceOf(accounts[0])).toString()
 		assert.equal(FULFILLER_BALANCE_B, REQUESTER_OFFERED_AMOUNT, "Requester balance should equal desired amount")
 
 	})
