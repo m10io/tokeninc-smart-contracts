@@ -1,4 +1,4 @@
-var { Wallet, utils } = require('ethers');
+var { Wallet, utils, SigningKey } = require('ethers');
 var Promise = require('bluebird')
 var TokenIOERC20 = artifacts.require("./TokenIOERC20.sol");
 var TokenIOCurrencyAuthority = artifacts.require("./TokenIOCurrencyAuthority.sol");
@@ -86,24 +86,16 @@ contract("TokenIOFX", function(accounts) {
 	it("Should allow the swap between the requester and the fulfiller", async () => {
 		const FX = await TokenIOFX.deployed();
 
+		const expiration = ((new Date().getTime() * 1000) + 86400 );
+
 		const message = utils.solidityKeccak256(
-			[ 'address', 'string', 'string', 'uint', 'uint', 'uint' ],
-			[ REQUESTER_WALLET.address, 'JPYx', 'USDx', REQUESTER_OFFERED_AMOUNT, REQUESTER_DESIRED_AMOUNT, (new Date().getTime() * 1000) ]
+			[ 'address', 'string', 'string', 'uint256', 'uint256', 'uint256' ],
+			[ REQUESTER_WALLET.address, 'USDx', 'JPYx', REQUESTER_DESIRED_AMOUNT, REQUESTER_OFFERED_AMOUNT, expiration ]
 		)
 
-		const txHash = utils.keccak256(utils.concat([
-	        utils.toUtf8Bytes('\x19Ethereum Signed Message:\n'),
-	        utils.toUtf8Bytes(String(message.length)),
-	        ((typeof(message) === 'string') ? utils.toUtf8Bytes(message): message)
-	    ]))
-
-		const signedMessage = REQUESTER_WALLET.signMessage(message)
-
-		const r = signedMessage.slice(0, 66)
-		const s = "0x"+signedMessage.slice(66, 130)
-		const v = 27 + parseInt(signedMessage.slice(130, 132));
-
-		const address = Wallet.verifyMessage(message, signedMessage)
+		const signingKey = new SigningKey(REQUESTER_WALLET.privateKey)
+		const sig = signingKey.signDigest(message)
+		const address = SigningKey.recover(message, sig.r, sig.s, sig.recoveryParam)
 
 		assert.equal(address, REQUESTER_WALLET.address, "Verified Address should be Requester's address")
 
@@ -117,9 +109,8 @@ contract("TokenIOFX", function(accounts) {
 			REQUESTER_WALLET.address.toLowerCase(),
 			TOKEN_A_SYMBOL, TOKEN_B_SYMBOL,
 			REQUESTER_DESIRED_AMOUNT, REQUESTER_OFFERED_AMOUNT,
-			v, r, s,
-			((new Date().getTime() * 1000) * (86400*1000)),
-			txHash
+			(+sig.recoveryParam + 27), sig.r, sig.s,
+			expiration
 		)
 
 		assert.equal(SWAP_TX['receipt']['status'], "0x1", "Transaction should succeed")

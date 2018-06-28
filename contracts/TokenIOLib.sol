@@ -1,4 +1,5 @@
 pragma solidity 0.4.24;
+pragma experimental ABIEncoderV2;
 
 import "./SafeMath.sol";
 import "./TokenIOStorage.sol";
@@ -386,10 +387,10 @@ library TokenIOLib {
     uint8 sigV,
     bytes32 sigR,
     bytes32 sigS,
-    uint expiration,
-    bytes32 fxTxHash
+    uint expiration
   ) internal returns (bool) {
 
+    bytes32 fxTxHash = keccak256(abi.encodePacked(requester, symbolA, symbolB, valueA, valueB, expiration));
     require(getKYCApproval(self, msg.sender));
     require(getKYCApproval(self, requester));
 
@@ -404,8 +405,8 @@ library TokenIOLib {
 
     require(ecrecover(fxTxHash, sigV, sigR, sigS) == requester);
 
-    /* require(forceTransfer(self, symbolA, msg.sender, requester, valueA, "0x0"));
-    require(forceTransfer(self, symbolB, requester, msg.sender, valueB, "0x0")); */
+    require(forceTransfer(self, symbolA, msg.sender, requester, valueA, "0x0"));
+    require(forceTransfer(self, symbolB, requester, msg.sender, valueB, "0x0"));
 
     return true;
   }

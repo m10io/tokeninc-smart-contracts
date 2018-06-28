@@ -31,10 +31,11 @@ contract TokenIOFX is Ownable {
     uint8 sigV,
     bytes32 sigR,
     bytes32 sigS,
-    uint expiration,
-    bytes32 fxTxHash
+    uint expiration
   ) public returns (bool) {
-    require(lib.execSwap(requester, symbolA, symbolB, valueA, valueB, sigV, sigR, sigS, expiration, fxTxHash));
+
+    require(lib.execSwap(requester, symbolA, symbolB, valueA, valueB, sigV, sigR, sigS, expiration));
+
     return true;
   }
 
