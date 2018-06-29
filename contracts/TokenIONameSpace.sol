@@ -23,7 +23,6 @@ contract TokenIONameSpace is Ownable {
     using TokenIOLib for TokenIOLib.Data;
     TokenIOLib.Data lib;
 
-
     constructor(address _storageContract) public {
         // Set the storage contract for the interface
         // This contract will be unable to use the storage constract until

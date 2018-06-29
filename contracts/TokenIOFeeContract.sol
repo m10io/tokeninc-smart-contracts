@@ -54,5 +54,11 @@ contract TokenIOFeeContract is Ownable {
 		return lib.calculateFees(address(this), amount);
 	}
 
+	function transferCollectedFees(string currency, address to, uint amount, bytes data) public onlyOwner returns (bool) {
+		require(lib.verifyAccount(to));
+		require(lib.forceTransfer(currency, address(this), to, amount, data));
+		return true;
+	}
+
 
 }

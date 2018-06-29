@@ -207,11 +207,10 @@ contract TokenIOERC20 is Ownable {
     }
 
     /* @notice gets currency status of contract
-     * @param isDeprecated [bool] false: live, true: deprected
      * @return [bool] isDeprececated statement true/false
      */
-    function deprecateInterface(bool isDeprecated) public onlyOwner returns (bool) {
-      require(lib.setDeprecatedContract(address(this), isDeprecated));
+    function deprecateInterface() public onlyOwner returns (bool) {
+      require(lib.setDeprecatedContract(address(this)));
       return true;
     }
 

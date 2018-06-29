@@ -297,7 +297,6 @@ library TokenIOLib {
     bytes32 id_c = keccak256(abi.encodePacked('token.balance', currency, getFeeContract(self, address(this))));
     bytes32 id_d = keccak256(abi.encodePacked('token.allowance', currency, getForwardedAccount(self, from), getForwardedAccount(self, msg.sender)));
 
-
     require(self.Storage.setUint(id_a, self.Storage.getUint(id_a).sub(amount.add(fees))));
     require(self.Storage.setUint(id_b, self.Storage.getUint(id_b).add(amount)));
     require(self.Storage.setUint(id_c, self.Storage.getUint(id_c).add(fees)));
@@ -357,7 +356,6 @@ library TokenIOLib {
     bytes32 id_a = keccak256(abi.encodePacked('token.balance', currency, getForwardedAccount(self, account)));
     bytes32 id_b = keccak256(abi.encodePacked('token.issued', currency, issuerFirm)); // possible for issuer to go negative
     bytes32 id_c = keccak256(abi.encodePacked('token.supply', currency));
-
 
     require(self.Storage.setUint(id_a, self.Storage.getUint(id_a).sub(amount)));
     require(self.Storage.setUint(id_b, self.Storage.getUint(id_b).sub(amount)));
@@ -455,9 +453,9 @@ library TokenIOLib {
     return true;
   }
 
-  function setDeprecatedContract(Data storage self, address contractAddress, bool status) internal returns (bool) {
+  function setDeprecatedContract(Data storage self, address contractAddress) internal returns (bool) {
     bytes32 id = keccak256(abi.encodePacked('depcrecated', contractAddress));
-    require(self.Storage.setBool(id, status));
+    require(self.Storage.setBool(id, true));
     return true;
   }
 
