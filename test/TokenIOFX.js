@@ -98,32 +98,10 @@ contract("TokenIOFX", function(accounts) {
 		const address = SigningKey.recover(message, sig.r, sig.s, sig.recoveryParam)
 
 		assert.equal(address, REQUESTER_WALLET.address, "Verified Address should be Requester's address")
-
-
-		assert.equal(
-			+(await TOKEN_B.balanceOf(REQUESTER_WALLET.address)).toString(),
-			REQUESTER_OFFERED_AMOUNT,
-			"Requester balance should equal offered amount"
-		)
-
-		assert.equal(
-			+(await TOKEN_A.balanceOf(REQUESTER_WALLET.address)).toString(),
-			0,
-			"Requester balance for token A should be zero"
-		)
-
-		assert.equal(
-			+(await TOKEN_A.balanceOf(accounts[0])).toString(),
-			REQUESTER_DESIRED_AMOUNT,
-			"Fulfiller balance should equal the requester desired amount"
-		)
-
-		assert.equal(
-			+(await TOKEN_B.balanceOf(accounts[0])).toString(),
-			0,
-			"Fulfiller balance for token B should be zero"
-		)
-
+		assert.equal(+(await TOKEN_B.balanceOf(REQUESTER_WALLET.address)).toString(), REQUESTER_OFFERED_AMOUNT, "Requester balance should equal offered amount")
+		assert.equal(+(await TOKEN_A.balanceOf(REQUESTER_WALLET.address)).toString(), 0, "Requester balance for token A should be zero")
+		assert.equal(+(await TOKEN_A.balanceOf(accounts[0])).toString(), REQUESTER_DESIRED_AMOUNT, "Fulfiller balance should equal the requester desired amount")
+		assert.equal(+(await TOKEN_B.balanceOf(accounts[0])).toString(), 0, "Fulfiller balance for token B should be zero")
 
 		const SWAP_TX = await FX.swap(
 			REQUESTER_WALLET.address.toLowerCase(),
@@ -134,32 +112,10 @@ contract("TokenIOFX", function(accounts) {
 		)
 
 		assert.equal(SWAP_TX['receipt']['status'], "0x1", "Transaction should succeed")
-
-		assert.equal(
-			+(await TOKEN_A.balanceOf(REQUESTER_WALLET.address)).toString(),
-			REQUESTER_DESIRED_AMOUNT,
-			"Requester balance should equal desired amount"
-		)
-
-		assert.equal(
-			+(await TOKEN_B.balanceOf(REQUESTER_WALLET.address)).toString(),
-			0,
-			"Requester balance for token B should be zero after swap"
-		)
-
-		assert.equal(
-			+(await TOKEN_B.balanceOf(accounts[0])).toString(),
-			REQUESTER_OFFERED_AMOUNT,
-			"Requester balance should equal desired amount"
-		)
-
-		assert.equal(
-			+(await TOKEN_A.balanceOf(accounts[0])).toString(),
-			0,
-			"Fulfiller balance for token A should be zero after swap"
-		)
-
-
+		assert.equal(+(await TOKEN_A.balanceOf(REQUESTER_WALLET.address)).toString(), REQUESTER_DESIRED_AMOUNT, "Requester balance should equal desired amount")
+		assert.equal(+(await TOKEN_B.balanceOf(REQUESTER_WALLET.address)).toString(), 0, "Requester balance for token B should be zero after swap")
+		assert.equal(+(await TOKEN_B.balanceOf(accounts[0])).toString(), REQUESTER_OFFERED_AMOUNT, "Requester balance should equal desired amount")
+		assert.equal(+(await TOKEN_A.balanceOf(accounts[0])).toString(), 0, "Fulfiller balance for token A should be zero after swap")
 
 	})
 
