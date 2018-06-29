@@ -32,7 +32,7 @@ contract("TokenIOCurrencyAuthority", function(accounts) {
       }
   })
 
-  it("Should ensure AUTHORITY_ACCOUNT can approve and deposit funds for an account", async () => {
+  it("Should ensure the AUTHORITY_ACCOUNT can approve and deposit funds for an account", async () => {
     const CA = await TokenIOCurrencyAuthority.deployed();
     const erc20 = await TokenIOERC20.deployed()
 
@@ -84,6 +84,10 @@ contract("TokenIOCurrencyAuthority", function(accounts) {
 
 
   });
+
+
+
+
 
 
 

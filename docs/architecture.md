@@ -1,7 +1,7 @@
-###### Token, Inc. Smart Contracts Documentation
+###### Token, Inc. Smart Money -- Solidity Smart Contracts Documentation
 ##### *NOTE: This document is for internal use only. Any external sharing, publication, or distribution with third parties and general audiences without permission and authorization by Token, Inc. is strictly Prohibited.*
 ---
-## Token Smart Money
+# Token Smart Money
 
 #### Overview
 
@@ -40,6 +40,19 @@ Running the command: `truffle migrate --reset` will deploy the scripts in the se
 
 #### Ethereum Smart Contract Architecture
 
+```mermaid
+graph BT;
+
+	S[TokenIOStorage.sol]--Universal Storage Layout Wrapped in LibStd methods-->LibStd[TokenIOLib.sol];
+	SafeMath--LibStd uses SafeMath for overflow/underflow-->LibStd
+	LibStd-->Auth[TokenIOAuthority.sol];
+	LibStd-->CA[TokenIOCurrencyAuthority.sol];
+	LibStd-->ERC20[TokenIOERC20.sol];
+	LibStd-->FX[TokenIOFX.sol];
+	LibStd-->Misc[...];
+```
+
+
 ###### Ownable.sol
 ###### TokenIOAuthority.sol
 ###### TokenIOStorage.sol
@@ -49,99 +62,7 @@ Running the command: `truffle migrate --reset` will deploy the scripts in the se
 ###### TokenIOCurrencyAuthority.sol
 ###### TokenIOFX.sol
 
----
-#### Creating a New Customer Account
 
-```sequence
-StartPage->CreateKey: Cache details of Email, Phone, Name, Picture in device
-CreateKey->BIP39: Show & Confirm 24 word bip39 phrase
-BIP39->SubmitAccount: Send Payload to Server
-```
-
-###### NOTE: private key of Ethereum address are stored in the device secure enclave
-
-```json
-// Payload to send to server on account create
-{
-	"name": "Ryan Tate", // isCCField
-	"email": "Ryan.michael.tate@gmail", // isCCField
-	"ethereumAddress": "0x0...", // created by phone/device
-	"phonePublicKey": "base64->hex", // provided via the secure enclave for the device RSA 2048 Asymm
-	"phoneNumber": "001-555-555-5555",
-	"messageHash": "0x1234...", // Buffered data that is to be signed
-	"signedMessage": "<Signature of message hash>"
-
-}
-```
-
-```sequence
-Customer->Server: `createAccount({accountDetails})` Request
-Server->Customer: Verify Email
-Customer->Server: Email is verified (Clicks confirm)
-Server->Customer: Send user SMS text w/ code
-Customer-Server: Confirm SMS Code
-Server->Database: Validate Details & Save User Information
-Database->Server: Return successful update
-Server->Customer: Account is confirmed, return UUID for account
-```
-
-###### NOTE: Once account is created, allow user to Navigate to home screen on application
-
-```sequence
-Client->Server: linkBankAccount({ beneficiaryDetails })
-
-Server->CurrencyCloud: Create Beneficiary Account for User
-CurrencyCloud->Server: Response
-
-Server->CurrencyAuthorityETHContract: `approveKYC(address account, bool isApproved, string issuerFirm)`
-CurrencyAuthorityETHContract->Server: Tx Receipt
-Server->Database: Update Account Info (beneficiary_id)
-Database->Server: Successful update
-```
-
-###### Request Authorization
-
-```js
-const bearer = request.headers['Authorization'];
-// console.log(bearer) == "Bearer: " + "<base64 signed string>"
-// Use passport http-bearer-strategy
-
-// May not work...
-passport.use(new BearerStrategy((accessToken, cb) => {
-	try {
-		// accessToken == <base64 signed string>
-		const publicKey = key.verify(accessToken, algorithm, { payload })
-
-		const user = await User.findOne({ publicKey })
-	} catch (error) {
-		...
-	}
-}))
-
-```
-
-###### Beneficiary Account Details Object
-
-// For field params, see: https://www.currencycloud.com/developers/docs/item/create-beneficiary/
-
-```json
-{
-	"name": "Ryan Tate", // isCCField
-	"bankAccountHolderName": "Ryan Tate", //isCCField
-	"bankCountry": "US", // isCCField (two-letter abv.)
-	"currency": "USD", // isCCField (Three-letter abv.)
-	"email": "Ryan.michael.tate@gmail", // isCCField
-	"ethereumAddress": "0x0...",
-	"beneficiaryAddress": "612 E. 35th Street",
-	"beneficiaryCountry": "US",
-	"accountNumber": "11235813",
-	"routingCodeType1": "aba",
-	"routingCodeValue1": "13213455",
-	"iban": "XE...", // can we create a virtual Ethereum XE Iban from address?
-	""
-
-}
-```
 
 ---
 ##### Footnotes
@@ -149,4 +70,4 @@ passport.use(new BearerStrategy((accessToken, cb) => {
 
 ---
 VERSION: v0.1.3
-DISCLOSURE: This document has been prepared by Emergent Financial LLC on behalf of Token, Inc. This document is intended for notes, documentation, and discussion for how the source code is written at a certain software version. Emergent Financial LLC and Token, Inc. do not guarantee the correctness of this software or the accuracy of this documentation and is not held liable for any misinterpretation, unintentional use or misuse of the software. Emergent Financial LLC and Token, Inc. will actively identify and resolve to the best ability, within reasonable limit, any known software limitations, bugs, or other vulnerabilities that might impact this software.
+DISCLOSURE: This document is intended for notes, documentation, and discussion for how the source code is written at a certain software version. Token, Inc. do not guarantee the correctness of this software or the accuracy of this documentation and is not held liable for any misinterpretation, unintentional use or misuse of the software. Token, Inc. will actively identify and resolve to the best ability, within reasonable limit, any known software limitations, bugs, or other vulnerabilities that might impact this software.

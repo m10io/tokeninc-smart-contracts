@@ -1,11 +1,11 @@
-
 const TokenIOCurrencyAuthority = artifacts.require("./TokenIOCurrencyAuthority.sol");
 const TokenIOStorage = artifacts.require("./TokenIOStorage.sol")
 const TokenIOERC20 = artifacts.require("./TokenIOERC20.sol")
+const TokenIOFeeContract = artifacts.require("./TokenIOFeeContract.sol")
 const { mode, development, production } = require('../token.config.js')
 const { utils } = require('ethers')
 
-const { AUTHORITY_DETAILS: { firmName, authorityAddress }, TOKEN_DETAILS} = mode
+const { AUTHORITY_DETAILS: { firmName, authorityAddress }, TOKEN_DETAILS, FEE_PARAMS } = mode
     == 'production' ? production : development //set stage
 
 contract("TokenIOERC20", function(accounts) {
@@ -13,8 +13,12 @@ contract("TokenIOERC20", function(accounts) {
     const USDx = TOKEN_DETAILS[0]
 
     // create test accounts
-    const TEST_ACCOUNT_1 = accounts[1]
-    const TEST_ACCOUNT_2 = accounts[2]
+    const TEST_ACCOUNT_1 = accounts[0]
+    const TEST_ACCOUNT_2 = accounts[1]
+    const TEST_ACCOUNT_3 = accounts[2]
+
+    const DEPOSIT_AMOUNT = 10000
+    const TRANSFER_AMOUNT = (DEPOSIT_AMOUNT/4)
 
     /* PARAMETERS */
 
@@ -46,11 +50,11 @@ contract("TokenIOERC20", function(accounts) {
     it(`FEE_PARAMS
         :should correctly set fee parameters according to config file 'token.config.js'
         [bps, min, max, flat, account]`, async () => {
-        const TOKEN_FEE_BPS = USDx.feeBps
-        const TOKEN_FEE_MIN = USDx.feeMin
-        const TOKEN_FEE_MAX = USDx.feeMax
-        const TOKEN_FEE_FLAT = USDx.feeFlat
-        const TOKEN_FEE_ACCOUNT = USDx.feeAccount
+        const TOKEN_FEE_BPS = FEE_PARAMS.feeBps
+        const TOKEN_FEE_MIN = FEE_PARAMS.feeMin
+        const TOKEN_FEE_MAX = FEE_PARAMS.feeMax
+        const TOKEN_FEE_FLAT = FEE_PARAMS.feeFlat
+        const TOKEN_FEE_ACCOUNT = (await TokenIOFeeContract.deployed()).address
 
         const erc20 = await TokenIOERC20.deployed()
         const feeParams = await erc20.getFeeParams()
@@ -74,7 +78,7 @@ contract("TokenIOERC20", function(accounts) {
         const erc20 = await TokenIOERC20.deployed()
         await erc20.setParams(...Object.keys(TOKEN_DETAILS[0]).map((param) => { return TOKEN_DETAILS[0][param] }))
 
-        const balance = await erc20.balanceOf(accounts[0])
+        const balance = await erc20.balanceOf(TEST_ACCOUNT_1)
         assert.equal(balance, 0)
     })
 
@@ -83,7 +87,7 @@ contract("TokenIOERC20", function(accounts) {
           const erc20 = await TokenIOERC20.deployed()
           await erc20.setParams(...Object.keys(TOKEN_DETAILS[0]).map((param) => { return TOKEN_DETAILS[0][param] }))
 
-          const allowance = await erc20.allowance(accounts[0], accounts[1])
+          const allowance = await erc20.allowance(TEST_ACCOUNT_1, TEST_ACCOUNT_2)
           assert.equal(allowance, 0)
     })
 
@@ -97,57 +101,50 @@ contract("TokenIOERC20", function(accounts) {
         const erc20 = await TokenIOERC20.deployed()
         const CA = await TokenIOCurrencyAuthority.deployed();
 
-        const kycReceipt1 = await CA.approveKYC(accounts[0], true, "Token, Inc.")
-        const kycReceipt12= await CA.approveKYC(accounts[1], true, "Token, Inc.")
+        const kycReceipt1 = await CA.approveKYC(TEST_ACCOUNT_1, true, "Token, Inc.")
+        const kycReceipt2= await CA.approveKYC(TEST_ACCOUNT_2, true, "Token, Inc.")
+        const kycReceipt3= await CA.approveKYC(TEST_ACCOUNT_3, true, "Token, Inc.")
 
         await erc20.setParams(...Object.keys(TOKEN_DETAILS[0]).map((param) => { return TOKEN_DETAILS[0][param] }))
         await storage.allowOwnership(erc20.address)
         const tokenSymbol = await erc20.symbol()
-        const depositReceipt = await CA.deposit(tokenSymbol, accounts[0], 200, "Token, Inc.")
+        const depositReceipt = await CA.deposit(tokenSymbol, TEST_ACCOUNT_1, DEPOSIT_AMOUNT, "Token, Inc.")
 
-        const balance1 = +(await erc20.balanceOf(accounts[0])).toString()
-        const balance2 = +(await erc20.balanceOf(accounts[1])).toString()
+        const balance1 = +(await erc20.balanceOf(TEST_ACCOUNT_1)).toString()
+        const balance2 = +(await erc20.balanceOf(TEST_ACCOUNT_2)).toString()
 
-        assert.equal(balance1, 200)
+        assert.equal(balance1, DEPOSIT_AMOUNT)
         assert.equal(balance2, 0)
 
-        const transferReceipt = await erc20.transfer(TEST_ACCOUNT_1, 100)
-        const balance1b = +(await erc20.balanceOf(accounts[0])).toString()
-        const balance2b = +(await erc20.balanceOf(accounts[1])).toString()
+        const transferReceipt = await erc20.transfer(TEST_ACCOUNT_2, TRANSFER_AMOUNT)
+        const balance1b = +(await erc20.balanceOf(TEST_ACCOUNT_1)).toString()
+        const balance2b = +(await erc20.balanceOf(TEST_ACCOUNT_2)).toString()
 
-        // calculate correct debit
-        const feeParams = await erc20.getFeeParams()
-        const feeBps = +(feeParams[0])
-        const debitAmount = 100 + feeBps
+        // calc fees
+        const TX_FEES = +(await erc20.calculateFees(TRANSFER_AMOUNT)).toString()
 
-        assert.equal(balance1b, 200 - debitAmount)
-        assert.equal(balance2b, 100)
+        // calculate correct current balance
+        assert.equal(balance1b, (DEPOSIT_AMOUNT-TRANSFER_AMOUNT-TX_FEES))
+        assert.equal(balance2b, TRANSFER_AMOUNT)
     })
 
 
     it(`APPROVE
-        :should give 100 allowance to account 2
+        :should give allowance of remaining balance of account 1 to account 2
         allowances[account1][account2]: 0 --> 100`, async () => {
         const storage = await TokenIOStorage.deployed()
         const erc20 = await TokenIOERC20.deployed()
         const CA = await TokenIOCurrencyAuthority.deployed();
 
-        const kycReceipt1 = await CA.approveKYC(accounts[0], true, "Token, Inc.")
-        const kycReceipt12= await CA.approveKYC(accounts[1], true, "Token, Inc.")
+        const balance1a = +(await erc20.balanceOf(TEST_ACCOUNT_1))
+        const balance1b = +(await erc20.balanceOf(TEST_ACCOUNT_2))
 
-        await erc20.setParams(...Object.keys(TOKEN_DETAILS[0]).map((param) => { return TOKEN_DETAILS[0][param] }))
-        await storage.allowOwnership(erc20.address)
-        const tokenSymbol = await erc20.symbol()
-        const depositReceipt = await CA.deposit(tokenSymbol, accounts[0], 200, "Token, Inc.")
 
-        const balance1a = +(await erc20.balanceOf(accounts[0]))
-        const balance1b = +(await erc20.balanceOf(accounts[1]))
+        const approveReceipt = await erc20.approve(TEST_ACCOUNT_2, balance1a)
+        const allowance = +(await erc20.allowance(TEST_ACCOUNT_1, TEST_ACCOUNT_2)).toString()
 
-        const approveReceipt = await erc20.approve(accounts[1], 100)
-        
-        const allowance = await erc20.allowance(accounts[0], accounts[1])
-
-        assert.equal(allowance, 100)
+        assert.notEqual(allowance, 0, "Allowance should not equal zero.")
+        assert.equal(allowance, balance1a, "Allowance should be the same value as the balance of account 1")
     })
 
     it(`TRANSFER_FROM
@@ -156,37 +153,29 @@ contract("TokenIOERC20", function(accounts) {
         const erc20 = await TokenIOERC20.deployed()
         const CA = await TokenIOCurrencyAuthority.deployed();
 
-        const kycReceipt1 = await CA.approveKYC(accounts[0], true, "Token, Inc.")
-        const kycReceipt12= await CA.approveKYC(accounts[1], true, "Token, Inc.")
 
+        const TEST_ACT_1_BEG_BALANCE = +(await erc20.balanceOf(TEST_ACCOUNT_1)).toString()
+        const TEST_ACT_2_BEG_BALANCE = +(await erc20.balanceOf(TEST_ACCOUNT_2)).toString()
+        const TEST_ACT_3_BEG_BALANCE = +(await erc20.balanceOf(TEST_ACCOUNT_3)).toString()
 
-        await erc20.setParams(...Object.keys(TOKEN_DETAILS[0]).map((param) => { return TOKEN_DETAILS[0][param] }))
+        assert.notEqual(TEST_ACT_1_BEG_BALANCE, 0, "Balance of account 1 should not equal zero.")
+        assert.notEqual(TEST_ACT_2_BEG_BALANCE, 0, "Balance of account 2 should not equal zero.")
 
-        await storage.allowOwnership(erc20.address)
-        const tokenSymbol = await erc20.symbol()
-        const depositReceipt = await CA.deposit(tokenSymbol, accounts[0], 2, "Token, Inc.")
-        const balance1a = +(await erc20.balanceOf(accounts[0]))
-        const balance1b = +(await erc20.balanceOf(accounts[1]))
-        console.log('balance1a', balance1a)
-        console.log('balance1b', balance1b)
+        const BEG_ALLOWANCE = await erc20.allowance(TEST_ACCOUNT_1, TEST_ACCOUNT_2)
+        assert.equal(BEG_ALLOWANCE, TEST_ACT_1_BEG_BALANCE)
 
-        const approveReceipt = await erc20.approve(accounts[1], 100)
+        const TRANSFER_FROM_AMOUNT = (TEST_ACT_1_BEG_BALANCE/2);
+        const transferFromReceipt = await erc20.transferFrom(TEST_ACCOUNT_1, TEST_ACCOUNT_3, TRANSFER_FROM_AMOUNT, { from: TEST_ACCOUNT_2 })
 
-        const allowance = await erc20.allowance(accounts[0], accounts[1])
-        console.log('allowance', allowance)
-        assert.equal(allowance, 100)
+        const TX_FEES = +(await erc20.calculateFees(TRANSFER_FROM_AMOUNT)).toString()
+        const TEST_ACT_1_END_BALANCE = +(await erc20.balanceOf(TEST_ACCOUNT_1))
+        assert.equal(TEST_ACT_1_END_BALANCE, (TEST_ACT_1_BEG_BALANCE-TRANSFER_FROM_AMOUNT-TX_FEES), "Ending balance should be net of transfer amount and fees")
 
-        const transferFromReceipt = await erc20.transferFrom(accounts[0], 100, {from: accounts[1]})
+        const TEST_ACT_3_END_BALANCE = +(await erc20.balanceOf(TEST_ACCOUNT_3)).toString()
+        assert.equal(TEST_ACT_3_END_BALANCE, TRANSFER_FROM_AMOUNT, "TEST_ACCOUNT_3 Balance should equal transfer amount");
 
-        const balance2a = +(await erc20.balanceOf(accounts[0]))
-        console.log('balance1', balance1)
-        const balance2b = +(await erc20.balanceOf(accounts[1]))
+        const END_ALLOWANCE = +(await erc20.allowance(TEST_ACCOUNT_1, TEST_ACCOUNT_2)).toString()
+        assert.equal(END_ALLOWANCE, (TEST_ACT_1_BEG_BALANCE-TRANSFER_FROM_AMOUNT), "Allowance should be reduced by amount transferred")
 
-        // calculate correct debit
-        const feeParams = await erc20.getFeeParams()
-        const feeBps = +(feeParams[0])
-
-        assert.equal(balance1, 0)
-        assert.equal(balance2, allowance - feeBps)
     })
 })

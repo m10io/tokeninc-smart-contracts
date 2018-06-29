@@ -1,5 +1,19 @@
 pragma solidity ^0.4.24;
 
+/*
+
+COPYRIGHT 2018 Token, Inc.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+*/
+
 
 import "./Ownable.sol";
 import "./TokenIOStorage.sol";
@@ -29,11 +43,7 @@ contract TokenIOERC20 is Ownable {
         string _tla,
         string _version,
         uint _decimals,
-        uint _bps,
-        uint _min,
-        uint _max,
-        uint _flat,
-        address _feeAccount
+        address _feeContract
     ) onlyOwner public returns (bool) {
 
         require(lib.setTokenName(_name));
@@ -41,11 +51,7 @@ contract TokenIOERC20 is Ownable {
         require(lib.setTokenTLA(_tla));
         require(lib.setTokenVersion(_version));
         require(lib.setTokenDecimals(_decimals));
-        require(lib.setFeeBPS(_bps));
-        require(lib.setFeeMin(_min));
-        require(lib.setFeeMax(_max));
-        require(lib.setFeeFlat(_flat));
-        require(lib.setFeeAccount(_feeAccount));
+        require(lib.setFeeContract(_feeContract));
         require(lib.setTokenNameSpace(_symbol));
 
         return true;
@@ -85,34 +91,44 @@ contract TokenIOERC20 is Ownable {
 
     function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, address feeAccount) {
         return (
-            lib.getFeeBPS(address(this)),
-            lib.getFeeMin(address(this)),
-            lib.getFeeMax(address(this)),
-            lib.getFeeFlat(address(this)),
-            lib.getFeeAccount(address(this))
+            lib.getFeeBPS(lib.getFeeContract(address(this))),
+            lib.getFeeMin(lib.getFeeContract(address(this))),
+            lib.getFeeMax(lib.getFeeContract(address(this))),
+            lib.getFeeFlat(lib.getFeeContract(address(this))),
+            lib.getFeeContract(address(this))
         );
     }
 
-    function transfer(address to, uint amount) public returns (bool) {
-      require(lib.getKYCApproval(msg.sender));
-      require(lib.getKYCApproval(to));
-      require(lib.transfer(to, amount, "0x0"));
+    function calculateFees(uint amount) public view returns (uint) {
+      return lib.calculateFees(lib.getFeeContract(address(this)), amount);
+    }
 
+    function transfer(address to, uint amount) public notDeprecated returns (bool) {
+      require(lib.verifyAccounts(msg.sender, to));
+      require(lib.transfer(to, amount, "0x0"));
       return true;
     }
 
-    function transferFrom(address from, address to, uint amount) public returns (bool) {
-        require(lib.getKYCApproval(from));
-        require(lib.getKYCApproval(to));
+    function transferFrom(address from, address to, uint amount) public notDeprecated returns (bool) {
+        require(lib.verifyAccounts(from, to));
         require(lib.transferFrom(from, to, amount));
         return true;
     }
 
-    function approve(address spender, uint amount) public returns (bool) {
+    function approve(address spender, uint amount) public notDeprecated returns (bool) {
+        require(lib.verifyAccounts(msg.sender, spender));
         require(lib.approve(spender, amount));
         return true;
     }
 
+    function deprecateInterface(bool isDeprecated) public onlyOwner returns (bool) {
+      require(lib.setDeprecatedContract(address(this), isDeprecated));
+      return true;
+    }
 
+    modifier notDeprecated() {
+      require(!lib.isContractDeprecated(address(this)));
+      _;
+    }
 
 }

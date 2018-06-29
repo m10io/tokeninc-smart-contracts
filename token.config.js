@@ -6,11 +6,7 @@ const USDx = {
   tokenTLA: 'USD', // tokenTLA
   tokenVersion: 'v0.1.3', // tokenVersion
   tokenDecimals: 2, // tokenDecimals
-  feeBps: 2, // bps fee
-  feeMin: 0, // min fee
-  feeMax: 100, // max fee
-  feeFlat: 2, // flat fee
-  feeAccount: "0x8cb2cebb0070b231d4ba4d3b747acaebdfbbd142" // fee account
+  feeContract: "0x0" // fee account
 }
 
 const MXNx = {
@@ -21,11 +17,7 @@ const MXNx = {
   tokenTLA: 'MXN', // tokenTLA
   tokenVersion: 'v0.1.3', // tokenVersion
   tokenDecimals: 2, // tokenDecimals
-  feeBps: 2, // bps fee
-  feeMin: 0, // min fee
-  feeMax: 100, // max fee
-  feeFlat: 2, // flat fee
-  feeAccount: "0x8cb2cebb0070b231d4ba4d3b747acaebdfbbd142" // fee account
+  feeContract: "0x0" // fee account
 }
 
 const GBPx = {
@@ -36,11 +28,7 @@ const GBPx = {
   tokenTLA: 'GBP', // tokenTLA
   tokenVersion: 'v0.1.3', // tokenVersion
   tokenDecimals: 2, // tokenDecimals
-  feeBps: 2, // bps fee
-  feeMin: 0, // min fee
-  feeMax: 100, // max fee
-  feeFlat: 2, // flat fee
-  feeAccount: "0x8cb2cebb0070b231d4ba4d3b747acaebdfbbd142" // fee account
+  feeContract: "0x0" // fee account
 }
 
 const JPYx = {
@@ -51,11 +39,7 @@ const JPYx = {
   tokenTLA: 'JPY', // tokenTLA
   tokenVersion: 'v0.1.3', // tokenVersion
   tokenDecimals: 2, // tokenDecimals
-  feeBps: 2, // bps fee
-  feeMin: 0, // min fee
-  feeMax: 100, // max fee
-  feeFlat: 2, // flat fee
-  feeAccount: "0x8cb2cebb0070b231d4ba4d3b747acaebdfbbd142" // fee account
+  feeContract: "0x0" // fee account
 }
 
 const EURx = {
@@ -66,16 +50,19 @@ const EURx = {
   tokenTLA: 'EUR', // tokenTLA
   tokenVersion: 'v0.1.3', // tokenVersion
   tokenDecimals: 2, // tokenDecimals
-  feeBps: 2, // bps fee
-  feeMin: 0, // min fee
-  feeMax: 100, // max fee
-  feeFlat: 2, // flat fee
-  feeAccount: "0x8cb2cebb0070b231d4ba4d3b747acaebdfbbd142" // fee account
+  feeContract: "0x0" // fee account
 }
 
 const AUTHORITY_DETAILS = {
   firmName: "Token, Inc.",
   authorityAddress: "0x8cb2cebb0070b231d4ba4d3b747acaebdfbbd142"
+}
+
+const FEE_PARAMS = {
+    feeBps: 2, // bps fee
+    feeMin: 0, // min fee
+    feeMax: 100, // max fee
+    feeFlat: 2 // flat fee
 }
 
 module.exports = {
@@ -88,7 +75,8 @@ module.exports = {
         JPYx,
         EURx,
     ],
-    AUTHORITY_DETAILS
+    AUTHORITY_DETAILS,
+    FEE_PARAMS
   },
   production: {
     TOKEN_DETAILS: [
@@ -98,7 +86,8 @@ module.exports = {
         JPYx,
         EURx,
     ],
-    AUTHORITY_DETAILS
+    AUTHORITY_DETAILS,
+    FEE_PARAMS
   }
 }
 

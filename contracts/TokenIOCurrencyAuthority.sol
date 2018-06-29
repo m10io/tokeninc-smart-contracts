@@ -1,6 +1,19 @@
 pragma solidity ^0.4.24;
 
 
+/*
+
+COPYRIGHT 2018 Token, Inc.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+*/
+
 import "./Ownable.sol";
 import "./TokenIOStorage.sol";
 import "./TokenIOLib.sol";
@@ -19,6 +32,14 @@ contract TokenIOCurrencyAuthority is Ownable {
         lib.Storage = TokenIOStorage(_storageContract);
 
         owner[msg.sender] = true;
+    }
+
+    function getTokenBalance(string currency, address account) public view returns (uint) {
+      return lib.getTokenBalance(currency, account);
+    }
+
+    function getTokenSupply(string currency) public view returns (uint) {
+      return lib.getTokenSupply(currency);
     }
 
     function freezeAccount(address account, bool isAllowed, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool) {
@@ -45,18 +66,13 @@ contract TokenIOCurrencyAuthority is Ownable {
     }
 
     function deposit(string currency, address account, uint amount, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool) {
-        require(lib.getKYCApproval(account));
-        require(lib.getAccountStatus(account));
+        require(lib.verifyAccount(account));
         require(lib.deposit(currency, account, amount, issuerFirm));
         return true;
     }
 
-    function getTokenBalance(string currency, address account) public view returns (uint) {
-      return lib.getTokenBalance(currency, account);
-    }
-
     function withdraw(string currency, address account, uint amount, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool) {
-        require(lib.getAccountStatus(account));
+        require(lib.verifyAccount(account));
         require(lib.withdraw(currency, account, amount, issuerFirm));
         return true;
     }

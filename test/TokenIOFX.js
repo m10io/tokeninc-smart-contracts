@@ -99,11 +99,31 @@ contract("TokenIOFX", function(accounts) {
 
 		assert.equal(address, REQUESTER_WALLET.address, "Verified Address should be Requester's address")
 
-		const REQUESTER_BALANCE_B = +(await TOKEN_B.balanceOf(REQUESTER_WALLET.address)).toString()
-		assert.equal(REQUESTER_BALANCE_B, REQUESTER_OFFERED_AMOUNT, "Requester balance should equal offered amount")
 
-		const FULFILLER_BALANCE_A = +(await TOKEN_A.balanceOf(accounts[0])).toString()
-		assert.equal(FULFILLER_BALANCE_A, REQUESTER_DESIRED_AMOUNT, "Fulfiller balance should equal the requester desired amount")
+		assert.equal(
+			+(await TOKEN_B.balanceOf(REQUESTER_WALLET.address)).toString(),
+			REQUESTER_OFFERED_AMOUNT,
+			"Requester balance should equal offered amount"
+		)
+
+		assert.equal(
+			+(await TOKEN_A.balanceOf(REQUESTER_WALLET.address)).toString(),
+			0,
+			"Requester balance for token A should be zero"
+		)
+
+		assert.equal(
+			+(await TOKEN_A.balanceOf(accounts[0])).toString(),
+			REQUESTER_DESIRED_AMOUNT,
+			"Fulfiller balance should equal the requester desired amount"
+		)
+
+		assert.equal(
+			+(await TOKEN_B.balanceOf(accounts[0])).toString(),
+			0,
+			"Fulfiller balance for token B should be zero"
+		)
+
 
 		const SWAP_TX = await FX.swap(
 			REQUESTER_WALLET.address.toLowerCase(),
@@ -115,35 +135,32 @@ contract("TokenIOFX", function(accounts) {
 
 		assert.equal(SWAP_TX['receipt']['status'], "0x1", "Transaction should succeed")
 
-		const REQUESTER_BALANCE_A = +(await TOKEN_A.balanceOf(REQUESTER_WALLET.address)).toString()
-		assert.equal(REQUESTER_BALANCE_A, REQUESTER_DESIRED_AMOUNT, "Requester balance should equal desired amount")
+		assert.equal(
+			+(await TOKEN_A.balanceOf(REQUESTER_WALLET.address)).toString(),
+			REQUESTER_DESIRED_AMOUNT,
+			"Requester balance should equal desired amount"
+		)
 
-		const FULFILLER_BALANCE_B = +(await TOKEN_B.balanceOf(accounts[0])).toString()
-		assert.equal(FULFILLER_BALANCE_B, REQUESTER_OFFERED_AMOUNT, "Requester balance should equal desired amount")
+		assert.equal(
+			+(await TOKEN_B.balanceOf(REQUESTER_WALLET.address)).toString(),
+			0,
+			"Requester balance for token B should be zero after swap"
+		)
+
+		assert.equal(
+			+(await TOKEN_B.balanceOf(accounts[0])).toString(),
+			REQUESTER_OFFERED_AMOUNT,
+			"Requester balance should equal desired amount"
+		)
+
+		assert.equal(
+			+(await TOKEN_A.balanceOf(accounts[0])).toString(),
+			0,
+			"Fulfiller balance for token A should be zero after swap"
+		)
+
+
 
 	})
-
-	// Global Test Variables;
-	// const AUTHORITY_ACCOUNT = accounts[0];
-	// const AUTHORITY_ACCOUNT_2 = authorityAddress;
-	// const FIRM_NAME = firmName;
-	//
-	// it("Should confirm AUTHORITY_ACCOUNT has been set appropriately", async () => {
-	//   const authority = await TokenIOAuthority.deployed();
-	//   const isAuthorized = await authority.isRegisteredToFirm(FIRM_NAME, AUTHORITY_ACCOUNT);
-	//   assert.equal(isAuthorized, true, "Authority firm and address should be authorized");
-	// });
-	//
-	// it("Should confirm FIRM_NAME has been set appropriately", async () => {
-	//   const authority = await TokenIOAuthority.deployed();
-	//   const authorityFirm = await authority.getFirmFromAuthority(AUTHORITY_ACCOUNT);
-	//   assert.equal(authorityFirm, FIRM_NAME, "Authority firm should be set to the firmName");
-	// })
-	//
-	// it("Should confirm non-authority is not authorized", async () => {
-	//   const authority = await TokenIOAuthority.deployed();
-	//   const isAuthorized = await authority.isRegisteredAuthority(AUTHORITY_ACCOUNT_2);
-	//   assert.equal(isAuthorized, false, "Non registered account should not be authorized");
-	// })
 
 });
