@@ -135,8 +135,6 @@ library TokenIOLib {
     }
   }
 
-  /* function migrateAccountDetails() */
-
   function getKYCApproval(Data storage self, address account) internal view returns (bool) {
       bytes32 id = keccak256(abi.encodePacked('account.kyc', getForwardedAccount(self, account)));
       return self.Storage.getBool(id);

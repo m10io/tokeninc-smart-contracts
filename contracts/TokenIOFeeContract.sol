@@ -34,7 +34,6 @@ contract TokenIOFeeContract is Ownable {
 		require(lib.setFeeMin(feeMin));
 		require(lib.setFeeMax(feeMax));
 		require(lib.setFeeFlat(feeFlat));
-
 		return true;
 	}
 
@@ -47,12 +46,13 @@ contract TokenIOFeeContract is Ownable {
 			);
 	}
 
-
 	function getTokenBalance(string currency) public view returns(uint) {
 		return lib.getTokenBalance(currency, address(this));
 	}
 
-
+	function calculateFees(uint amount) public view returns (uint) {
+		return lib.calculateFees(address(this), amount);
+	}
 
 
 }

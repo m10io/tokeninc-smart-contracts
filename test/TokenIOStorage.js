@@ -19,19 +19,17 @@ const USDx = TOKEN_DETAILS[0]
 // Recover the previous values of the original contract
 
 
-contract("TokenIOERC20", function(accounts) {
+contract("TokenIOStorage", function(accounts) {
 
-	const TEST_ACCOUNT_1 = accounts[1]
+	const TEST_ACCOUNT_1 = accounts[0]
+	const TEST_ACCOUNT_2 = accounts[1]
 	const DEPOSIT_AMOUNT = 100000
 
 	it("Should get the token details directly from the storage contract", async () => {
 		const storage = await TokenIOStorage.deployed()
 		const token = await TokenIOERC20.deployed()
 
-		const TOKEN_SUPPLY_ID = utils.solidityKeccak256(
-			['string', 'string'],
-			['token.supply', 'USDx']
-		)
+		const TOKEN_SUPPLY_ID = utils.solidityKeccak256(['string', 'string'], ['token.supply', 'USDx'])
 
 		const TOKEN_SUPPLY_STORAGE = +(await storage.getUint(TOKEN_SUPPLY_ID)).toString()
 		assert.equal(TOKEN_SUPPLY_STORAGE, 0, "Token Supply should begin at zero supply")
@@ -42,12 +40,12 @@ contract("TokenIOERC20", function(accounts) {
 	})
 
 
-	it("Should approve kyc and deposit funds into TEST_ACCOUNT_1", async () => {
+	it("Should approve kyc and deposit funds into TEST_ACCOUNT_2 and ensure balance is the same for multiple interface contracts", async () => {
 		const CA = await TokenIOCurrencyAuthority.deployed()
 		const storage = await TokenIOStorage.deployed()
 		const token = await TokenIOERC20.deployed()
 
-		const APPROVE_AND_DEPOSIT = await CA.approveKYCAndDeposit('USDx', TEST_ACCOUNT_1, DEPOSIT_AMOUNT, "Token, Inc.")
+		const APPROVE_AND_DEPOSIT = await CA.approveKYCAndDeposit('USDx', TEST_ACCOUNT_2, DEPOSIT_AMOUNT, "Token, Inc.")
 		assert.equal(APPROVE_AND_DEPOSIT['receipt']['status'], "0x1", "Transaction should succeed.")
 
 		const TOKEN_SUPPLY = +(await CA.getTokenSupply('USDx')).toString()
@@ -61,6 +59,129 @@ contract("TokenIOERC20", function(accounts) {
 		const TOKEN_SUPPLY_CONTRACT = +(await token.totalSupply()).toString()
 		assert.equal(TOKEN_SUPPLY_STORAGE, TOKEN_SUPPLY_CONTRACT, "Token supply should be the same value as the storage value")
 
+	})
+
+	it("Should set, get, and delete a uint256 value", async () => {
+		const storage = await TokenIOStorage.deployed()
+		const id = utils.solidityKeccak256(['string'], ['uint256'])
+		const value = 100
+		const SET_TX = await storage.setUint(id, value)
+		assert.equal(SET_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_BEG = +(await storage.getUint(id)).toString()
+		assert.equal(value, GET_VALUE_BEG, "Uint value should be the same value retrieved from storage.")
+
+		const DELETE_TX = await storage.deleteUint(id)
+		assert.equal(DELETE_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_END = +(await storage.getUint(id)).toString()
+		assert.equal(0, GET_VALUE_END, "Uint value should be deleted from storage.")
+	})
+
+	it("Should set, get, and delete a string value", async () => {
+		const storage = await TokenIOStorage.deployed()
+		const id = utils.solidityKeccak256(['string'], ['string'])
+		const value = 'testing'
+		const SET_TX = await storage.setString(id, value)
+		assert.equal(SET_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_BEG = await storage.getString(id)
+		assert.equal(value, GET_VALUE_BEG, "String value should be the same value retrieved from storage.")
+
+		const DELETE_TX = await storage.deleteString(id)
+		assert.equal(DELETE_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_END = await storage.getString(id)
+		assert.equal("", GET_VALUE_END, "String value should be deleted from storage.")
+	})
+
+	it("Should set, get, and delete a address value", async () => {
+		const storage = await TokenIOStorage.deployed()
+		const id = utils.solidityKeccak256(['string'], ['address'])
+		const value = accounts[0]
+		const SET_TX = await storage.setAddress(id, value)
+		assert.equal(SET_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_BEG = await storage.getAddress(id)
+		assert.equal(value, GET_VALUE_BEG, "Address value should be the same value retrieved from storage.")
+
+		const DELETE_TX = await storage.deleteAddress(id)
+		assert.equal(DELETE_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_END = await storage.getAddress(id)
+		assert.equal("0x0000000000000000000000000000000000000000", GET_VALUE_END, "Address value should be deleted from storage.")
+	})
+
+	it("Should set, get, and delete a bytes value", async () => {
+		const storage = await TokenIOStorage.deployed()
+		const id = utils.solidityKeccak256(['string'], ['bytes'])
+		const value = "0x112358132134"
+		const SET_TX = await storage.setBytes(id, value)
+		assert.equal(SET_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_BEG = await storage.getBytes(id)
+		assert.equal(value, GET_VALUE_BEG, "Bytes value should be the same value retrieved from storage.")
+
+		const DELETE_TX = await storage.deleteBytes(id)
+		assert.equal(DELETE_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_END = await storage.getBytes(id)
+		assert.equal("0x", GET_VALUE_END, "Bytes value should be deleted from storage.")
+	})
+
+	it("Should set, get, and delete a bool value", async () => {
+		const storage = await TokenIOStorage.deployed()
+		const id = utils.solidityKeccak256(['string'], ['bool'])
+		const value = true
+		const SET_TX = await storage.setBool(id, value)
+		assert.equal(SET_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_BEG = await storage.getBool(id)
+		assert.equal(value, GET_VALUE_BEG, "Bool value should be the same value retrieved from storage.")
+
+		const DELETE_TX = await storage.deleteBool(id)
+		assert.equal(DELETE_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_END = await storage.getBool(id)
+		assert.equal(false, GET_VALUE_END, "Bool value should be deleted from storage.")
+	})
+
+	it("Should set, get, and delete a int256 value", async () => {
+		const storage = await TokenIOStorage.deployed()
+		const id = utils.solidityKeccak256(['string'], ['int256'])
+		const value = -100
+		const SET_TX = await storage.setInt(id, value)
+		assert.equal(SET_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_BEG = +(await storage.getInt(id)).toString()
+		assert.equal(value, GET_VALUE_BEG, "Int value should be the same value retrieved from storage.")
+
+		const DELETE_TX = await storage.deleteInt(id)
+		assert.equal(DELETE_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_END = +(await storage.getInt(id)).toString()
+		assert.equal(0, GET_VALUE_END, "Int value should be deleted from storage.")
+	})
+
+	it("Should not allow an unauthorized account to set or delete a storage value", async () => {
+		try {
+			const storage = await TokenIOStorage.deployed()
+			const id = utils.solidityKeccak256(['string'], ['int256'])
+			const value = -100
+			const SET_TX = await storage.setInt(id, value, { from: TEST_ACCOUNT_2 })
+			assert.equal(SET_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+			const GET_VALUE_BEG = +(await storage.getInt(id)).toString()
+			assert.equal(value, GET_VALUE_BEG, "Int value should be the same value retrieved from storage.")
+
+			const DELETE_TX = await storage.deleteInt(id, { from: TEST_ACCOUNT_2 })
+			assert.equal(DELETE_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+			const GET_VALUE_END = +(await storage.getInt(id)).toString()
+			assert.equal(0, GET_VALUE_END, "Int value should be deleted from storage.")
+		} catch (error) {
+			assert.equal(error.message.match(RegExp('revert')).length, 1, "Expect transaction to revert due unauthorized account");
+		}
 	})
 
 

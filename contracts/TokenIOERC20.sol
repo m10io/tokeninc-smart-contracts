@@ -52,7 +52,6 @@ contract TokenIOERC20 is Ownable {
         require(lib.setTokenVersion(_version));
         require(lib.setTokenDecimals(_decimals));
         require(lib.setFeeContract(_feeContract));
-        require(lib.setTokenNameSpace(_symbol));
 
         return true;
     }

@@ -33,6 +33,8 @@ contract("TokenIOFX", function(accounts) {
 	const REQUESTER_OFFERED_AMOUNT = 1000000
 	const REQUESTER_DESIRED_AMOUNT = 10000
 
+	const TEST_ACCOUNT_1 = accounts[0]
+
 
 	var TOKEN_A,
 	TOKEN_B,
@@ -66,10 +68,10 @@ contract("TokenIOFX", function(accounts) {
 		const CA = await TokenIOCurrencyAuthority.deployed();
 
 		const APPROVE_REQUESTER = await CA.approveKYC(REQUESTER_WALLET.address, true, "Token, Inc.")
-		const APPROVE_FULFILLER = await CA.approveKYC(accounts[0], true, "Token, Inc.")
+		const APPROVE_FULFILLER = await CA.approveKYC(TEST_ACCOUNT_1, true, "Token, Inc.")
 
 		const DEPOSIT_REQUESTER_AMOUNT_TX = await CA.deposit(TOKEN_B_SYMBOL, REQUESTER_WALLET.address, REQUESTER_OFFERED_AMOUNT, "Token, Inc.")
-		const DEPOSIT_FULFILLER_AMOUNT_TX = await CA.deposit(TOKEN_A_SYMBOL, accounts[0], REQUESTER_DESIRED_AMOUNT, "Token, Inc.")
+		const DEPOSIT_FULFILLER_AMOUNT_TX = await CA.deposit(TOKEN_A_SYMBOL, TEST_ACCOUNT_1, REQUESTER_DESIRED_AMOUNT, "Token, Inc.")
 
 		assert.equal(DEPOSIT_REQUESTER_AMOUNT_TX['receipt']['status'], "0x1", "Transaction should be successful")
 		assert.equal(DEPOSIT_FULFILLER_AMOUNT_TX['receipt']['status'], "0x1", "Transaction should be successful")
@@ -78,7 +80,7 @@ contract("TokenIOFX", function(accounts) {
 		const REQUESTER_BALANCE = +(await TOKEN_B.balanceOf(REQUESTER_WALLET.address)).toString()
 		assert.equal(REQUESTER_BALANCE, REQUESTER_OFFERED_AMOUNT, "Requester balance should equal offered amount")
 
-		const FULFILLER_BALANCE = +(await TOKEN_A.balanceOf(accounts[0])).toString()
+		const FULFILLER_BALANCE = +(await TOKEN_A.balanceOf(TEST_ACCOUNT_1)).toString()
 		assert.equal(FULFILLER_BALANCE, REQUESTER_DESIRED_AMOUNT, "Fulfiller balance should equal the requester desired amount")
 
 	})
@@ -100,8 +102,8 @@ contract("TokenIOFX", function(accounts) {
 		assert.equal(address, REQUESTER_WALLET.address, "Verified Address should be Requester's address")
 		assert.equal(+(await TOKEN_B.balanceOf(REQUESTER_WALLET.address)).toString(), REQUESTER_OFFERED_AMOUNT, "Requester balance should equal offered amount")
 		assert.equal(+(await TOKEN_A.balanceOf(REQUESTER_WALLET.address)).toString(), 0, "Requester balance for token A should be zero")
-		assert.equal(+(await TOKEN_A.balanceOf(accounts[0])).toString(), REQUESTER_DESIRED_AMOUNT, "Fulfiller balance should equal the requester desired amount")
-		assert.equal(+(await TOKEN_B.balanceOf(accounts[0])).toString(), 0, "Fulfiller balance for token B should be zero")
+		assert.equal(+(await TOKEN_A.balanceOf(TEST_ACCOUNT_1)).toString(), REQUESTER_DESIRED_AMOUNT, "Fulfiller balance should equal the requester desired amount")
+		assert.equal(+(await TOKEN_B.balanceOf(TEST_ACCOUNT_1)).toString(), 0, "Fulfiller balance for token B should be zero")
 
 		const SWAP_TX = await FX.swap(
 			REQUESTER_WALLET.address.toLowerCase(),
@@ -114,8 +116,8 @@ contract("TokenIOFX", function(accounts) {
 		assert.equal(SWAP_TX['receipt']['status'], "0x1", "Transaction should succeed")
 		assert.equal(+(await TOKEN_A.balanceOf(REQUESTER_WALLET.address)).toString(), REQUESTER_DESIRED_AMOUNT, "Requester balance should equal desired amount")
 		assert.equal(+(await TOKEN_B.balanceOf(REQUESTER_WALLET.address)).toString(), 0, "Requester balance for token B should be zero after swap")
-		assert.equal(+(await TOKEN_B.balanceOf(accounts[0])).toString(), REQUESTER_OFFERED_AMOUNT, "Requester balance should equal desired amount")
-		assert.equal(+(await TOKEN_A.balanceOf(accounts[0])).toString(), 0, "Fulfiller balance for token A should be zero after swap")
+		assert.equal(+(await TOKEN_B.balanceOf(TEST_ACCOUNT_1)).toString(), REQUESTER_OFFERED_AMOUNT, "Requester balance should equal desired amount")
+		assert.equal(+(await TOKEN_A.balanceOf(TEST_ACCOUNT_1)).toString(), 0, "Fulfiller balance for token A should be zero after swap")
 
 	})
 
