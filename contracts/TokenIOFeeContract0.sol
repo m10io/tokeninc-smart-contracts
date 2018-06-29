@@ -32,7 +32,9 @@ maintain data consistency between contract.
 
 contract TokenIOFeeContract is Ownable {
 
-	/// @dev Set reference to TokenIOLib interface which proxies to TokenIOStorage
+	/**
+	 * @notice This contract uses the TokenIOLib for logic handling
+	 */
 	using TokenIOLib for TokenIOLib.Data;
 	TokenIOLib.Data lib;
 

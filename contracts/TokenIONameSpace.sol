@@ -12,6 +12,18 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTI
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
+
+@title Token Name Space Interface for Token, Inc. Smart Money System
+
+@author Ryan Tate <ryan.michael.tate@gmail.com>, Sean Pollock <seanpollock3344@gmail.com>
+
+@notice Contract uses generalized storage contract, `TokenIOStorage`, for
+upgradeability of interface contract.
+
+@dev In the event that the main contract becomes deprecated, the upgraded contract
+will be set as the owner of this contract, and use this contract's storage to
+maintain data consistency between contract.
+
 */
 
 import "./Ownable.sol";
@@ -20,21 +32,33 @@ import "./TokenIOLib.sol";
 
 contract TokenIONameSpace is Ownable {
 
+    /// @dev Set reference to TokenIOLib interface which proxies to TokenIOStorage
     using TokenIOLib for TokenIOLib.Data;
     TokenIOLib.Data lib;
 
-    constructor(address _storageContract) public {
-        // Set the storage contract for the interface
-        // This contract will be unable to use the storage constract until
-        // contract address is authorized with the storage contract
-        // Once authorized, Use the `init` method to set storage values;
-        lib.Storage = TokenIOStorage(_storageContract);
+    /**
+  	* @notice Constructor method for ERC20 contract
+  	* @param _storageContract     address of TokenIOStorage contract
+  	*/
+  	constructor(address _storageContract) public {
+  			/// @dev Set the storage contract for the interface
+  			/// @dev NOTE: This contract will be unable to use the storage constract until
+  			/// @dev contract address is authorized with the storage contract
+  			/// @dev Once authorized, Use the `setParams` method to set storage values
+  			lib.Storage = TokenIOStorage(_storageContract);
 
-        owner[msg.sender] = true;
-    }
+  			/// @dev set owner to contract initiator
+  			owner[msg.sender] = true;
+  	}
 
-    function getTokenNameSpace(string _symbol) public view returns (address) {
-        return lib.getTokenNameSpace(_symbol);
+    /**
+     * @notice Returns the address of the contract associated with the currency symbol
+     * @notice This method may be deprecated or refactored to allow for multiple interfaces
+     * @param  currency string Currency symbol of the token (e.g. USDx, JYPx, GBPx)
+     * @return bool		         Returns true if successfully called from another contract
+     */
+    function getTokenNameSpace(string currency) public view returns (address) {
+        return lib.getTokenNameSpace(currency);
     }
 
 }

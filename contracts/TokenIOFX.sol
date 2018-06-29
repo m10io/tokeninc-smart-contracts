@@ -1,6 +1,12 @@
 pragma solidity 0.4.24;
 pragma experimental ABIEncoderV2;
 
+
+import "./Ownable.sol";
+import "./TokenIOLib.sol";
+import "./TokenIOStorage.sol";
+
+
 /*
 COPYRIGHT 2018 Token, Inc.
 
@@ -12,31 +18,57 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTI
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
+@title Currency FX Contract for Token, Inc. Smart Money System
+
+@author Ryan Tate <ryan.michael.tate@gmail.com>, Sean Pollock <seanpollock3344@gmail.com>
+
+@notice Contract uses generalized storage contract, `TokenIOStorage`, for
+upgradeability of interface contract.
+
+@dev In the event that the main contract becomes deprecated, the upgraded contract
+will be set as the owner of this contract, and use this contract's storage to
+maintain data consistency between contract.
+
 */
-
-
-
-import "./Ownable.sol";
-import "./TokenIOLib.sol";
-import "./TokenIOStorage.sol";
 
 contract TokenIOFX is Ownable {
 
+  /// @dev Set reference to TokenIOLib interface which proxies to TokenIOStorage
   using TokenIOLib for TokenIOLib.Data;
   TokenIOLib.Data lib;
 
 
-  constructor(address _storageContract) public {
-      // Set the storage contract for the interface
-      // This contract will be unable to use the storage constract until
-      // contract address is authorized with the storage contract
-      // Once authorized, Use the `init` method to set storage values;
-      lib.Storage = TokenIOStorage(_storageContract);
+  /**
+	* @notice Constructor method for ERC20 contract
+	* @param _storageContract     address of TokenIOStorage contract
+	*/
+	constructor(address _storageContract) public {
+			/// @dev Set the storage contract for the interface
+			/// @dev NOTE: This contract will be unable to use the storage constract until
+			/// @dev contract address is authorized with the storage contract
+			/// @dev Once authorized, Use the `setParams` method to set storage values
+			lib.Storage = TokenIOStorage(_storageContract);
 
-      owner[msg.sender] = true;
+			/// @dev set owner to contract initiator
+			owner[msg.sender] = true;
+	}
 
-  }
 
+  /**
+   * @notice Accepts a signed fx request to swap currency pairs at a given amount;
+   * @dev This method can be called directly between peers.
+   * @param  requester address Requester is the orginator of the offer and must
+   * match the signature of the payload submitted by the fulfiller
+   * @param  symbolA    string  Symbol of the currency desired
+   * @param  symbolB    string  Symbol of the currency offered
+   * @param  valueA     uint    Amount of the currency desired
+   * @param  valueB     uint    Amount of the currency offered
+   * @param  sigV       uint8   Ethereum secp256k1 signature V value; used by ecrecover()
+   * @param  sigR       bytes32 Ethereum secp256k1 signature R value; used by ecrecover()
+   * @param  sigS       bytes32 Ethereum secp256k1 signature S value; used by ecrecover()
+   * @param  expiration uint    Expiration of the offer; Offer is good until expired
+   * @return bool               Returns true if successfully called from another contract
+   */
   function swap(
     address requester,
     string symbolA,
