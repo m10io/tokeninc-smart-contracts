@@ -80,9 +80,7 @@ contract TokenIOFX is Ownable {
     bytes32 sigS,
     uint expiration
   ) public returns (bool) {
-
     require(lib.execSwap(requester, symbolA, symbolB, valueA, valueB, sigV, sigR, sigS, expiration));
-
     return true;
   }
 
