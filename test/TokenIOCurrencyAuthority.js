@@ -18,6 +18,7 @@ contract("TokenIOCurrencyAuthority", function(accounts) {
   const DEPOSIT_TO_ACCOUNT = accounts[1];
   const CURRENCY_SYMBOL = USDx.tokenSymbol
   const DEPOSIT_AMOUNT = 1123581321e2
+  const LIMIT_AMOUNT = 5000e2
   const WITHDRAW_AMOUNT = 81321e2
   const FIRM_NAME = firmName;
 
@@ -36,7 +37,7 @@ contract("TokenIOCurrencyAuthority", function(accounts) {
     const CA = await TokenIOCurrencyAuthority.deployed();
     const erc20 = await TokenIOERC20.deployed()
 
-    const { receipt: { status } } = await CA.approveKYCAndDeposit(CURRENCY_SYMBOL, DEPOSIT_TO_ACCOUNT, DEPOSIT_AMOUNT, FIRM_NAME)
+    const { receipt: { status } } = await CA.approveKYCAndDeposit(CURRENCY_SYMBOL, DEPOSIT_TO_ACCOUNT, DEPOSIT_AMOUNT, LIMIT_AMOUNT, FIRM_NAME)
     assert.equal(status, "0x1", "Transaction receipt status should be 0x1 successful.");
 
     const BALANCE = +(await erc20.balanceOf(DEPOSIT_TO_ACCOUNT)).toString()

@@ -111,7 +111,7 @@ contract TokenIOAuthority is Ownable {
      * @param _feeContract [address] of the fee contract
      * @return [bool] true if lib.setMasterFeeContract succeeds
      */
-    function setMasterFeeContract(address _feeContract) public onlyOwner returns (bool) {
+    function setMasterFeeContract(address _feeContract) public onlyOwner returns (bool success) {
         // @notice set master fee contract
         require(lib.setMasterFeeContract(_feeContract));
         return true;

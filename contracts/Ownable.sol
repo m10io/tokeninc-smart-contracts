@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 
 
@@ -24,7 +24,8 @@ functions, this simplifies the implementation of "user permissions".
 contract Ownable {
   mapping(address => bool) public owner;
 
-  event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+  event LogOwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+  event LogAllowOwnership(address indexed allowedAddress);
 
   /**
    * @dev The Ownable constructor sets the original `owner` of the contract to the sender
@@ -48,14 +49,15 @@ contract Ownable {
    */
   function transferOwnership(address newOwner) public onlyOwner {
     require(newOwner != address(0));
-    emit OwnershipTransferred(msg.sender, newOwner);
+    emit LogOwnershipTransferred(msg.sender, newOwner);
     owner[newOwner] = true;
     owner[msg.sender] = false;
   }
 
   /// @dev Allows interface contracts to access contract methods (e.g. Storage contract)
-  function allowOwnership(address allowed) public onlyOwner returns (bool) {
-    owner[allowed] = true;
+  function allowOwnership(address allowedAddress) public onlyOwner returns (bool) {
+    owner[allowedAddress] = true;
+    emit LogAllowOwnership(allowedAddress);
     return true;
   }
 

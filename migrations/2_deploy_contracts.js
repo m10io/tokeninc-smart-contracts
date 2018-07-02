@@ -40,11 +40,12 @@ const deployContracts = async (deployer, accounts) => {
       await storage.allowOwnership(masterFeeContract.address)
       await masterFeeContract.setFeeParams(...Object.keys(FEE_PARAMS).map((p) => { return FEE_PARAMS[p] }))
 
-      /* authority */
+      /* authority contracts */
       const authority = await deployer.deploy(TokenIOAuthority, storage.address)
       await storage.allowOwnership(authority.address)
       const currencyAuthority = await deployer.deploy(TokenIOCurrencyAuthority, storage.address)
       await storage.allowOwnership(currencyAuthority.address)
+      await currencyAuthority.setParams()
 
       /* fx */
       const fx = await deployer.deploy(TokenIOFX, storage.address)

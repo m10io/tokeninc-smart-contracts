@@ -29,7 +29,7 @@ upgradeability of interface contract.
 
 contract TokenIOCurrencyAuthority is Ownable {
 
-    // @dev Set reference to TokenIOLib interface which proxies to TokenIOStorage
+    /// @dev Set reference to TokenIOLib interface which proxies to TokenIOStorage */
     using TokenIOLib for TokenIOLib.Data;
     TokenIOLib.Data lib;
 
@@ -53,7 +53,7 @@ contract TokenIOCurrencyAuthority is Ownable {
      * @param account [address] sepcified account
      * @return [uint] account balance
      */
-    function getTokenBalance(string currency, address account) public view returns (uint) {
+    function getTokenBalance(string currency, address account) public view returns (uint balance) {
       return lib.getTokenBalance(currency, account);
     }
 
@@ -68,10 +68,10 @@ contract TokenIOCurrencyAuthority is Ownable {
     /* @notice Updates account status. false: frozen, true: un-frozen
      * @param account [address] sepcified account
      * @param isAllowed [bool] false: frozen, true: un-frozen
-     * @param issuerFirm [string] name of firm
-     * @return [bool] true if lib.setAccountStatus succeeds
+     * @param issuerFirm Name of the issuer firm with authority on account holder;
+     * @return { "success": "Returns true if successfully called from another contract"}
      */
-    function freezeAccount(address account, bool isAllowed, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool) {
+    function freezeAccount(address account, bool isAllowed, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool success) {
         // @notice updates account status
         // @dev !!! mutates storage state
         require(lib.setAccountStatus(account, isAllowed, issuerFirm));
@@ -81,44 +81,100 @@ contract TokenIOCurrencyAuthority is Ownable {
     /* @notice Sets approval status of specified account
      * @param account [address] sepcified account
      * @param isApproved [bool] false: not-approved, true: approved
-     * @param issuerFirm [string] name of firm
-     * @return [bool] true if lib.setKYCApproval and lib.setAccountStatus succeed
+     * @param issuerFirm Name of the issuer firm with authority on account holder;
+     * @return { "success": "Returns true if successfully called from another contract"}
      */
-    function approveKYC(address account, bool isApproved, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool) {
+    function approveKYC(address account, bool isApproved, uint limit, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool success) {
         // @notice updates kyc approval status
         // @dev !!! mutates storage state
         require(lib.setKYCApproval(account, isApproved, issuerFirm));
         // @notice updates account statuss
         // @dev !!! mutates storage state
         require(lib.setAccountStatus(account, isApproved, issuerFirm));
+        require(lib.setAccountSpendingLimit(account, limit));
+        require(lib.setAccountSpendingPeriod(account, (now + 86400)));
         return true;
     }
 
     /* @notice Approves account and deposits specified amount of given currency
-     * @param currency [string] currency symbol
-     * @param account [address] specified account
-     * @param amount [uint] specified amount
-     * @param issuerFirm [string] name of firm
-     * @return [bool] true if lib.setKYCApproval, lib.setAccountStatus and lib.deposit succeed
+     * @param currency Currency symbol of amount to be deposited;
+     * @param account Ethereum address of account holder;
+     * @param amount Deposit amount for account holder;
+     * @param issuerFirm Name of the issuer firm with authority on account holder;
+     * @return { "success": "Returns true if successfully called from another contract"}
      */
-    function approveKYCAndDeposit(string currency, address account, uint amount, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool) {
-        // @notice updates kyc approval status
-        // @dev !!! mutates storage state
+    function approveKYCAndDeposit(string currency, address account, uint amount, uint limit, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool success) {
+        /// @notice updates kyc approval status
+        /// @dev !!! mutates storage state
         require(lib.setKYCApproval(account, true, issuerFirm));
-        // @notice updates kyc approval status
-        // @dev !!! mutates storage state
+        /// @notice updates kyc approval status
+        /// @dev !!! mutates storage state
         require(lib.setAccountStatus(account, true, issuerFirm));
         require(lib.deposit(currency, account, amount, issuerFirm));
+        require(lib.setAccountSpendingLimit(account, limit));
+        require(lib.setAccountSpendingPeriod(account, (now + 86400)));
         return true;
+    }
+
+    /**
+     * @notice Sets the spending limit for a given account
+     * @param account Ethereum address of account holder;
+     * @param limit Spending limit amount for account;
+     * @param issuerFirm Name of the issuer firm with authority on account holder;
+     * @return { "success": "Returns true if successfully called from another contract"}
+     */
+    function setAccountSpendingLimit(address account, uint limit, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool success) {
+      require(lib.setAccountSpendingLimit(account, limit));
+      return true;
+    }
+
+    /**
+     * @notice Returns the periodic remaining spending amount for an account
+     * @param  account Ethereum address of account holder;
+     * @return {"spendingRemaining" : "Returns the remaining spending amount for the account"}
+     */
+    function getAccountSpendingRemaining(address account) public view returns (uint spendingRemaining) {
+      return lib.getAccountSpendingRemaining(account);
+    }
+
+    /**
+     * @notice Return the spending limit for an account
+     * @param  account Ethereum address of account holder
+     * @return {"spendingLimit" : "Returns the remaining daily spending limit of the account"}
+     */
+    function getAccountSpendingLimit(address account) public view returns (uint spendingLimit) {
+      return lib.getAccountSpendingLimit(account);
+    }
+
+    /**
+     * @notice Set the foreign currency exchange rate to USD in basis points
+     * @param currency The TokenIO currency symbol (e.g. USDx, JPYx, GBPx)
+     * @param bpsRate Basis point rate of foreign currency exchange rate to USD
+     * @param issuerFirm Firm setting the foreign currency exchange
+     * @return { "success": "Returns true if successfully called from another contract"}
+     */
+    function setFxBpsRate(string currency, uint bpsRate, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool success) {
+      require(lib.setFxUSDBPSRate(currency, bpsRate));
+      return true;
+    }
+
+    /**
+     * @notice Return the foreign currency USD exchanged amount
+     * @param currency The TokenIO currency symbol (e.g. USDx, JPYx, GBPx)
+     * @param fxAmount Amount of foreign currency to exchange into USD
+     * @return {"usdAmount" : "Returns the foreign currency amount in USD"}
+     */
+    function getFxUSDAmount(string currency, uint fxAmount) public view returns (uint usdAmount) {
+      return lib.getFxUSDAmount(currency, fxAmount);
     }
 
     /* @notice Updates to new forwarded account
      * @param originalAccount [address]
      * @param updatedAccount [address]
-     * @param issuerFirm [string] name of firm
-     * @return [bool] true if lib.setForwardedAccount succeeds
+     * @param issuerFirm Name of the issuer firm with authority on account holder;
+     * @return { "success": "Returns true if successfully called from another contract"}
      */
-    function approveForwardedAccount(address originalAccount, address updatedAccount, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool) {
+    function approveForwardedAccount(address originalAccount, address updatedAccount, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool success) {
         // @notice updatesa forwarded account
         // @dev !!! mutates storage state
         require(lib.setForwardedAccount(originalAccount, updatedAccount));
@@ -128,10 +184,10 @@ contract TokenIOCurrencyAuthority is Ownable {
     /* @notice Issues a specified account to recipient account of a given currency
      * @param currency [string] currency symbol
      * @param amount [uint] issuance amount
-     * @param issuerFirm [string] name of firm
-     * @return [bool] true if lib.verifyAccount and lib.deposit succeeds
+     * @param issuerFirm Name of the issuer firm with authority on account holder;
+     * @return { "success": "Returns true if successfully called from another contract"}
      */
-    function deposit(string currency, address account, uint amount, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool) {
+    function deposit(string currency, address account, uint amount, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool success) {
         require(lib.verifyAccount(account));
         // @notice depositing tokens to account
         // @dev !!! mutates storage state
@@ -141,12 +197,12 @@ contract TokenIOCurrencyAuthority is Ownable {
 
     /* @notice Withdraws a specified amount of tokens of a given currency
      * @param currency [string] currency symbol
-     * @param account [address] specified account
+     * @param account Ethereum address of account holder;
      * @param amount [uint] issuance amount
-     * @param issuerFirm [string] name of firm
-     * @return [bool] true if lib.verifyAccount and lib.withdraw succeeds
+     * @param issuerFirm Name of the issuer firm with authority on account holder;
+     * @return { "success": "Returns true if successfully called from another contract"}
      */
-    function withdraw(string currency, address account, uint amount, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool) {
+    function withdraw(string currency, address account, uint amount, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool success) {
         require(lib.verifyAccount(account));
         // @notice withdrawing from account
         // @dev !!! mutates storage state
@@ -154,7 +210,10 @@ contract TokenIOCurrencyAuthority is Ownable {
         return true;
     }
 
-
+    /**
+     * @notice Ensure only authorized currency firms and authorities can modify protected methods
+     * @dev authority must be registered to an authorized firm to use protected methods
+     */
     modifier onlyAuthority(string _firmName, address _authority) {
         // @notice throws if authority account is not registred to the given firm
         require(lib.isRegisteredToFirm(_firmName, _authority));

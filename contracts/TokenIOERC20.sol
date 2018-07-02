@@ -51,32 +51,32 @@ contract TokenIOERC20 is Ownable {
     }
 
 
-    /*
-     * @notice Sets erc20 globals and fee paramters
-     * @param _name [string] full token name  'USD by token.io'
-     * @param _symbol [string] symbol name 'USDx'
-     * @param _tla [string] three letter abbreviation 'USD'
-     * @param _version [string] release version 'v0.0.1'
-     * @param _decimals [uint] how many supply uints equal 1 token '2'
-     * @param _feeContract [address] address of fee interface '0x0...'
-     * @return [bool] true if setters pass
+    /**
+     @notice Sets erc20 globals and fee paramters
+     @param _name Full token name  'USD by token.io'
+     @param _symbol Symbol name 'USDx'
+     @param _tla Three letter abbreviation 'USD'
+     @param _version Release version 'v0.0.1'
+     @param _decimals Decimal precision
+     @param _feeContract Address of fee contract
+     @return Returns true if successfully called from another contract
      */
-     // Ex: "USDx by token.io", "USDx", "USD", "0.1.2", 2, 2, 0, 100, 2, "0xca35b7d915458ef540ade6068dfe2f44e8fa733c"
-    function setParams(
+     function setParams(
         string _name,
         string _symbol,
         string _tla,
         string _version,
         uint _decimals,
-        address _feeContract
+        address _feeContract,
+        uint _fxUSDBPSRate
     ) onlyOwner public returns (bool) {
         require(lib.setTokenName(_name));
         require(lib.setTokenSymbol(_symbol));
         require(lib.setTokenTLA(_tla));
         require(lib.setTokenVersion(_version));
-        require(lib.setTokenDecimals(_decimals));
+        require(lib.setTokenDecimals(_symbol, _decimals));
         require(lib.setFeeContract(_feeContract));
-
+        require(lib.setFxUSDBPSRate(_symbol, _fxUSDBPSRate));
         return true;
     }
 
@@ -112,7 +112,7 @@ contract TokenIOERC20 is Ownable {
      * @return [uint]
      */
     function decimals() public view returns (uint) {
-        return lib.getTokenDecimals(address(this));
+        return lib.getTokenDecimals(lib.getTokenSymbol(address(this)));
     }
 
     /* @notice Gets total supply of token
@@ -190,7 +190,7 @@ contract TokenIOERC20 is Ownable {
         require(lib.verifyAccounts(from, to));
         // @notice sends transferFrom through library
         // @dev !!! mutates storage state
-        require(lib.transferFrom(from, to, amount));
+        require(lib.transferFrom(from, to, amount, "0x0"));
         return true;
     }
 

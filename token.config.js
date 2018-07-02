@@ -6,7 +6,8 @@ const USDx = {
   tokenTLA: 'USD', // tokenTLA
   tokenVersion: 'v0.1.3', // tokenVersion
   tokenDecimals: 2, // tokenDecimals
-  feeContract: "0x0" // fee account
+  feeContract: "0x0", // fee account
+  fxBPSRate: 10000
 }
 
 const MXNx = {
@@ -17,7 +18,8 @@ const MXNx = {
   tokenTLA: 'MXN', // tokenTLA
   tokenVersion: 'v0.1.3', // tokenVersion
   tokenDecimals: 2, // tokenDecimals
-  feeContract: "0x0" // fee account
+  feeContract: "0x0", // fee account
+  fxBPSRate: 510
 }
 
 const GBPx = {
@@ -28,7 +30,8 @@ const GBPx = {
   tokenTLA: 'GBP', // tokenTLA
   tokenVersion: 'v0.1.3', // tokenVersion
   tokenDecimals: 2, // tokenDecimals
-  feeContract: "0x0" // fee account
+  feeContract: "0x0", // fee account
+  fxBPSRate: 13200
 }
 
 const JPYx = {
@@ -38,8 +41,9 @@ const JPYx = {
   tokenSymbol: 'JPYx', // tokenSymbol
   tokenTLA: 'JPY', // tokenTLA
   tokenVersion: 'v0.1.3', // tokenVersion
-  tokenDecimals: 2, // tokenDecimals
-  feeContract: "0x0" // fee account
+  tokenDecimals: 0, // tokenDecimals
+  feeContract: "0x0", // fee account
+  fxBPSRate: 90
 }
 
 const EURx = {
@@ -50,7 +54,8 @@ const EURx = {
   tokenTLA: 'EUR', // tokenTLA
   tokenVersion: 'v0.1.3', // tokenVersion
   tokenDecimals: 2, // tokenDecimals
-  feeContract: "0x0" // fee account
+  feeContract: "0x0", // fee account
+  fxBPSRate: 11700
 }
 
 const AUTHORITY_DETAILS = {

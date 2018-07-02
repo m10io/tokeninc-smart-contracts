@@ -1,5 +1,5 @@
-pragma solidity 0.4.24;
-pragma experimental ABIEncoderV2;
+pragma solidity ^0.4.24;
+/* pragma experimental ABIEncoderV2; */
 
 
 import "./Ownable.sol";
@@ -7,7 +7,7 @@ import "./TokenIOLib.sol";
 import "./TokenIOStorage.sol";
 
 
-/*
+/**
 COPYRIGHT 2018 Token, Inc.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
@@ -40,7 +40,7 @@ contract TokenIOFX is Ownable {
 
   /**
 	* @notice Constructor method for ERC20 contract
-	* @param _storageContract     address of TokenIOStorage contract
+	* @param _storageContract Address of TokenIOStorage contract
 	*/
 	constructor(address _storageContract) public {
 			/// @dev Set the storage contract for the interface
@@ -59,15 +59,15 @@ contract TokenIOFX is Ownable {
    * @dev This method can be called directly between peers.
    * @param  requester address Requester is the orginator of the offer and must
    * match the signature of the payload submitted by the fulfiller
-   * @param  symbolA    string  Symbol of the currency desired
-   * @param  symbolB    string  Symbol of the currency offered
-   * @param  valueA     uint    Amount of the currency desired
-   * @param  valueB     uint    Amount of the currency offered
-   * @param  sigV       uint8   Ethereum secp256k1 signature V value; used by ecrecover()
-   * @param  sigR       bytes32 Ethereum secp256k1 signature R value; used by ecrecover()
-   * @param  sigS       bytes32 Ethereum secp256k1 signature S value; used by ecrecover()
-   * @param  expiration uint    Expiration of the offer; Offer is good until expired
-   * @return bool               Returns true if successfully called from another contract
+   * @param  symbolA    Symbol of the currency desired
+   * @param  symbolB    Symbol of the currency offered
+   * @param  valueA     Amount of the currency desired
+   * @param  valueB     Amount of the currency offered
+   * @param  sigV       Ethereum secp256k1 signature V value; used by ecrecover()
+   * @param  sigR       Ethereum secp256k1 signature R value; used by ecrecover()
+   * @param  sigS       Ethereum secp256k1 signature S value; used by ecrecover()
+   * @param  expiration Expiration of the offer; Offer is good until expired
+   * @return {"success" : "Returns true if successfully called from another contract"}
    */
   function swap(
     address requester,
@@ -79,7 +79,7 @@ contract TokenIOFX is Ownable {
     bytes32 sigR,
     bytes32 sigS,
     uint expiration
-  ) public returns (bool) {
+  ) public returns (bool success) {
     require(lib.execSwap(requester, symbolA, symbolB, valueA, valueB, sigV, sigR, sigS, expiration));
     return true;
   }

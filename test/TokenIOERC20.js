@@ -17,7 +17,8 @@ contract("TokenIOERC20", function(accounts) {
     const TEST_ACCOUNT_2 = accounts[1]
     const TEST_ACCOUNT_3 = accounts[2]
 
-    const DEPOSIT_AMOUNT = 10000
+    const DEPOSIT_AMOUNT = 10000e2
+    const LIMIT_AMOUNT = (DEPOSIT_AMOUNT/2)
     const TRANSFER_AMOUNT = (DEPOSIT_AMOUNT/4)
 
     /* PARAMETERS */
@@ -94,16 +95,14 @@ contract("TokenIOERC20", function(accounts) {
     /* PUBLIC FUNCTIONS */
 
     it(`TRANSFER
-        :should supply uints, debiting the sender and crediting the receiver
-        balance1: 100 --> 0
-        balance2:   0 --> 98`, async () => {
+        :should supply uints, debiting the sender and crediting the receiver`, async () => {
         const storage = await TokenIOStorage.deployed()
         const erc20 = await TokenIOERC20.deployed()
         const CA = await TokenIOCurrencyAuthority.deployed();
 
-        const kycReceipt1 = await CA.approveKYC(TEST_ACCOUNT_1, true, "Token, Inc.")
-        const kycReceipt2= await CA.approveKYC(TEST_ACCOUNT_2, true, "Token, Inc.")
-        const kycReceipt3= await CA.approveKYC(TEST_ACCOUNT_3, true, "Token, Inc.")
+        const kycReceipt1 = await CA.approveKYC(TEST_ACCOUNT_1, true, LIMIT_AMOUNT, "Token, Inc.")
+        const kycReceipt2= await CA.approveKYC(TEST_ACCOUNT_2, true, LIMIT_AMOUNT, "Token, Inc.")
+        const kycReceipt3= await CA.approveKYC(TEST_ACCOUNT_3, true, LIMIT_AMOUNT, "Token, Inc.")
 
         await erc20.setParams(...Object.keys(TOKEN_DETAILS[0]).map((param) => { return TOKEN_DETAILS[0][param] }))
         await storage.allowOwnership(erc20.address)
@@ -123,6 +122,13 @@ contract("TokenIOERC20", function(accounts) {
         // calc fees
         const TX_FEES = +(await erc20.calculateFees(TRANSFER_AMOUNT)).toString()
 
+        // check spending limit remaining
+        const SPENDING_LIMIT = +(await CA.getAccountSpendingLimit(TEST_ACCOUNT_1)).toString()
+        const SPENDING_REMAINING = +(await CA.getAccountSpendingRemaining(TEST_ACCOUNT_1)).toString()
+
+        assert.equal(SPENDING_REMAINING, (SPENDING_LIMIT - TRANSFER_AMOUNT),
+            "Remaining spending amount should equal the spending limit minus the transfer amount")
+
         // calculate correct current balance
         assert.equal(balance1b, (DEPOSIT_AMOUNT-TRANSFER_AMOUNT-TX_FEES))
         assert.equal(balance2b, TRANSFER_AMOUNT)
@@ -138,7 +144,6 @@ contract("TokenIOERC20", function(accounts) {
 
         const balance1a = +(await erc20.balanceOf(TEST_ACCOUNT_1))
         const balance1b = +(await erc20.balanceOf(TEST_ACCOUNT_2))
-
 
         const approveReceipt = await erc20.approve(TEST_ACCOUNT_2, balance1a)
         const allowance = +(await erc20.allowance(TEST_ACCOUNT_1, TEST_ACCOUNT_2)).toString()
@@ -164,7 +169,7 @@ contract("TokenIOERC20", function(accounts) {
         const BEG_ALLOWANCE = await erc20.allowance(TEST_ACCOUNT_1, TEST_ACCOUNT_2)
         assert.equal(BEG_ALLOWANCE, TEST_ACT_1_BEG_BALANCE)
 
-        const TRANSFER_FROM_AMOUNT = (TEST_ACT_1_BEG_BALANCE/2);
+        const TRANSFER_FROM_AMOUNT = +(await CA.getAccountSpendingRemaining(TEST_ACCOUNT_1)).toString()
         const transferFromReceipt = await erc20.transferFrom(TEST_ACCOUNT_1, TEST_ACCOUNT_3, TRANSFER_FROM_AMOUNT, { from: TEST_ACCOUNT_2 })
 
         const TX_FEES = +(await erc20.calculateFees(TRANSFER_FROM_AMOUNT)).toString()
@@ -178,4 +183,21 @@ contract("TokenIOERC20", function(accounts) {
         assert.equal(END_ALLOWANCE, (TEST_ACT_1_BEG_BALANCE-TRANSFER_FROM_AMOUNT), "Allowance should be reduced by amount transferred")
 
     })
+
+    it("Should attempt to transfer more than the daily limit for the account and fail", async () => {
+        const erc20 = await TokenIOERC20.deployed()
+        const CA = await TokenIOCurrencyAuthority.deployed();
+
+        const SPENDING_REMAINING = +(await CA.getAccountSpendingRemaining(TEST_ACCOUNT_1)).toString()
+        assert.equal(0, SPENDING_REMAINING, "Expect daily spending limit to be zero")
+
+        try {
+            const TRANSFER_AMOUNT = 100e2
+            const TRANSFER_TX = await erc20.transfer(TEST_ACCOUNT_2, TRANSFER_AMOUNT)
+        } catch (error) {
+            assert.equal(error.message.match(RegExp('revert')).length, 1, "Expect transaction to revert due to excessive spending limit");
+        }
+    })
+
+
 })
