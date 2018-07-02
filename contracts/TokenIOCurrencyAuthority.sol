@@ -61,7 +61,7 @@ contract TokenIOCurrencyAuthority is Ownable {
      * @param currency Currency symbol 'USDx'
      * @return { "supply": "Returns total supply of currency"}
      */
-    function getTokenSupply(string currency) public view returns (uint) {
+    function getTokenSupply(string currency) public view returns (uint supply) {
       return lib.getTokenSupply(currency);
     }
 
