@@ -51,7 +51,7 @@ contract TokenIOCurrencyAuthority is Ownable {
     /* @notice Gets balance of sepcified account for a given currency
      * @param currency [string] currency symbol 'USDx'
      * @param account [address] sepcified account
-     * @return [uint] account balance
+     * @return { "balance": "Returns account balance"}
      */
     function getTokenBalance(string currency, address account) public view returns (uint balance) {
       return lib.getTokenBalance(currency, account);
@@ -59,6 +59,7 @@ contract TokenIOCurrencyAuthority is Ownable {
 
     /* @notice Gets total supply of specified currency
      * @param currency [string] currency symbol 'USDx'
+     * @return { "supply": "Returns total supply of currency"}
      * @return [uint] total supply
      */
     function getTokenSupply(string currency) public view returns (uint) {
