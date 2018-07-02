@@ -30,9 +30,10 @@ contract("TokenIOFX", function(accounts) {
 
 	// Globals
 	const coder = new utils.AbiCoder()
-	const REQUESTER_OFFERED_AMOUNT = 1000000
-	const REQUESTER_DESIRED_AMOUNT = 10000
+	const REQUESTER_OFFERED_AMOUNT = 10000e2
+	const REQUESTER_DESIRED_AMOUNT = 1000e2
 
+	const SPENDING_LIMIT = 10000e2
 	const TEST_ACCOUNT_1 = accounts[0]
 
 
@@ -55,7 +56,7 @@ contract("TokenIOFX", function(accounts) {
 		REQUESTER_WALLET = await Wallet.createRandom()
 	})
 
-	it("Should create a wallet for our requester and provide it with an initial balance", async () => {
+	it("Should ensure token symbols are correctly set", async () => {
 		TOKEN_A_SYMBOL = await TOKEN_A.symbol()
 		TOKEN_B_SYMBOL = await TOKEN_B.symbol()
 
@@ -67,8 +68,8 @@ contract("TokenIOFX", function(accounts) {
 	it("Should Deposit JPYx into REQUESTER_WALLET account", async () => {
 		const CA = await TokenIOCurrencyAuthority.deployed();
 
-		const APPROVE_REQUESTER = await CA.approveKYC(REQUESTER_WALLET.address, true, "Token, Inc.")
-		const APPROVE_FULFILLER = await CA.approveKYC(TEST_ACCOUNT_1, true, "Token, Inc.")
+		const APPROVE_REQUESTER = await CA.approveKYC(REQUESTER_WALLET.address, true, SPENDING_LIMIT, "Token, Inc.")
+		const APPROVE_FULFILLER = await CA.approveKYC(TEST_ACCOUNT_1, true, SPENDING_LIMIT, "Token, Inc.")
 
 		const DEPOSIT_REQUESTER_AMOUNT_TX = await CA.deposit(TOKEN_B_SYMBOL, REQUESTER_WALLET.address, REQUESTER_OFFERED_AMOUNT, "Token, Inc.")
 		const DEPOSIT_FULFILLER_AMOUNT_TX = await CA.deposit(TOKEN_A_SYMBOL, TEST_ACCOUNT_1, REQUESTER_DESIRED_AMOUNT, "Token, Inc.")

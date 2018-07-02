@@ -148,6 +148,7 @@ contract TokenIOCurrencyAuthority is Ownable {
 
     /**
      * @notice Set the foreign currency exchange rate to USD in basis points
+     * @dev NOTE: This value should always be relative to USD pair; e.g. JPY/USD, GBP/USD, etc.
      * @param currency The TokenIO currency symbol (e.g. USDx, JPYx, GBPx)
      * @param bpsRate Basis point rate of foreign currency exchange rate to USD
      * @param issuerFirm Firm setting the foreign currency exchange
