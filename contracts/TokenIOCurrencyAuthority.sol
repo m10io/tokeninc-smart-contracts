@@ -35,7 +35,7 @@ contract TokenIOCurrencyAuthority is Ownable {
 
     /*
      * @notice Constructor method for CurrencyAuthority contract
-     * @param _storageContract [address] of TokenIOStorage contract
+     * @param _storageContract Address of TokenIOStorage contract
      */
     constructor(address _storageContract) public {
         /* @notice Set the storage contract for the interface
@@ -49,8 +49,8 @@ contract TokenIOCurrencyAuthority is Ownable {
     }
 
     /* @notice Gets balance of sepcified account for a given currency
-     * @param currency [string] currency symbol 'USDx'
-     * @param account [address] sepcified account
+     * @param currency Currency symbol 'USDx'
+     * @param account Sepcified account address
      * @return { "balance": "Returns account balance"}
      */
     function getTokenBalance(string currency, address account) public view returns (uint balance) {
@@ -58,17 +58,16 @@ contract TokenIOCurrencyAuthority is Ownable {
     }
 
     /* @notice Gets total supply of specified currency
-     * @param currency [string] currency symbol 'USDx'
+     * @param currency Currency symbol 'USDx'
      * @return { "supply": "Returns total supply of currency"}
-     * @return [uint] total supply
      */
     function getTokenSupply(string currency) public view returns (uint) {
       return lib.getTokenSupply(currency);
     }
 
     /* @notice Updates account status. false: frozen, true: un-frozen
-     * @param account [address] sepcified account
-     * @param isAllowed [bool] false: frozen, true: un-frozen
+     * @param account Sepcified account address
+     * @param isAllowed Frozen status
      * @param issuerFirm Name of the issuer firm with authority on account holder;
      * @return { "success": "Returns true if successfully called from another contract"}
      */
@@ -80,8 +79,8 @@ contract TokenIOCurrencyAuthority is Ownable {
     }
 
     /* @notice Sets approval status of specified account
-     * @param account [address] sepcified account
-     * @param isApproved [bool] false: not-approved, true: approved
+     * @param account Sepcified account address
+     * @param isApproved Frozen status
      * @param issuerFirm Name of the issuer firm with authority on account holder;
      * @return { "success": "Returns true if successfully called from another contract"}
      */
@@ -198,10 +197,10 @@ contract TokenIOCurrencyAuthority is Ownable {
     }
 
     /* @notice Withdraws a specified amount of tokens of a given currency
-     * @param currency [string] currency symbol
-     * @param account Ethereum address of account holder;
-     * @param amount [uint] issuance amount
-     * @param issuerFirm Name of the issuer firm with authority on account holder;
+     * @param currency Currency symbol
+     * @param account Ethereum address of account holder
+     * @param amount Issuance amount
+     * @param issuerFirm Name of the issuer firm with authority on account holder
      * @return { "success": "Returns true if successfully called from another contract"}
      */
     function withdraw(string currency, address account, uint amount, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool success) {
