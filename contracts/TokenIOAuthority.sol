@@ -51,7 +51,7 @@ contract TokenIOAuthority is Ownable {
     /* @notice Registers a firm as authorized true/false
      * @param _firmName [string] name of firm
      * @param _authorized [string] authorization status
-     * @return [bool] true if lib.setRegisteredFirm succeeds
+     * @return {"success" : "Returns true if lib.setRegisteredFirm succeeds"}
      */
     function setRegisteredFirm(string _firmName, bool _authorized) public onlyAuthority(_firmName, msg.sender) returns (bool) {
         // @ notice set firm registration status
@@ -63,7 +63,7 @@ contract TokenIOAuthority is Ownable {
      * @param _firmName [string] name of firm
      * @param _authority [address] of authority account
      * @param _authorized [bool] authorization status
-     * @return [bool] true if lib.setRegisteredAuthority succeeds
+     * @return {"success" : "Returns true if lib.setRegisteredAuthority succeeds"}
      */
     function setRegisteredAuthority(string _firmName, address _authority, bool _authorized) public onlyAuthority(_firmName, msg.sender) returns (bool) {
         // @notice set authority of firm to given status
@@ -73,7 +73,7 @@ contract TokenIOAuthority is Ownable {
 
     /* @notice Gets firm asoociated with an authority address
      * @param _authority [address] of authority account
-     * @return [string] name of firm
+     * @return {"firm" : "name of firm"}
      */
     function getFirmFromAuthority(address _authority) public view returns (string) {
         return lib.getFirmFromAuthority(_authority);
@@ -81,7 +81,7 @@ contract TokenIOAuthority is Ownable {
 
     /* @notice Gets status of firm registration
      * @param _firmname [string] name of firm
-     * @return [bool] true if registered, false if not registered
+     * @return {"status" : "Returns status of firm registration"}
      */
     function isRegisteredFirm(string _firmName) public view returns (bool) {
         // @notice check firm's registration status
@@ -91,7 +91,7 @@ contract TokenIOAuthority is Ownable {
     /* @notice Checks if an authority account is registered to a given firm
      * @param _firmname [string] name of firm
      * @param _authority [address] of authority account
-     * @return [bool] true if authority is registered to firm
+     * @return {"status" : "Returns status of account registration to firm"}
      */
     function isRegisteredToFirm(string _firmName, address _authority) public view returns (bool) {
         // @notice check if registered to firm
@@ -109,7 +109,7 @@ contract TokenIOAuthority is Ownable {
 
     /* @notice Sets contract which specifies fee parameters
      * @param _feeContract [address] of the fee contract
-     * @return [bool] true if lib.setMasterFeeContract succeeds
+     * @return { "status" : "Returns true if lib.setMasterFeeContract succeeds" }
      */
     function setMasterFeeContract(address _feeContract) public onlyOwner returns (bool success) {
         // @notice set master fee contract
