@@ -576,40 +576,57 @@ library TokenIOLib {
     }
   }
 
-
+  /**
+   * @notice Verified KYC and global status for two accounts and return true or throw if either account is not verified
+   * @dev NOTE: This method has an `internal` view
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param accountA Ethereum address of first account holder to verify
+   * @param accountB Ethereum address of second account holder to verify
+   * @return { "verified" : "Returns true if both accounts are successfully verified" }
+   */
   function verifyAccounts(Data storage self, address accountA, address accountB) internal returns (bool verified) {
     require(verifyAccount(self, accountA));
     require(verifyAccount(self, accountB));
     return true;
   }
 
+  /**
+   * @notice Verified KYC and global status for a single account and return true or throw if account is not verified
+   * @dev NOTE: This method has an `internal` view
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param account Ethereum address of account holder to verify
+   * @return { "verified" : "Returns true if account is successfully verified" }
+   */
   function verifyAccount(Data storage self, address account) internal returns (bool verified) {
     require(getKYCApproval(self, account));
     require(getAccountStatus(self, account));
     return true;
   }
 
-  function transfer(Data storage self, address to, uint amount, bytes data) internal returns (bool success) {
+
+  function transfer(Data storage self, string currency, address to, uint amount, bytes data) internal returns (bool success) {
     require(address(to) != 0x0);
 
-    string memory currency = getTokenSymbol(self, address(this));
-    uint fees = calculateFees(self, getFeeContract(self, address(this)), amount);
+    /* string memory currency = getTokenSymbol(self, address(this)); */
+    address feeContract = getFeeContract(self, address(this));
+    uint fees = calculateFees(self, feeContract, amount);
     require(setAccountSpendingAmount(self, msg.sender, getFxUSDAmount(self, currency, amount)));
     require(forceTransfer(self, currency, msg.sender, to, amount, data));
-    require(forceTransfer(self, currency, msg.sender, getFeeContract(self, address(this)), fees, data));
+    require(forceTransfer(self, currency, msg.sender, feeContract, fees, "0x747846656573"));
 
     return true;
   }
 
-  function transferFrom(Data storage self, address from, address to, uint amount, bytes data) internal returns (bool success) {
+  function transferFrom(Data storage self, string currency, address from, address to, uint amount, bytes data) internal returns (bool success) {
     require(address(to) != 0x0);
 
-    uint fees = calculateFees(self, getFeeContract(self, address(this)), amount);
-    string memory currency = getTokenSymbol(self, address(this));
+    address feeContract = getFeeContract(self, address(this));
+    uint fees = calculateFees(self, feeContract, amount);
+    /* string memory currency = getTokenSymbol(self, address(this)); */
 
     require(setAccountSpendingAmount(self, from, getFxUSDAmount(self, currency, amount)));
     require(forceTransfer(self, currency, from, to, amount, data));
-    require(forceTransfer(self, currency, from, getFeeContract(self, address(this)), fees, data));
+    require(forceTransfer(self, currency, from, feeContract, fees, "0x747846656573"));
     require(updateAllowance(self, currency, from, amount));
 
     return true;

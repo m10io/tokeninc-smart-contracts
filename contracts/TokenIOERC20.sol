@@ -175,7 +175,7 @@ contract TokenIOERC20 is Ownable {
       require(lib.verifyAccounts(msg.sender, to));
       // @notice send transfer through library
       // @dev !!! mutates storage state
-      require(lib.transfer(to, amount, "0x0"));
+      require(lib.transfer(lib.getTokenSymbol(address(this)), to, amount, "0x0"));
       return true;
     }
 
@@ -190,7 +190,7 @@ contract TokenIOERC20 is Ownable {
         require(lib.verifyAccounts(from, to));
         // @notice sends transferFrom through library
         // @dev !!! mutates storage state
-        require(lib.transferFrom(from, to, amount, "0x0"));
+        require(lib.transferFrom(lib.getTokenSymbol(address(this)), from, to, amount, "0x0"));
         return true;
     }
 

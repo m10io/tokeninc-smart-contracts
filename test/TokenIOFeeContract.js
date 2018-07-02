@@ -19,17 +19,18 @@ contract("TokenIOFeeContract", function(accounts) {
 	const TEST_ACCOUNT_1 = accounts[0]
 	const TEST_ACCOUNT_2 = accounts[1]
 	const TEST_ACCOUNT_3 = accounts[2]
-	const DEPOSIT_AMOUNT = 2e8 // 1 million USD; 2 decimal representation
-	const TRANSFER_AMOUNT = 1e8
+	const DEPOSIT_AMOUNT = 10000e2 // 1 million USD; 2 decimal representation
+	const TRANSFER_AMOUNT = DEPOSIT_AMOUNT/4
+    const SPENDING_LIMIT = DEPOSIT_AMOUNT/2
 
 	it("Should transfer an amount of funds and send the fees to the fee contract", async () => {
 		const CA = await TokenIOCurrencyAuthority.deployed()
 		const token = await TokenIOERC20.deployed()
 		const feeContract = await TokenIOFeeContract.deployed()
 
-		const APPROVE_ACCOUNT_1_TX = await CA.approveKYC(TEST_ACCOUNT_1, true, "Token, Inc.")
-		const APPROVE_ACCOUNT_2_TX = await CA.approveKYC(TEST_ACCOUNT_2, true, "Token, Inc.")
-		const APPROVE_ACCOUNT_3_TX = await CA.approveKYC(TEST_ACCOUNT_3, true, "Token, Inc.")
+		const APPROVE_ACCOUNT_1_TX = await CA.approveKYC(TEST_ACCOUNT_1, true, SPENDING_LIMIT, "Token, Inc.")
+		const APPROVE_ACCOUNT_2_TX = await CA.approveKYC(TEST_ACCOUNT_2, true, SPENDING_LIMIT, "Token, Inc.")
+		const APPROVE_ACCOUNT_3_TX = await CA.approveKYC(TEST_ACCOUNT_3, true, SPENDING_LIMIT, "Token, Inc.")
 
 		assert.equal(APPROVE_ACCOUNT_1_TX['receipt']['status'], "0x1", "Transaction should succeed.")
 		assert.equal(APPROVE_ACCOUNT_2_TX['receipt']['status'], "0x1", "Transaction should succeed.")

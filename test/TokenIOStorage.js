@@ -23,7 +23,8 @@ contract("TokenIOStorage", function(accounts) {
 
 	const TEST_ACCOUNT_1 = accounts[0]
 	const TEST_ACCOUNT_2 = accounts[1]
-	const DEPOSIT_AMOUNT = 100000
+	const DEPOSIT_AMOUNT = 10000e2
+    const SPENDING_LIMIT = DEPOSIT_AMOUNT/2
 
 	it("Should get the token details directly from the storage contract", async () => {
 		const storage = await TokenIOStorage.deployed()
@@ -45,7 +46,7 @@ contract("TokenIOStorage", function(accounts) {
 		const storage = await TokenIOStorage.deployed()
 		const token = await TokenIOERC20.deployed()
 
-		const APPROVE_AND_DEPOSIT = await CA.approveKYCAndDeposit('USDx', TEST_ACCOUNT_2, DEPOSIT_AMOUNT, "Token, Inc.")
+		const APPROVE_AND_DEPOSIT = await CA.approveKYCAndDeposit('USDx', TEST_ACCOUNT_2, DEPOSIT_AMOUNT, SPENDING_LIMIT, "Token, Inc.")
 		assert.equal(APPROVE_AND_DEPOSIT['receipt']['status'], "0x1", "Transaction should succeed.")
 
 		const TOKEN_SUPPLY = +(await CA.getTokenSupply('USDx')).toString()
