@@ -53,7 +53,7 @@ contract TokenIOAuthority is Ownable {
      * @param _authorized Authorization status
      * @return {"success" : "Returns true if lib.setRegisteredFirm succeeds"}
      */
-    function setRegisteredFirm(string _firmName, bool _authorized) public onlyAuthority(_firmName, msg.sender) returns (bool) {
+    function setRegisteredFirm(string _firmName, bool _authorized) public onlyAuthority(_firmName, msg.sender) returns (bool success) {
         // @ notice set firm registration status
         require(lib.setRegisteredFirm(_firmName, _authorized));
         return true;
@@ -65,7 +65,7 @@ contract TokenIOAuthority is Ownable {
      * @param _authorized Authorization status
      * @return {"success" : "Returns true if lib.setRegisteredAuthority succeeds"}
      */
-    function setRegisteredAuthority(string _firmName, address _authority, bool _authorized) public onlyAuthority(_firmName, msg.sender) returns (bool) {
+    function setRegisteredAuthority(string _firmName, address _authority, bool _authorized) public onlyAuthority(_firmName, msg.sender) returns (bool success) {
         // @notice set authority of firm to given status
         require(lib.setRegisteredAuthority(_firmName, _authority, _authorized));
         return true;
@@ -75,7 +75,7 @@ contract TokenIOAuthority is Ownable {
      * @param _authority Address of authority account
      * @return {"firm" : "name of firm"}
      */
-    function getFirmFromAuthority(address _authority) public view returns (string) {
+    function getFirmFromAuthority(address _authority) public view returns (string firm) {
         return lib.getFirmFromAuthority(_authority);
     }
 
@@ -83,7 +83,7 @@ contract TokenIOAuthority is Ownable {
      * @param _firmname Name of firm
      * @return {"status" : "Returns status of firm registration"}
      */
-    function isRegisteredFirm(string _firmName) public view returns (bool) {
+    function isRegisteredFirm(string _firmName) public view returns (bool status) {
         // @notice check firm's registration status
         return lib.isRegisteredFirm(_firmName);
     }
@@ -93,7 +93,7 @@ contract TokenIOAuthority is Ownable {
      * @param _authority Address of authority account
      * @return {"registered" : "Returns status of account registration to firm"}
      */
-    function isRegisteredToFirm(string _firmName, address _authority) public view returns (bool) {
+    function isRegisteredToFirm(string _firmName, address _authority) public view returns (bool registered) {
         // @notice check if registered to firm
         return lib.isRegisteredToFirm(_firmName, _authority);
     }
@@ -102,7 +102,7 @@ contract TokenIOAuthority is Ownable {
      * @param _authority Address of authority account
      * @return { "registered" : "Returns true if account is a registered authority }
      */
-    function isRegisteredAuthority(address _authority) public view returns (bool) {
+    function isRegisteredAuthority(address _authority) public view returns (bool registered) {
         // @notice check if registered authority
         return lib.isRegisteredAuthority(_authority);
     }
