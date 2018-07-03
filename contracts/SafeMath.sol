@@ -9,8 +9,11 @@ library SafeMath {
 
   /**
   * @dev Multiplies two numbers, throws on overflow.
+  * @param a Multiplier
+  * @param b Multiplicand
+  * @return {"result" : "Returns product"}
   */
-  function mul(uint256 a, uint256 b) internal pure returns (uint256) {
+  function mul(uint256 a, uint256 b) internal pure returns (uint256 result) {
     if (a == 0) {
       return 0;
     }
@@ -21,24 +24,34 @@ library SafeMath {
 
   /**
   * @dev Integer division of two numbers, truncating the quotient.
+  * @param a Dividend
+  * @param b Divisor
+  * @return {"result" : "Returns quotient"}
   */
-  function div(uint256 a, uint256 b) internal pure returns (uint256) {
-    // assert(b > 0); // Solidity automatically throws when dividing by 0
+  function div(uint256 a, uint256 b) internal pure returns (uint256 result) {
+    // @dev assert(b > 0); // Solidity automatically throws when dividing by 0
     uint256 c = a / b;
-    // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+    // @dev assert(a == b * c + a % b); // There is no case in which this doesn't hold
     return c;
   }
 
   /**
-  * @dev Subtracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
+  * @dev Subtracts two numbers.
+  * @param a Subtrahend
+  * @param a Minuend
+  * @return {"result" : "Returns difference"}
   */
   function sub(uint256 a, uint256 b) internal pure returns (uint256) {
+    // @dev throws on overflow (i.e. if subtrahend is greater than minuend)
     assert(b <= a);
     return a - b;
   }
 
   /**
   * @dev Adds two numbers, throws on overflow.
+  * @param a First addend
+  * @param b Second addend
+  * @return {"result" : "Returns summation"}
   */
   function add(uint256 a, uint256 b) internal pure returns (uint256) {
     uint256 c = a + b;

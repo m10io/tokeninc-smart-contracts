@@ -81,71 +81,72 @@ contract TokenIOERC20 is Ownable {
     }
 
     /* @notice Gets name of token
-     * @return [string]
+     * @return {"name" : "Returns name of token"}
      */
-    function name() public view returns (string) {
+    function name() public view returns (string name) {
         return lib.getTokenName(address(this));
     }
 
     /* @notice Gets symbol of token
-     * @return [string]
+     * @return {"symbol" : "Returns symbol of token"}
      */
-    function symbol() public view returns (string) {
+    function symbol() public view returns (string symbol) {
         return lib.getTokenSymbol(address(this));
     }
 
     /* @notice Gets three-letter-abbreviation of token
-     * @return [string]
+     * @return {"tla" : "Returns three-letter-abbreviation of token"}
      */
-    function tla() public view returns (string) {
+    function tla() public view returns (string tla) {
         return lib.getTokenTLA(address(this));
     }
 
     /* @notice Gets version of token
-     * @return [string]
+     * @return {"version" : "Returns version of token"}
      */
-    function version() public view returns (string) {
+    function version() public view returns (string version) {
         return lib.getTokenVersion(address(this));
     }
 
     /* @notice Gets decimals of token
-     * @return [uint]
+     * @return {"decimals" : "Returns number of decimals"}
      */
-    function decimals() public view returns (uint) {
+    function decimals() public view returns (uint decimals) {
         return lib.getTokenDecimals(lib.getTokenSymbol(address(this)));
     }
 
     /* @notice Gets total supply of token
-     * @return [uint]
+     * @return {"supply" : "Returns current total supply of token"}
      */
-    function totalSupply() public view returns (uint) {
+    function totalSupply() public view returns (uint supply) {
       return lib.getTokenSupply(lib.getTokenSymbol(address(this)));
     }
 
     /* @notice Gets allowance that spender has with approver
-     * @param account [address] address of approver
-     * @param spender [address] address of spender
-     * @return [uint] allowance amount
+     * @param account Address of approver
+     * @param spender Address of spender
+     * @return {"allowance" : "Returns allowance of given account and spender"}
      */
-    function allowance(address account, address spender) public view returns (uint) {
+    function allowance(address account, address spender) public view returns (uint allowance) {
       return lib.getTokenAllowance(lib.getTokenSymbol(address(this)), account, spender);
     }
 
     /* @notice Gets balance of account
-     * @param account [address] account address for balance lookup
-     * @return [uint] balance amount
+     * @param account Address for balance lookup
+     * @return {"balance" : "Returns balance amount"}
      */
-    function balanceOf(address account) public view returns (uint) {
+    function balanceOf(address account) public view returns (uint balance) {
       return lib.getTokenBalance(lib.getTokenSymbol(address(this)), account);
     }
 
-     /* @notice Gets fee parameters
-     * @return [tuple] (uint, uint, uint, uint, address)
-     *    bps [uint] fee amount as a mesuare of basis points
-     *    min [uint] minimum fee amount
-     *    max [uint] maximum fee amount
-     *    flat [uint] flat fee amount
-     *    contract [address] fee contract address
+    /* @notice Gets fee parameters
+     * @return {
+     "bps":"Fee amount as a mesuare of basis points",
+     "min":"Minimum fee amount",
+     "max":"Maximum fee amount",
+     "flat":"Flat fee amount",
+     "contract":"Address of fee contract"
+     }
      */
     function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, address feeAccount) {
         return (
@@ -166,11 +167,11 @@ contract TokenIOERC20 is Ownable {
     }
 
     /* @notice transfers 'amount' from msg.sender to a receiving account 'to'
-     * @param to [address] receiving address
-     * @param amount [uint] transfer amount
-     * @return [bool] true if transfer succeeds
+     * @param to Receiving address
+     * @param amount Transfer amount
+     * @return {"success" : "Returns true if transfer succeeds"}
      */
-    function transfer(address to, uint amount) public notDeprecated returns (bool) {
+    function transfer(address to, uint amount) public notDeprecated returns (bool success) {
       // @notice check that receiving account is verified
       require(lib.verifyAccounts(msg.sender, to));
       // @notice send transfer through library
@@ -180,12 +181,12 @@ contract TokenIOERC20 is Ownable {
     }
 
     /* @notice spender transfers from approvers account to the reciving account
-     * @param from [address] approver's address
-     * @param to [address] receiving address
-     * @param amount [uint] transfer amount
-     * @return [bool] true if transfer succeeds
+     * @param from Approver's address
+     * @param to Receiving address
+     * @param amount Transfer amount
+     * @return {"success" : "Returns true if transferFrom succeeds"}
      */
-    function transferFrom(address from, address to, uint amount) public notDeprecated returns (bool) {
+    function transferFrom(address from, address to, uint amount) public notDeprecated returns (bool success) {
         // @ notice checks from and to accounts are verified
         require(lib.verifyAccounts(from, to));
         // @notice sends transferFrom through library
@@ -195,11 +196,11 @@ contract TokenIOERC20 is Ownable {
     }
 
     /* @notice approves spender a given amount
-     * @param spender [address] spender's address
-     * @param amount [uint] allowance amount
-     * @return [bool] true if approval succeeds
+     * @param spender Spender's address
+     * @param amount Allowance amount
+     * @return {"success" : "Returns true if approve succeeds"}
      */
-    function approve(address spender, uint amount) public notDeprecated returns (bool) {
+    function approve(address spender, uint amount) public notDeprecated returns (bool success) {
         // @notice checks approver and spenders accounts are verified
         require(lib.verifyAccounts(msg.sender, spender));
         // @notice sends approve through library
@@ -209,9 +210,9 @@ contract TokenIOERC20 is Ownable {
     }
 
     /* @notice gets currency status of contract
-     * @return [bool] isDeprececated statement true/false
+     * @return {"deprecated" : "Returns true if deprecated, false otherwise"}
      */
-    function deprecateInterface() public onlyOwner returns (bool) {
+    function deprecateInterface() public onlyOwner returns (bool deprecated) {
       require(lib.setDeprecatedContract(address(this)));
       return true;
     }

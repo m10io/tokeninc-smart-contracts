@@ -46,16 +46,21 @@ contract Ownable {
   /**
    * @dev Allows the current owner to transfer control of the contract to a newOwner.
    * @param newOwner The address to transfer ownership to.
+   * @return {"success" : "Returns true when successfully transferred ownership"}
    */
-  function transferOwnership(address newOwner) public onlyOwner {
+  function transferOwnership(address newOwner) public onlyOwner returns (bool success) {
     require(newOwner != address(0));
     emit LogOwnershipTransferred(msg.sender, newOwner);
     owner[newOwner] = true;
     owner[msg.sender] = false;
   }
 
-  /// @dev Allows interface contracts to access contract methods (e.g. Storage contract)
-  function allowOwnership(address allowedAddress) public onlyOwner returns (bool) {
+  /**
+   * @dev Allows interface contracts to access contract methods (e.g. Storage contract)
+   * @param allowedAddress The address of new owner
+   * @return {"success" : "Returns true when successfully allowed ownership"}
+   */
+  function allowOwnership(address allowedAddress) public onlyOwner returns (bool success) {
     owner[allowedAddress] = true;
     emit LogAllowOwnership(allowedAddress);
     return true;
