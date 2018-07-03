@@ -26,7 +26,7 @@ library SafeMath {
   * @dev Integer division of two numbers, truncating the quotient.
   * @param a Dividend
   * @param b Divisor
-  * @return {"resut" : "Returns quotient"}
+  * @return {"result" : "Returns quotient"}
   */
   function div(uint256 a, uint256 b) internal pure returns (uint256 result) {
     // @dev assert(b > 0); // Solidity automatically throws when dividing by 0
@@ -39,7 +39,7 @@ library SafeMath {
   * @dev Subtracts two numbers.
   * @param a Subtrahend
   * @param a Minuend
-  * @return {"resut" : "Returns difference"}
+  * @return {"result" : "Returns difference"}
   */
   function sub(uint256 a, uint256 b) internal pure returns (uint256) {
     // @dev throws on overflow (i.e. if subtrahend is greater than minuend)
@@ -51,7 +51,7 @@ library SafeMath {
   * @dev Adds two numbers, throws on overflow.
   * @param a First addend
   * @param b Second addend
-  * @return {"resut" : "Returns summation"}
+  * @return {"result" : "Returns summation"}
   */
   function add(uint256 a, uint256 b) internal pure returns (uint256) {
     uint256 c = a + b;
