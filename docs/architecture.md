@@ -2,6 +2,20 @@
 ##### *NOTE: This document is for internal use only. Any external sharing, publication, or distribution with third parties and general audiences without permission and authorization by Token, Inc. is strictly Prohibited.*
 ---
 # Token Smart Money
+### Solidity Smart Contract Architecture
+
+
+* [Overview](#overview)
+* [Developer Guide](#developer-guide)
+* [Contract Deployment Process](#contract-deployment-process)
+* [Unit Tests](#unit-tests)
+* [Deployed Contract Addresses](#deployed-contract-addresses)
+* [Interacting with TokenIO Contracts](#interacting-with-tokenio-contracts)
+* [Links to Smart Contract NatSpec Documentation](#links-to-smart-contract-natspec-documentation)
+* [Links to Smart Contract Source Code](#links-to-smart-contract-source-code)
+* [Smart Contract Use Cases](#smart-contract-use-cases)
+* [Audit Report](#audit-report)
+
 
 #### Overview
 
@@ -16,14 +30,14 @@ The TSM system is designed to be peer-to-peer (p2p) and business-to-business (b2
 The TSM Ethereum contracts will be deployed on the Ethereum main network. Consequentially, to interact with the TSM system on Ethereum, there is a cost that is paid to the network maintainers (i.e. transaction miners). This cost can either be paid directly by the participants in the system (institutions and end-users alike) or the cost can be paid through a proxied signing service that Token will charge a fee for.
 
 
+---
+#### Developer Guide
 
-#### Deployment Process
+##### Contract Deployment Process
 
 The deployment process is different for the development and production releases of the smart contracts.
 
-###### Development
-
-When developing the smart contracts, this repository uses `truffle develop` local network to deploy, test, and interact with smart contracts.
+When developing the smart contracts, this repository uses `truffle develop` (`npm run dev`) local network to deploy, test, and interact with smart contracts.
 
 Truffle has a migration process, `truffle migrate`, which deploys contract sequences using a migration script, located in the `/migrations` folder in the root of this repository.
 
@@ -31,38 +45,89 @@ The default script, `/migrations/1_initial_migration.js`, is used internally by 
 
 The remaining scripts in the `/migrations` folder are used to deploy the smart contracts in a sequence. The deployment sequence of these contracts is important!
 
-Running the command: `truffle migrate --reset` will deploy the scripts in the sequence corresponding to the pre-fixed number. However, if you need to deploy a specific smart contract, `truffle migrate -f #` is available<sup id="a1">[1](#f1)</sup> where `#` is the number of the script to be deployed.
+Running the command: `(console)> migrate --reset` will deploy the scripts in the sequence corresponding to the pre-fixed number. However, if you need to deploy a specific smart contract, `(console)> migrate -f #` is available<sup id="a1">[1](#f1)</sup> where `#` is the number of the script to be deployed.
 
-<small>(E.g. `truffle migrate -f 2` is to deploy `2_deploy_contracts.js`)</small>
+<small>(E.g. `(console)> migrate -f 2` is to deploy `2_deploy_contracts.js`)</small>
 
-
-###### Production
-
-#### Ethereum Smart Contract Architecture
-
-```mermaid
-graph BT;
-
-	S[TokenIOStorage.sol]--Universal Storage Layout Wrapped in LibStd methods-->LibStd[TokenIOLib.sol];
-	SafeMath--LibStd uses SafeMath for overflow/underflow-->LibStd
-	LibStd-->Auth[TokenIOAuthority.sol];
-	LibStd-->CA[TokenIOCurrencyAuthority.sol];
-	LibStd-->ERC20[TokenIOERC20.sol];
-	LibStd-->FX[TokenIOFX.sol];
-	LibStd-->Misc[...];
-```
+##### Unit Tests
 
 
-###### Ownable.sol
-###### TokenIOAuthority.sol
-###### TokenIOStorage.sol
-###### TokenIOLib.sol
-###### TokenIOERC20.sol
-###### TokenIONameSpace.sol
-###### TokenIOCurrencyAuthority.sol
-###### TokenIOFX.sol
+In the Truffle console, run all tests:
 
+`(console)> test`
 
+Alternatively, run a single test:
+
+`(console)> test ./test/<name_of_contract>.js`
+
+---
+#### Deployed Contract Addresses
+
+The following contracts have been deployed at the associated addresses corresponding to the Ethereum network deployed on.
+
+*Ropsten:*
+- TokenIOStorage.sol: **0x0**
+- TokenIOAuthority.sol: **0x0**
+- TokenIOCurrencyAuthority.sol: **0x0**
+- TokenIOFeeContract.sol: **0x0**
+- TokenIOFX.sol: **0x0**
+- TokenIOERC20.sol: **0x0**
+
+*TokenIO PoA TestNet:*
+- TokenIOStorage.sol: **0x0**
+- TokenIOAuthority.sol: **0x0**
+- TokenIOCurrencyAuthority.sol: **0x0**
+- TokenIOFeeContract.sol: **0x0**
+- TokenIOFX.sol: **0x0**
+- TokenIOERC20.sol: **0x0**
+
+---
+
+#### Interacting with TokenIO Contracts
+
+TokenIO provides mobile and web client applications to interact with smart contracts.
+
+- [Web Application](http://dc.token.io)
+- Mobile Application ([iOS](https://apple.com) / [Android](https://android.com))
+
+Alternatively, if you're a software developer, TokenIO contracts can be interacted with using the TokenIO JS Smart Contract SDK.
+
+- [TokenIO TSM Ethereum JS SDK](https://github.com/tokenio)
+
+---
+
+#### Links To Smart Contract NatSpec Documentation
+
+- [Ownable](../docs/Ownable.md)
+- [SafeMath](../docs/SafeMath.md)
+- [TokenIOAuthority](../docs/TokenIOAuthority.md)
+- [TokenIOCurrencyAuthority](../docs/TokenIOCurrencyAuthority.md)
+- [TokenIOERC20](../docs/TokenIOERC20.md)
+- [TokenIOFeeContract](../docs/TokenIOFeeContract.md)
+- [TokenIOFX](../docs/TokenIOFX.md)
+- [TokenIOLib](../docs/TokenIOLib.md)
+- [TokenIONameSpace](../docs/TokenIONameSpace.md)
+- [TokenIOStorage](../docs/TokenIOStorage.md)
+
+---
+#### Links to Smart Contract Source Code
+
+- [Ownable](../contracts/Ownable.sol)
+- [SafeMath](../contracts/SafeMath.sol)
+- [TokenIOAuthority](../contracts/TokenIOAuthority.sol)
+- [TokenIOCurrencyAuthority](../contracts/TokenIOCurrencyAuthority.sol)
+- [TokenIOERC20](../contracts/TokenIOERC20.sol)
+- [TokenIOFeeContract](../contracts/TokenIOFeeContract.sol)
+- [TokenIOFX](../contracts/TokenIOFX.sol)
+- [TokenIOLib](../contracts/TokenIOLib.sol)
+- [TokenIONameSpace](../contracts/TokenIONameSpace.sol)
+- [TokenIOStorage](../contracts/TokenIOStorage.sol)
+
+---
+#### Smart Contract Use Cases
+
+---
+#### Audit Report
 
 ---
 ##### Footnotes
