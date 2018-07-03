@@ -58,8 +58,8 @@ Inputs
 
 | **type** | **name** | **description** |
 |-|-|-|
-| *uint256* | a | Minuend |
-| *uint256* | b | undefined |
+| *uint256* | a | Subtrahend |
+| *uint256* | b | Minuend |
 
 Outputs
 

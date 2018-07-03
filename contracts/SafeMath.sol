@@ -38,7 +38,7 @@ library SafeMath {
   /**
   * @notice Subtracts two numbers, throws on underflow.
   * @param a Subtrahend
-  * @param a Minuend
+  * @param b Minuend
   * @return {"result" : "Returns difference"}
   */
   function sub(uint256 a, uint256 b) public pure returns (uint256 result) {
