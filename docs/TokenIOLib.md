@@ -1,14 +1,3 @@
-* [Ownable](#ownable)
-  * [allowOwnership](#function-allowownership)
-  * [owner](#function-owner)
-  * [transferOwnership](#function-transferownership)
-  * [LogOwnershipTransferred](#event-logownershiptransferred)
-  * [LogAllowOwnership](#event-logallowownership)
-* [SafeMath](#safemath)
-  * [add](#function-add)
-  * [div](#function-div)
-  * [sub](#function-sub)
-  * [mul](#function-mul)
 * [TokenIOLib](#tokeniolib)
   * [getFxUSDAmount](#function-getfxusdamount)
   * [getFeeMin](#function-getfeemin)
@@ -86,187 +75,7 @@
   * [LogFxSwap](#event-logfxswap)
   * [LogAccountForward](#event-logaccountforward)
   * [LogNewAuthority](#event-lognewauthority)
-* [TokenIOStorage](#tokeniostorage)
-  * [deleteAddress](#function-deleteaddress)
-  * [getAddress](#function-getaddress)
-  * [deleteBool](#function-deletebool)
-  * [setBytes](#function-setbytes)
-  * [setInt](#function-setint)
-  * [allowOwnership](#function-allowownership)
-  * [deleteBytes](#function-deletebytes)
-  * [owner](#function-owner)
-  * [setString](#function-setstring)
-  * [getBool](#function-getbool)
-  * [deleteInt](#function-deleteint)
-  * [getString](#function-getstring)
-  * [setBool](#function-setbool)
-  * [getUint](#function-getuint)
-  * [getBytes](#function-getbytes)
-  * [setAddress](#function-setaddress)
-  * [getInt](#function-getint)
-  * [setUint](#function-setuint)
-  * [deleteUint](#function-deleteuint)
-  * [transferOwnership](#function-transferownership)
-  * [deleteString](#function-deletestring)
-  * [LogOwnershipTransferred](#event-logownershiptransferred)
-  * [LogAllowOwnership](#event-logallowownership)
 
-# Ownable
-
-
-## *function* allowOwnership
-
-Ownable.allowOwnership(allowedAddress) `nonpayable` `4bbc142c`
-
-> Allows interface contracts to access contract methods (e.g. Storage contract)
-
-Inputs
-
-| **type** | **name** | **description** |
-|-|-|-|
-| *address* | allowedAddress | The address of new owner |
-
-Outputs
-
-| **type** | **name** | **description** |
-|-|-|-|
-| *bool* | success | Returns true when successfully allowed ownership |
-
-## *function* owner
-
-Ownable.owner() `view` `666e1b39`
-
-
-Inputs
-
-| **type** | **name** | **description** |
-|-|-|-|
-| *address* |  | undefined |
-
-
-## *function* transferOwnership
-
-Ownable.transferOwnership(newOwner) `nonpayable` `f2fde38b`
-
-> Allows the current owner to transfer control of the contract to a newOwner.
-
-Inputs
-
-| **type** | **name** | **description** |
-|-|-|-|
-| *address* | newOwner | The address to transfer ownership to. |
-
-Outputs
-
-| **type** | **name** | **description** |
-|-|-|-|
-| *bool* | success | Returns true when successfully transferred ownership |
-
-## *event* LogOwnershipTransferred
-
-Ownable.LogOwnershipTransferred(previousOwner, newOwner) `db6d05f3`
-
-Arguments
-
-| **type** | **name** | **description** |
-|-|-|-|
-| *address* | previousOwner | indexed |
-| *address* | newOwner | indexed |
-
-## *event* LogAllowOwnership
-
-Ownable.LogAllowOwnership(allowedAddress) `5c65eb6a`
-
-Arguments
-
-| **type** | **name** | **description** |
-|-|-|-|
-| *address* | allowedAddress | indexed |
-
-
----
-# SafeMath
-
-
-## *function* add
-
-SafeMath.add(a, b) `pure` `771602f7`
-
-**Adds two numbers, throws on overflow.**
-
-
-Inputs
-
-| **type** | **name** | **description** |
-|-|-|-|
-| *uint256* | a | First addend |
-| *uint256* | b | Second addend |
-
-Outputs
-
-| **type** | **name** | **description** |
-|-|-|-|
-| *uint256* | result | Returns summation |
-
-## *function* div
-
-SafeMath.div(a, b) `pure` `a391c15b`
-
-**Integer division of two numbers, truncating the quotient.**
-
-
-Inputs
-
-| **type** | **name** | **description** |
-|-|-|-|
-| *uint256* | a | Dividend |
-| *uint256* | b | Divisor |
-
-Outputs
-
-| **type** | **name** | **description** |
-|-|-|-|
-| *uint256* | result | Returns quotient |
-
-## *function* sub
-
-SafeMath.sub(a, b) `pure` `b67d77c5`
-
-**Subtracts two numbers, throws on underflow.**
-
-
-Inputs
-
-| **type** | **name** | **description** |
-|-|-|-|
-| *uint256* | a | Minuend |
-| *uint256* | b | undefined |
-
-Outputs
-
-| **type** | **name** | **description** |
-|-|-|-|
-| *uint256* | result | Returns difference |
-
-## *function* mul
-
-SafeMath.mul(a, b) `pure` `c8a4ac9c`
-
-**Multiplies two numbers, throws on overflow.**
-
-
-Inputs
-
-| **type** | **name** | **description** |
-|-|-|-|
-| *uint256* | a | Multiplier |
-| *uint256* | b | Multiplicand |
-
-Outputs
-
-| **type** | **name** | **description** |
-|-|-|-|
-| *uint256* | result | Returns product |
 
 ---
 # TokenIOLib
@@ -299,7 +108,7 @@ TokenIOLib.getFeeMin(self, contractAddress) `view` `1bd0c750`
 
 **Get the minimum fee of the contract address; typically TokenIOFeeContract**
 
-> | This method has an `internal` view 
+> | This method has an `internal` view
 
 Inputs
 
@@ -342,7 +151,7 @@ TokenIOLib.setFeeMax(self, feeMax) `nonpayable` `1fada8e2`
 
 **Set maximum fee for contract interface**
 
-> Transaction fees can be set by the TokenIOFeeContractFees vary by contract interface specified `feeContract`| This method has an `internal` view 
+> Transaction fees can be set by the TokenIOFeeContractFees vary by contract interface specified `feeContract`| This method has an `internal` view
 
 Inputs
 
@@ -363,7 +172,7 @@ TokenIOLib.getFirmFromAuthority(self, authorityAddress) `view` `2268c026`
 
 **Get the issuer firm registered to the authority Ethereum address**
 
-> | Only one firm can be registered per authority 
+> | Only one firm can be registered per authority
 
 Inputs
 
@@ -384,7 +193,7 @@ TokenIOLib.getTokenTLA(self, contractAddress) `view` `26db6a78`
 
 **Get the token Three letter abbreviation (TLA) for Token interfaces**
 
-> This method must be set by the token interface's setParams() method| This method has an `internal` view 
+> This method must be set by the token interface's setParams() method| This method has an `internal` view
 
 Inputs
 
@@ -405,7 +214,7 @@ TokenIOLib.getFeeFlat(self, contractAddress) `view` `2bd67a0c`
 
 **Get the flat fee of the contract address; typically TokenIOFeeContract**
 
-> | This method has an `internal` view 
+> | This method has an `internal` view
 
 Inputs
 
@@ -426,7 +235,7 @@ TokenIOLib.getTokenAllowance(self, currency, account, spender) `view` `2c56a4c2`
 
 **Get the token spender allowance for a given account**
 
-> | This method has an `internal` view 
+> | This method has an `internal` view
 
 Inputs
 
@@ -449,7 +258,7 @@ TokenIOLib.forceTransfer(self, currency, from, to, amount, data) `nonpayable` `3
 
 **Low-level transfer method**
 
-> | This method has an `internal` view | This method does not include fees or approved allowances. | This method is only for authorized interfaces to use (e.g. TokenIOFX) 
+> | This method has an `internal` view | This method does not include fees or approved allowances. | This method is only for authorized interfaces to use (e.g. TokenIOFX)
 
 Inputs
 
@@ -474,7 +283,7 @@ TokenIOLib.getTokenDecimals(self, currency) `view` `32ea20c7`
 
 **Get the token decimals for Token interfaces**
 
-> This method must be set by the token interface's setParams() method| This method has an `internal` view 
+> This method must be set by the token interface's setParams() method| This method has an `internal` view
 
 Inputs
 
@@ -495,7 +304,7 @@ TokenIOLib.isRegisteredAuthority(self, authorityAddress) `view` `345f0f68`
 
 **Return if an authority address is registered**
 
-> | This also checks the status of the registered issuer firm 
+> | This also checks the status of the registered issuer firm
 
 Inputs
 
@@ -516,7 +325,7 @@ TokenIOLib.setAccountStatus(self, account, isAllowed, issuerFirm) `nonpayable` `
 
 **Set the global approval status (true/false) for a given account**
 
-> | This method has an `internal` view | Every account must be permitted to be able to use transfer() & transferFrom() methods | To gain approval for an account, register at https://tsm.token.io/sign-up 
+> | This method has an `internal` view | Every account must be permitted to be able to use transfer() & transferFrom() methods | To gain approval for an account, register at https://tsm.token.io/sign-up
 
 Inputs
 
@@ -560,7 +369,7 @@ TokenIOLib.deposit(self, currency, account, amount, issuerFirm) `nonpayable` `36
 
 **Deposit an amount of currency into the Ethereum account holder**
 
-> | The total supply of the token increases only when new funds are deposited 1:1 | This method should only be called by authorized issuer firms 
+> | The total supply of the token increases only when new funds are deposited 1:1 | This method should only be called by authorized issuer firms
 
 Inputs
 
@@ -584,7 +393,7 @@ TokenIOLib.setTokenName(self, tokenName) `nonpayable` `3fc4e479`
 
 **Set the token name for Token interfaces**
 
-> This method must be set by the token interface's setParams() method| This method has an `internal` view 
+> This method must be set by the token interface's setParams() method| This method has an `internal` view
 
 Inputs
 
@@ -605,7 +414,7 @@ TokenIOLib.verifyAccount(self, account) `nonpayable` `496062fc`
 
 **Verified KYC and global status for a single account and return true or throw if account is not verified**
 
-> | This method has an `internal` view 
+> | This method has an `internal` view
 
 Inputs
 
@@ -626,7 +435,7 @@ TokenIOLib.setMasterFeeContract(self, contractAddress) `nonpayable` `49a8539c`
 
 **Set the master fee contract used as the default fee contract when none is provided**
 
-> | This method has an `internal` view | This value is set in the TokenIOAuthority contract 
+> | This method has an `internal` view | This value is set in the TokenIOAuthority contract
 
 Inputs
 
@@ -647,7 +456,7 @@ TokenIOLib.getTokenFrozenBalance(self, currency, account) `view` `4a63c263`
 
 **Get the frozen token balance for a given account**
 
-> | This method has an `internal` view 
+> | This method has an `internal` view
 
 Inputs
 
@@ -669,7 +478,7 @@ TokenIOLib.getTokenVersion(self, contractAddress) `view` `4af2feaf`
 
 **Get the token version for Token interfaces**
 
-> This method must be set by the token interface's setParams() method| This method has an `internal` view 
+> This method must be set by the token interface's setParams() method| This method has an `internal` view
 
 Inputs
 
@@ -690,7 +499,7 @@ TokenIOLib.verifyAccounts(self, accountA, accountB) `nonpayable` `4dc61327`
 
 **Verified KYC and global status for two accounts and return true or throw if either account is not verified**
 
-> | This method has an `internal` view 
+> | This method has an `internal` view
 
 Inputs
 
@@ -712,7 +521,7 @@ TokenIOLib.getAccountSpendingLimit(self, account) `view` `4e88e91d`
 
 **Get the account spending limit amount**
 
-> | Each account has it's own daily spending limit 
+> | Each account has it's own daily spending limit
 
 Inputs
 
@@ -733,7 +542,7 @@ TokenIOLib.setDeprecatedContract(self, contractAddress) `nonpayable` `4f0dbac1`
 
 **Deprecate a contract interface**
 
-> | This is a low-level method to deprecate a contract interface. | This is useful if the interface needs to be updated or becomes out of date 
+> | This is a low-level method to deprecate a contract interface. | This is useful if the interface needs to be updated or becomes out of date
 
 Inputs
 
@@ -754,7 +563,7 @@ TokenIOLib.approveAllowance(self, spender, amount) `nonpayable` `51911edc`
 
 **Low-level method to set the allowance for a spender**
 
-> | This method is called inside the `approve()` ERC20 method | msg.sender == account holder 
+> | This method is called inside the `approve()` ERC20 method | msg.sender == account holder
 
 Inputs
 
@@ -776,7 +585,7 @@ TokenIOLib.setForwardedAccount(self, originalAccount, forwardedAccount) `nonpaya
 
 **Set a forwarded address for an account.**
 
-> | This method has an `internal` view | Forwarded accounts must be set by an authority in case of account recovery; | Additionally, the original owner can set a forwarded account (e.g. add a new device, spouse, dependent, etc) | All transactions will be logged under the same KYC information as the original account holder; 
+> | This method has an `internal` view | Forwarded accounts must be set by an authority in case of account recovery; | Additionally, the original owner can set a forwarded account (e.g. add a new device, spouse, dependent, etc) | All transactions will be logged under the same KYC information as the original account holder;
 
 Inputs
 
@@ -798,7 +607,7 @@ TokenIOLib.getTokenName(self, contractAddress) `view` `640f855e`
 
 **Get the token name for Token interfaces**
 
-> This method must be set by the token interface's setParams() method| This method has an `internal` view 
+> This method must be set by the token interface's setParams() method| This method has an `internal` view
 
 Inputs
 
@@ -819,7 +628,7 @@ TokenIOLib.calculateFees(self, contractAddress, amount) `view` `657e1746`
 
 **Set the frozen token balance for a given account**
 
-> | This method has an `internal` view 
+> | This method has an `internal` view
 
 Inputs
 
@@ -841,7 +650,7 @@ TokenIOLib.setFeeBPS(self, feeBPS) `nonpayable` `65dcb608`
 
 **Set basis point fee for contract interface**
 
-> Transaction fees can be set by the TokenIOFeeContractFees vary by contract interface specified `feeContract`| This method has an `internal` view 
+> Transaction fees can be set by the TokenIOFeeContractFees vary by contract interface specified `feeContract`| This method has an `internal` view
 
 Inputs
 
@@ -862,7 +671,7 @@ TokenIOLib.getKYCApproval(self, account) `view` `6668d689`
 
 **Get KYC approval status for the account holder**
 
-> | This method has an `internal` view | All forwarded accounts will use the original account's status 
+> | This method has an `internal` view | All forwarded accounts will use the original account's status
 
 Inputs
 
@@ -903,7 +712,7 @@ TokenIOLib.setFeeFlat(self, feeFlat) `nonpayable` `69ff34d0`
 
 **Set flat fee for contract interface**
 
-> Transaction fees can be set by the TokenIOFeeContractFees vary by contract interface specified `feeContract`| This method has an `internal` view 
+> Transaction fees can be set by the TokenIOFeeContractFees vary by contract interface specified `feeContract`| This method has an `internal` view
 
 Inputs
 
@@ -924,7 +733,7 @@ TokenIOLib.getTokenNameSpace(self, currency) `view` `87a10738`
 
 **Get the contract interface address associated with token symbol**
 
-> | This method has an `internal` view 
+> | This method has an `internal` view
 
 Inputs
 
@@ -945,7 +754,7 @@ TokenIOLib.getAccountSpendingRemaining(self, account) `view` `9462fce1`
 
 **Return the amount remaining during the current period**
 
-> | Each account has it's own daily spending limit 
+> | Each account has it's own daily spending limit
 
 Inputs
 
@@ -987,7 +796,7 @@ TokenIOLib.getTokenBalance(self, currency, account) `view` `9d7af4a5`
 
 **Get the token balance for a given account**
 
-> | This method has an `internal` view 
+> | This method has an `internal` view
 
 Inputs
 
@@ -1009,7 +818,7 @@ TokenIOLib.transfer(self, currency, to, amount, data) `nonpayable` `9ed0715b`
 
 **Transfer an amount of currency token from msg.sender account to another specified account**
 
-> This function is called by an interface that is accessible directly to the account holder| This method has an `internal` view | This method uses `forceTransfer()` low-level api 
+> This function is called by an interface that is accessible directly to the account holder| This method has an `internal` view | This method uses `forceTransfer()` low-level api
 
 Inputs
 
@@ -1033,7 +842,7 @@ TokenIOLib.setFxUSDBPSRate(self, currency, bpsRate) `nonpayable` `abe36a55`
 
 **Set the foreign currency exchange rate to USD in basis points**
 
-> | This value should always be relative to USD pair; e.g. JPY/USD, GBP/USD, etc. 
+> | This value should always be relative to USD pair; e.g. JPY/USD, GBP/USD, etc.
 
 Inputs
 
@@ -1055,7 +864,7 @@ TokenIOLib.setTokenSymbol(self, tokenSymbol) `nonpayable` `abec96da`
 
 **Set the token symbol for Token interfaces**
 
-> This method must be set by the token interface's setParams() method| This method has an `internal` view 
+> This method must be set by the token interface's setParams() method| This method has an `internal` view
 
 Inputs
 
@@ -1076,7 +885,7 @@ TokenIOLib.setTokenFrozenBalance(self, currency, account, amount) `view` `acb19f
 
 **Set the frozen token balance for a given account**
 
-> | This method has an `internal` view 
+> | This method has an `internal` view
 
 Inputs
 
@@ -1099,7 +908,7 @@ TokenIOLib.getFeeContract(self, contractAddress) `view` `b4af3078`
 
 **Get the fee contract set for a contract interface**
 
-> | This method has an `internal` view | Custom fee pricing can be set by assigning a fee contract to transactional contract interfaces | If a fee contract has not been set by an interface contract, then the master fee contract will be returned 
+> | This method has an `internal` view | Custom fee pricing can be set by assigning a fee contract to transactional contract interfaces | If a fee contract has not been set by an interface contract, then the master fee contract will be returned
 
 Inputs
 
@@ -1140,7 +949,7 @@ TokenIOLib.setKYCApproval(self, account, isApproved, issuerFirm) `nonpayable` `b
 
 **Set the KYC approval status (true/false) for a given account**
 
-> | This method has an `internal` view | Every account must be KYC'd to be able to use transfer() & transferFrom() methods | To gain approval for an account, register at https://tsm.token.io/sign-up 
+> | This method has an `internal` view | Every account must be KYC'd to be able to use transfer() & transferFrom() methods | To gain approval for an account, register at https://tsm.token.io/sign-up
 
 Inputs
 
@@ -1163,7 +972,7 @@ TokenIOLib.setAccountSpendingPeriod(self, account, period) `nonpayable` `bf7d9b4
 
 **Set the Account Spending Period Limit as UNIX timestamp**
 
-> | Each account has it's own daily spending limit 
+> | Each account has it's own daily spending limit
 
 Inputs
 
@@ -1225,7 +1034,7 @@ TokenIOLib.getTokenSymbol(self, contractAddress) `view` `c90fe5d1`
 
 **Get the token symbol for Token interfaces**
 
-> This method must be set by the token interface's setParams() method| This method has an `internal` view 
+> This method must be set by the token interface's setParams() method| This method has an `internal` view
 
 Inputs
 
@@ -1246,7 +1055,7 @@ TokenIOLib.updateAllowance(self, currency, account, amount) `nonpayable` `cdaa59
 
 **Low-level method to update spender allowance for account**
 
-> | This method is called inside the `transferFrom()` method | msg.sender == spender address 
+> | This method is called inside the `transferFrom()` method | msg.sender == spender address
 
 Inputs
 
@@ -1269,7 +1078,7 @@ TokenIOLib.getAccountStatus(self, account) `view` `d773b936`
 
 **Get global approval status for the account holder**
 
-> | This method has an `internal` view | All forwarded accounts will use the original account's status 
+> | This method has an `internal` view | All forwarded accounts will use the original account's status
 
 Inputs
 
@@ -1290,7 +1099,7 @@ TokenIOLib.setRegisteredFirm(self, issuerFirm, approved) `nonpayable` `d81ab4e8`
 
 **Method for setting a registered issuer firm**
 
-> | Only Token, Inc. and other authorized institutions may set a registered firm | The TokenIOAuthority.sol interface wraps this method | If the registered firm is unapproved; all authorized addresses of that firm will also be unapproved 
+> | Only Token, Inc. and other authorized institutions may set a registered firm | The TokenIOAuthority.sol interface wraps this method | If the registered firm is unapproved; all authorized addresses of that firm will also be unapproved
 
 Inputs
 
@@ -1312,7 +1121,7 @@ TokenIOLib.execSwap(self, requester, symbolA, symbolB, valueA, valueB, sigV, sig
 
 **Accepts a signed fx request to swap currency pairs at a given amount;**
 
-> | This method can be called directly between peers | This method does not take transaction fees from the swap 
+> | This method can be called directly between peers | This method does not take transaction fees from the swap
 
 Inputs
 
@@ -1341,7 +1150,7 @@ TokenIOLib.setTokenNameSpace(self, currency) `nonpayable` `dfd06cad`
 
 **Set contract interface associated with a given TokenIO currency symbol (e.g. USDx)**
 
-> | This should only be called once from a token interface contract; | This method has an `internal` view | This method is experimental and may be deprecated/refactored 
+> | This should only be called once from a token interface contract; | This method has an `internal` view | This method is experimental and may be deprecated/refactored
 
 Inputs
 
@@ -1362,7 +1171,7 @@ TokenIOLib.getAccountSpendingAmount(self, account) `view` `e210824d`
 
 **Return the amount spent during the current period**
 
-> | Each account has it's own daily spending limit 
+> | Each account has it's own daily spending limit
 
 Inputs
 
@@ -1383,7 +1192,7 @@ TokenIOLib.setAccountSpendingLimit(self, account, limit) `nonpayable` `e349be5d`
 
 **Set the account spending limit amount**
 
-> | Each account has it's own daily spending limit 
+> | Each account has it's own daily spending limit
 
 Inputs
 
@@ -1405,7 +1214,7 @@ TokenIOLib.setTokenVersion(self, tokenVersion) `nonpayable` `e9723fc6`
 
 **Set the token version for Token interfaces**
 
-> This method must be set by the token interface's setParams() method| This method has an `internal` view 
+> This method must be set by the token interface's setParams() method| This method has an `internal` view
 
 Inputs
 
@@ -1426,7 +1235,7 @@ TokenIOLib.getMasterFeeContract(self) `view` `eb6baba6`
 
 **Get the master fee contract set via the TokenIOAuthority contract**
 
-> | This method has an `internal` view 
+> | This method has an `internal` view
 
 Inputs
 
@@ -1446,7 +1255,7 @@ TokenIOLib.getFeeMax(self, contractAddress) `view` `ec27e7b2`
 
 **Get the maximum fee of the contract address; typically TokenIOFeeContract**
 
-> | This method has an `internal` view 
+> | This method has an `internal` view
 
 Inputs
 
@@ -1467,7 +1276,7 @@ TokenIOLib.setTokenTLA(self, tokenTLA) `nonpayable` `ed04d5e3`
 
 **Set the token three letter abreviation (TLA) for Token interfaces**
 
-> This method must be set by the token interface's setParams() method| This method has an `internal` view 
+> This method must be set by the token interface's setParams() method| This method has an `internal` view
 
 Inputs
 
@@ -1488,7 +1297,7 @@ TokenIOLib.withdraw(self, currency, account, amount, issuerFirm) `nonpayable` `e
 
 **Withdraw an amount of currency from the Ethereum account holder**
 
-> | The total supply of the token decreases only when new funds are withdrawn 1:1 | This method should only be called by authorized issuer firms 
+> | The total supply of the token decreases only when new funds are withdrawn 1:1 | This method should only be called by authorized issuer firms
 
 Inputs
 
@@ -1512,7 +1321,7 @@ TokenIOLib.setFeeContract(self, feeContract) `nonpayable` `f07f6713`
 
 **Set fee contract for a contract interface**
 
-> feeContract must be a TokenIOFeeContract storage approved contractFees vary by contract interface specified `feeContract`| This method has an `internal` view | This must be called directly from the interface contract 
+> feeContract must be a TokenIOFeeContract storage approved contractFees vary by contract interface specified `feeContract`| This method has an `internal` view | This must be called directly from the interface contract
 
 Inputs
 
@@ -1533,7 +1342,7 @@ TokenIOLib.transferFrom(self, currency, from, to, amount, data) `nonpayable` `f2
 
 **Transfer an amount of currency token from account to another specified account via an approved spender account**
 
-> This function is called by an interface that is accessible directly to the account spender| This method has an `internal` view | Transactions will fail if the spending amount exceeds the daily limit | This method uses `forceTransfer()` low-level api | This method implements ERC20 transferFrom() method with approved spender behavior | msg.sender == spender; `updateAllowance()` reduces approved limit for account spender 
+> This function is called by an interface that is accessible directly to the account spender| This method has an `internal` view | Transactions will fail if the spending amount exceeds the daily limit | This method uses `forceTransfer()` low-level api | This method implements ERC20 transferFrom() method with approved spender behavior | msg.sender == spender; `updateAllowance()` reduces approved limit for account spender
 
 Inputs
 
@@ -1558,7 +1367,7 @@ TokenIOLib.getForwardedAccount(self, account) `view` `f379adad`
 
 **Get the original address for a forwarded account**
 
-> | This method has an `internal` view | Will return the registered account for the given forwarded account 
+> | This method has an `internal` view | Will return the registered account for the given forwarded account
 
 Inputs
 
@@ -1599,7 +1408,7 @@ TokenIOLib.setFeeMin(self, feeMin) `nonpayable` `fc9fcfdf`
 
 **Set minimum fee for contract interface**
 
-> Transaction fees can be set by the TokenIOFeeContractFees vary by contract interface specified `feeContract`| This method has an `internal` view 
+> Transaction fees can be set by the TokenIOFeeContractFees vary by contract interface specified `feeContract`| This method has an `internal` view
 
 Inputs
 
@@ -1641,7 +1450,7 @@ TokenIOLib.setRegisteredAuthority(self, issuerFirm, authorityAddress, approved) 
 
 **Method for setting a registered issuer firm authority**
 
-> | Only Token, Inc. and other approved institutions may set a registered firm | The TokenIOAuthority.sol interface wraps this method | Authority can only be set for a registered issuer firm 
+> | Only Token, Inc. and other approved institutions may set a registered firm | The TokenIOAuthority.sol interface wraps this method | Authority can only be set for a registered issuer firm
 
 Inputs
 
@@ -1664,7 +1473,7 @@ TokenIOLib.getFeeBPS(self, contractAddress) `view` `fd7c95ae`
 
 **Get the basis points fee of the contract address; typically TokenIOFeeContract**
 
-> | This method has an `internal` view 
+> | This method has an `internal` view
 
 Inputs
 
@@ -1685,7 +1494,7 @@ TokenIOLib.getTokenSupply(self, currency) `view` `fdf5c005`
 
 **Get the token supply for a given TokenIO TSM currency symbol (e.g. USDx)**
 
-> | This method has an `internal` view 
+> | This method has an `internal` view
 
 Inputs
 
@@ -1706,7 +1515,7 @@ TokenIOLib.setAccountSpendingAmount(self, account, amount) `nonpayable` `fe9b1bb
 
 **Set the account spending amount for the daily period**
 
-> | Each account has it's own daily spending limit | This transaction will throw if the new spending amount is greater than the limit | This method is called in the `transfer()` and `transferFrom()` methods 
+> | Each account has it's own daily spending limit | This transaction will throw if the new spending amount is greater than the limit | This method is called in the `transfer()` and `transferFrom()` methods
 
 Inputs
 
