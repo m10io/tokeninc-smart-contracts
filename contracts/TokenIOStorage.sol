@@ -69,32 +69,69 @@ contract TokenIOStorage is Ownable {
     }
 
     /// @dev Set Key Methods
-    function setAddress(bytes32 _key, address _value) public onlyOwner returns (bool) {
+
+    /**
+     * @notice Set value for Address associated with bytes32 id key
+     * @param _key Pointer identifier for value in storage
+     * @param _value The Address value to be set
+     * @return { "success" : "Returns true when successfully called from another contract" }
+     */
+    function setAddress(bytes32 _key, address _value) public onlyOwner returns (bool success) {
         addressStorage[_key] = _value;
         return true;
     }
 
-    function setUint(bytes32 _key, uint _value) public onlyOwner returns (bool) {
+    /**
+     * @notice Set value for Uint associated with bytes32 id key
+     * @param _key Pointer identifier for value in storage
+     * @param _value The Uint value to be set
+     * @return { "success" : "Returns true when successfully called from another contract" }
+     */
+    function setUint(bytes32 _key, uint _value) public onlyOwner returns (bool success) {
         uIntStorage[_key] = _value;
         return true;
     }
 
-    function setString(bytes32 _key, string _value) public onlyOwner returns (bool) {
+    /**
+     * @notice Set value for String associated with bytes32 id key
+     * @param _key Pointer identifier for value in storage
+     * @param _value The String value to be set
+     * @return { "success" : "Returns true when successfully called from another contract" }
+     */
+    function setString(bytes32 _key, string _value) public onlyOwner returns (bool success) {
         stringStorage[_key] = _value;
         return true;
     }
 
-    function setBytes(bytes32 _key, bytes _value) public onlyOwner returns (bool) {
+    /**
+     * @notice Set value for Bytes associated with bytes32 id key
+     * @param _key Pointer identifier for value in storage
+     * @param _value The Bytes value to be set
+     * @return { "success" : "Returns true when successfully called from another contract" }
+     */
+    function setBytes(bytes32 _key, bytes _value) public onlyOwner returns (bool success) {
         bytesStorage[_key] = _value;
         return true;
     }
 
-    function setBool(bytes32 _key, bool _value) public onlyOwner returns (bool) {
+    /**
+     * @notice Set value for Bool associated with bytes32 id key
+     * @param _key Pointer identifier for value in storage
+     * @param _value The Bool value to be set
+     * @return { "success" : "Returns true when successfully called from another contract" }
+     */
+    function setBool(bytes32 _key, bool _value) public onlyOwner returns (bool success) {
         boolStorage[_key] = _value;
         return true;
     }
 
-    function setInt(bytes32 _key, int _value) public onlyOwner returns (bool) {
+    /**
+     * @notice Set value for Int associated with bytes32 id key
+     * @param _key Pointer identifier for value in storage
+     * @param _value The Int value to be set
+     * @return { "success" : "Returns true when successfully called from another contract" }
+     */
+    function setInt(bytes32 _key, int _value) public onlyOwner returns (bool success) {
         intStorage[_key] = _value;
         return true;
     }
@@ -102,58 +139,120 @@ contract TokenIOStorage is Ownable {
     /// @dev Delete Key Methods
 		/// @dev delete methods may be unnecessary; Use set methods to set values
 		/// to default?
-    function deleteAddress(bytes32 _key) public onlyOwner returns (bool) {
+
+    /**
+     * @notice Delete value for Address associated with bytes32 id key
+     * @param _key Pointer identifier for value in storage
+     * @return { "success" : "Returns true when successfully called from another contract" }
+     */
+    function deleteAddress(bytes32 _key) public onlyOwner returns (bool success) {
         delete addressStorage[_key];
         return true;
     }
 
-    function deleteUint(bytes32 _key) public onlyOwner returns (bool) {
+    /**
+     * @notice Delete value for Uint associated with bytes32 id key
+     * @param _key Pointer identifier for value in storage
+     * @return { "success" : "Returns true when successfully called from another contract" }
+     */
+    function deleteUint(bytes32 _key) public onlyOwner returns (bool success) {
         delete uIntStorage[_key];
         return true;
     }
 
-    function deleteString(bytes32 _key) public onlyOwner returns (bool) {
+    /**
+     * @notice Delete value for String associated with bytes32 id key
+     * @param _key Pointer identifier for value in storage
+     * @return { "success" : "Returns true when successfully called from another contract" }
+     */
+    function deleteString(bytes32 _key) public onlyOwner returns (bool success) {
         delete stringStorage[_key];
         return true;
     }
 
-    function deleteBytes(bytes32 _key) public onlyOwner returns (bool) {
+    /**
+     * @notice Delete value for Bytes associated with bytes32 id key
+     * @param _key Pointer identifier for value in storage
+     * @return { "success" : "Returns true when successfully called from another contract" }
+     */
+    function deleteBytes(bytes32 _key) public onlyOwner returns (bool success) {
         delete bytesStorage[_key];
         return true;
     }
 
-    function deleteBool(bytes32 _key) public onlyOwner returns (bool) {
+    /**
+     * @notice Delete value for Bool associated with bytes32 id key
+     * @param _key Pointer identifier for value in storage
+     * @return { "success" : "Returns true when successfully called from another contract" }
+     */
+    function deleteBool(bytes32 _key) public onlyOwner returns (bool success) {
         delete boolStorage[_key];
         return true;
     }
 
-    function deleteInt(bytes32 _key) public onlyOwner returns (bool) {
+    /**
+     * @notice Delete value for Int associated with bytes32 id key
+     * @param _key Pointer identifier for value in storage
+     * @return { "success" : "Returns true when successfully called from another contract" }
+     */
+    function deleteInt(bytes32 _key) public onlyOwner returns (bool success) {
         delete intStorage[_key];
         return true;
     }
 
     /// @dev Get Key Methods
-    function getAddress(bytes32 _key) public view returns (address) {
+
+    /**
+     * @notice Get value for Address associated with bytes32 id key
+     * @param _key Pointer identifier for value in storage
+     * @return { "_value" : "Returns the Address value associated with the id key" }
+     */
+    function getAddress(bytes32 _key) public view returns (address _value) {
         return addressStorage[_key];
     }
 
-    function getUint(bytes32 _key) public view returns (uint) {
+    /**
+     * @notice Get value for Uint associated with bytes32 id key
+     * @param _key Pointer identifier for value in storage
+     * @return { "_value" : "Returns the Uint value associated with the id key" }
+     */
+    function getUint(bytes32 _key) public view returns (uint _value) {
         return uIntStorage[_key];
     }
 
-    function getString(bytes32 _key) public view returns (string) {
+    /**
+     * @notice Get value for String associated with bytes32 id key
+     * @param _key Pointer identifier for value in storage
+     * @return { "_value" : "Returns the String value associated with the id key" }
+     */
+    function getString(bytes32 _key) public view returns (string _value) {
         return stringStorage[_key];
     }
 
-    function getBytes(bytes32 _key) public view returns (bytes) {
+    /**
+     * @notice Get value for Bytes associated with bytes32 id key
+     * @param _key Pointer identifier for value in storage
+     * @return { "_value" : "Returns the Bytes value associated with the id key" }
+     */
+    function getBytes(bytes32 _key) public view returns (bytes _value) {
         return bytesStorage[_key];
     }
 
-    function getBool(bytes32 _key) public view returns (bool) {
+    /**
+     * @notice Get value for Bool associated with bytes32 id key
+     * @param _key Pointer identifier for value in storage
+     * @return { "_value" : "Returns the Bool value associated with the id key" }
+     */
+    function getBool(bytes32 _key) public view returns (bool _value) {
         return boolStorage[_key];
     }
 
-    function getInt(bytes32 _key) public view returns (int) {
+    /**
+     * @notice Get value for Int associated with bytes32 id key
+     * @param _key Pointer identifier for value in storage
+     * @return { "_value" : "Returns the Int value associated with the id key" }
+     */
+    function getInt(bytes32 _key) public view returns (int _value) {
         return intStorage[_key];
     }
 

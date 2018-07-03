@@ -204,7 +204,7 @@ contract TokenIOERC20 is Ownable {
         require(lib.verifyAccounts(msg.sender, spender));
         // @notice sends approve through library
         // @dev !!! mtuates storage states
-        require(lib.approve(spender, amount));
+        require(lib.approveAllowance(spender, amount));
         return true;
     }
 

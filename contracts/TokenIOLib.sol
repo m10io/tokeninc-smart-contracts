@@ -604,34 +604,82 @@ library TokenIOLib {
   }
 
 
+  /**
+   * @notice Transfer an amount of currency token from msg.sender account to another specified account
+   * @dev This function is called by an interface that is accessible directly to the account holder
+   * @dev NOTE: This method has an `internal` view
+   * @dev NOTE: This method uses `forceTransfer()` low-level api
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param currency TokenIO TSM currency symbol (e.g. USDx)
+   * @param to Ethereum address of account to send currency amount to
+   * @param amount Value of currency to transfer
+   * @param data Arbitrary bytes data to include with the transaction
+   * @return { "success" : "Return true if successfully called from another contract" }
+   */
   function transfer(Data storage self, string currency, address to, uint amount, bytes data) internal returns (bool success) {
     require(address(to) != 0x0);
 
-    /* string memory currency = getTokenSymbol(self, address(this)); */
     address feeContract = getFeeContract(self, address(this));
     uint fees = calculateFees(self, feeContract, amount);
+
     require(setAccountSpendingAmount(self, msg.sender, getFxUSDAmount(self, currency, amount)));
     require(forceTransfer(self, currency, msg.sender, to, amount, data));
-    require(forceTransfer(self, currency, msg.sender, feeContract, fees, "0x747846656573"));
+    /// @dev "0x547846656573" == "TxFees"
+    require(forceTransfer(self, currency, msg.sender, feeContract, fees, "0x547846656573"));
 
     return true;
   }
 
+  /**
+   * @notice Transfer an amount of currency token from account to another specified account via an approved spender account
+   * @dev This function is called by an interface that is accessible directly to the account spender
+   * @dev NOTE: This method has an `internal` view
+   * @dev NOTE: Transactions will fail if the spending amount exceeds the daily limit
+   * @dev NOTE: This method uses `forceTransfer()` low-level api
+   * @dev NOTE: This method implements ERC20 transferFrom() method with approved spender behavior
+   * @dev NOTE: msg.sender == spender; `updateAllowance()` reduces approved limit for account spender
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param currency TokenIO TSM currency symbol (e.g. USDx)
+   * @param from Ethereum address of account to send currency amount from
+   * @param to Ethereum address of account to send currency amount to
+   * @param amount Value of currency to transfer
+   * @param data Arbitrary bytes data to include with the transaction
+   * @return { "success" : "Return true if successfully called from another contract" }
+   */
   function transferFrom(Data storage self, string currency, address from, address to, uint amount, bytes data) internal returns (bool success) {
     require(address(to) != 0x0);
 
     address feeContract = getFeeContract(self, address(this));
     uint fees = calculateFees(self, feeContract, amount);
-    /* string memory currency = getTokenSymbol(self, address(this)); */
 
+    /// @dev NOTE: This transaction will fail if the spending amount exceeds the daily limit
     require(setAccountSpendingAmount(self, from, getFxUSDAmount(self, currency, amount)));
+
+    /// @dev Attempt to transfer the amount
     require(forceTransfer(self, currency, from, to, amount, data));
-    require(forceTransfer(self, currency, from, feeContract, fees, "0x747846656573"));
+
+    /// @dev "0x547846656573" == "TxFees"
+    require(forceTransfer(self, currency, from, feeContract, fees, "0x547846656573"));
+
+    /// @dev Attempt to update the spender allowance
     require(updateAllowance(self, currency, from, amount));
 
     return true;
   }
 
+  /**
+   * @notice Low-level transfer method
+   * @dev NOTE: This method has an `internal` view
+   * @dev NOTE: This method does not include fees or approved allowances.
+   * @dev NOTE: This method is only for authorized interfaces to use (e.g. TokenIOFX)
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param currency TokenIO TSM currency symbol (e.g. USDx)
+   * @param from Ethereum address of account to send currency amount from
+   * @param to Ethereum address of account to send currency amount to
+   * @param amount Value of currency to transfer
+   * @param data Arbitrary bytes data to include with the transaction
+   * @return { "success" : "Return true if successfully called from another contract" }
+   */
   function forceTransfer(Data storage self, string currency, address from, address to, uint amount, bytes data) internal returns (bool success) {
     require(address(to) != 0x0);
 
@@ -646,13 +694,32 @@ library TokenIOLib {
     return true;
   }
 
+  /**
+   * @notice Low-level method to update spender allowance for account
+   * @dev NOTE: This method is called inside the `transferFrom()` method
+   * @dev NOTE: msg.sender == spender address
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param currency TokenIO TSM currency symbol (e.g. USDx)
+   * @param account Ethereum address of account holder
+   * @param amount Value to reduce allowance by (i.e. the amount spent)
+   * @return { "success" : "Return true if successfully called from another contract" }
+   */
   function updateAllowance(Data storage self, string currency, address account, uint amount) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('token.allowance', currency, getForwardedAccount(self, account), getForwardedAccount(self, msg.sender)));
     require(self.Storage.setUint(id, self.Storage.getUint(id).sub(amount)));
     return true;
   }
 
-  function approve(Data storage self, address spender, uint amount) internal returns (bool success) {
+  /**
+   * @notice Low-level method to set the allowance for a spender
+   * @dev NOTE: This method is called inside the `approve()` ERC20 method
+   * @dev NOTE: msg.sender == account holder
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param spender Ethereum address of account spender
+   * @param amount Value to set for spender allowance
+   * @return { "success" : "Return true if successfully called from another contract" }
+   */
+  function approveAllowance(Data storage self, address spender, uint amount) internal returns (bool success) {
     string memory currency = getTokenSymbol(self, address(this));
 
     bytes32 id_a = keccak256(abi.encodePacked('token.allowance', currency, getForwardedAccount(self, msg.sender), getForwardedAccount(self, spender)));
@@ -667,6 +734,17 @@ library TokenIOLib {
     return true;
   }
 
+  /**
+   * @notice Deposit an amount of currency into the Ethereum account holder
+   * @dev NOTE: The total supply of the token increases only when new funds are deposited 1:1
+   * @dev NOTE: This method should only be called by authorized issuer firms
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param currency TokenIO TSM currency symbol (e.g. USDx)
+   * @param account Ethereum address of account holder to deposit funds for
+   * @param amount Value of currency to deposit for account
+   * @param issuerFirm Name of the issuing firm authorizing the deposit
+   * @return { "success" : "Return true if successfully called from another contract" }
+   */
   function deposit(Data storage self, string currency, address account, uint amount, string issuerFirm) internal returns (bool success) {
     bytes32 id_a = keccak256(abi.encodePacked('token.balance', currency, getForwardedAccount(self, account)));
     bytes32 id_b = keccak256(abi.encodePacked('token.issued', currency, issuerFirm));
@@ -683,6 +761,17 @@ library TokenIOLib {
 
   }
 
+  /**
+   * @notice Withdraw an amount of currency from the Ethereum account holder
+   * @dev NOTE: The total supply of the token decreases only when new funds are withdrawn 1:1
+   * @dev NOTE: This method should only be called by authorized issuer firms
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param currency TokenIO TSM currency symbol (e.g. USDx)
+   * @param account Ethereum address of account holder to deposit funds for
+   * @param amount Value of currency to withdraw for account
+   * @param issuerFirm Name of the issuing firm authorizing the withdraw
+   * @return { "success" : "Return true if successfully called from another contract" }
+   */
   function withdraw(Data storage self, string currency, address account, uint amount, string issuerFirm) internal returns (bool success) {
     bytes32 id_a = keccak256(abi.encodePacked('token.balance', currency, getForwardedAccount(self, account)));
     bytes32 id_b = keccak256(abi.encodePacked('token.issued', currency, issuerFirm)); // possible for issuer to go negative
@@ -698,54 +787,131 @@ library TokenIOLib {
 
   }
 
-  function setRegisteredFirm(Data storage self, string _firmName, bool _authorized) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('registered.firm', _firmName));
-    require(self.Storage.setBool(id, _authorized));
+  /**
+   * @notice Method for setting a registered issuer firm
+   * @dev NOTE: Only Token, Inc. and other authorized institutions may set a registered firm
+   * @dev NOTE: The TokenIOAuthority.sol interface wraps this method
+   * @dev NOTE: If the registered firm is unapproved; all authorized addresses of that firm will also be unapproved
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param issuerFirm Name of the firm to be registered
+   * @param approved Approval status to set for the firm (true/false)
+   * @return { "success" : "Return true if successfully called from another contract" }
+   */
+  function setRegisteredFirm(Data storage self, string issuerFirm, bool approved) internal returns (bool success) {
+    bytes32 id = keccak256(abi.encodePacked('registered.firm', issuerFirm));
+    require(self.Storage.setBool(id, approved));
     return true;
   }
 
-  function setRegisteredAuthority(Data storage self, string _firmName, address _authority, bool _authorized) internal returns (bool success) {
-    require(isRegisteredFirm(self, _firmName));
-    bytes32 id_a = keccak256(abi.encodePacked('registered.authority', _firmName, _authority));
-    bytes32 id_b = keccak256(abi.encodePacked('registered.authority.firm', _authority));
+  /**
+   * @notice Method for setting a registered issuer firm authority
+   * @dev NOTE: Only Token, Inc. and other approved institutions may set a registered firm
+   * @dev NOTE: The TokenIOAuthority.sol interface wraps this method
+   * @dev NOTE: Authority can only be set for a registered issuer firm
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param issuerFirm Name of the firm to be registered to authority
+   * @param authorityAddress Ethereum address of the firm authority to be approved
+   * @param approved Approval status to set for the firm authority (true/false)
+   * @return { "success" : "Return true if successfully called from another contract" }
+   */
+  function setRegisteredAuthority(Data storage self, string issuerFirm, address authorityAddress, bool approved) internal returns (bool success) {
+    require(isRegisteredFirm(self, issuerFirm));
+    bytes32 id_a = keccak256(abi.encodePacked('registered.authority', issuerFirm, authorityAddress));
+    bytes32 id_b = keccak256(abi.encodePacked('registered.authority.firm', authorityAddress));
 
-    require(self.Storage.setBool(id_a, _authorized));
-    require(self.Storage.setString(id_b, _firmName));
+    require(self.Storage.setBool(id_a, approved));
+    require(self.Storage.setString(id_b, issuerFirm));
 
     return true;
   }
 
-  function getFirmFromAuthority(Data storage self, address _authority) internal view returns (string) {
-    bytes32 id = keccak256(abi.encodePacked('registered.authority.firm', getForwardedAccount(self, _authority)));
+  /**
+   * @notice Get the issuer firm registered to the authority Ethereum address
+   * @dev NOTE: Only one firm can be registered per authority
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param authorityAddress Ethereum address of the firm authority to query
+   * @return { "issuerFirm" : "Name of the firm registered to authority" }
+   */
+  function getFirmFromAuthority(Data storage self, address authorityAddress) internal view returns (string issuerFirm) {
+    bytes32 id = keccak256(abi.encodePacked('registered.authority.firm', getForwardedAccount(self, authorityAddress)));
     return self.Storage.getString(id);
   }
 
-  function isRegisteredFirm(Data storage self, string _firmName) internal view returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('registered.firm', _firmName));
+  /**
+   * @notice Return the boolean (true/false) registration status for an issuer firm
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param issuerFirm Name of the issuer firm
+   * @return { "registered" : "Return if the issuer firm has been registered" }
+   */
+  function isRegisteredFirm(Data storage self, string issuerFirm) internal view returns (bool registered) {
+    bytes32 id = keccak256(abi.encodePacked('registered.firm', issuerFirm));
     return self.Storage.getBool(id);
   }
 
-  function isRegisteredToFirm(Data storage self, string _firmName, address _authority) internal view returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('registered.authority', _firmName, getForwardedAccount(self, _authority)));
+  /**
+   * @notice Return the boolean (true/false) status if an authority is registered to an issuer firm
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param issuerFirm Name of the issuer firm
+   * @param authorityAddress Ethereum address of the firm authority to query
+   * @return { "registered" : "Return if the authority is registered with the issuer firm" }
+   */
+  function isRegisteredToFirm(Data storage self, string issuerFirm, address authorityAddress) internal view returns (bool registered) {
+    bytes32 id = keccak256(abi.encodePacked('registered.authority', issuerFirm, getForwardedAccount(self, authorityAddress)));
     return self.Storage.getBool(id);
   }
 
-  function isRegisteredAuthority(Data storage self, address _authority) internal view returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('registered.authority', getFirmFromAuthority(self, getForwardedAccount(self, _authority)), getForwardedAccount(self, _authority)));
+  /**
+   * @notice Return if an authority address is registered
+   * @dev NOTE: This also checks the status of the registered issuer firm
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param authorityAddress Ethereum address of the firm authority to query
+   * @return { "registered" : "Return if the authority is registered" }
+   */
+  function isRegisteredAuthority(Data storage self, address authorityAddress) internal view returns (bool registered) {
+    bytes32 id = keccak256(abi.encodePacked('registered.authority', getFirmFromAuthority(self, getForwardedAccount(self, authorityAddress)), getForwardedAccount(self, authorityAddress)));
     return self.Storage.getBool(id);
   }
 
-  function getTxStatus(Data storage self, bytes32 _txHash) internal view returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('tx.status', _txHash));
+  /**
+   * @notice Return boolean transaction status if the transaction has been used
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param txHash keccak256 ABI tightly packed encoded hash digest of tx params
+   * @return {"txStatus": "Returns true if the tx hash has already been set using `setTxStatus()` method"}
+   */
+  function getTxStatus(Data storage self, bytes32 txHash) internal view returns (bool txStatus) {
+    bytes32 id = keccak256(abi.encodePacked('tx.status', txHash));
     return self.Storage.getBool(id);
   }
 
-  function setTxStatus(Data storage self, bytes32 _txHash) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('tx.status', _txHash));
+  /**
+   * @notice Set transaction status if the transaction has been used
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param txHash keccak256 ABI tightly packed encoded hash digest of tx params
+   * @return { "success" : "Return true if successfully called from another contract" }
+   */
+  function setTxStatus(Data storage self, bytes32 txHash) internal returns (bool success) {
+    bytes32 id = keccak256(abi.encodePacked('tx.status', txHash));
     require(self.Storage.setBool(id, true));
     return true;
   }
 
+  /**
+   * @notice Accepts a signed fx request to swap currency pairs at a given amount;
+   * @dev NOTE: This method can be called directly between peers
+   * @dev NOTE: This method does not take transaction fees from the swap
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param  requester address Requester is the orginator of the offer and must
+   * match the signature of the payload submitted by the fulfiller
+   * @param  symbolA    Symbol of the currency desired
+   * @param  symbolB    Symbol of the currency offered
+   * @param  valueA     Amount of the currency desired
+   * @param  valueB     Amount of the currency offered
+   * @param  sigV       Ethereum secp256k1 signature V value; used by ecrecover()
+   * @param  sigR       Ethereum secp256k1 signature R value; used by ecrecover()
+   * @param  sigS       Ethereum secp256k1 signature S value; used by ecrecover()
+   * @param  expiration Expiration of the offer; Offer is good until expired
+   * @return {"success" : "Returns true if successfully called from another contract"}
+   */
   function execSwap(
     Data storage self,
     address requester,
@@ -762,20 +928,20 @@ library TokenIOLib {
     bytes32 fxTxHash = keccak256(abi.encodePacked(requester, symbolA, symbolB, valueA, valueB, expiration));
     require(verifyAccounts(self, msg.sender, requester));
 
-    // Ensure transaction has not yet been used;
+    /// @dev Ensure transaction has not yet been used;
     require(!getTxStatus(self, fxTxHash));
 
-    // Immediately set this transaction to be confirmed before updating any params;
+    /// @dev Immediately set this transaction to be confirmed before updating any params;
     require(setTxStatus(self, fxTxHash));
 
-    // Ensure contract has not yet expired;
+    /// @dev Ensure contract has not yet expired;
     require(expiration >= now);
 
-    // Recover the address of the signature from the hashed digest;
-    // Ensure it equals the requester's address
+    /// @dev Recover the address of the signature from the hashed digest;
+    /// @dev Ensure it equals the requester's address
     require(ecrecover(fxTxHash, sigV, sigR, sigS) == requester);
 
-    // Transfer funds from each account to another.
+    /// @dev Transfer funds from each account to another.
     require(forceTransfer(self, symbolA, msg.sender, requester, valueA, "0x0"));
     require(forceTransfer(self, symbolB, requester, msg.sender, valueB, "0x0"));
 
@@ -784,23 +950,38 @@ library TokenIOLib {
     return true;
   }
 
+  /**
+   * @notice Deprecate a contract interface
+   * @dev NOTE: This is a low-level method to deprecate a contract interface.
+   * @dev NOTE: This is useful if the interface needs to be updated or becomes out of date
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param contractAddress Ethereum address of the contract interface
+   * @return {"success" : "Returns true if successfully called from another contract"}
+   */
   function setDeprecatedContract(Data storage self, address contractAddress) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('depcrecated', contractAddress));
     require(self.Storage.setBool(id, true));
     return true;
   }
 
-  function isContractDeprecated(Data storage self, address contractAddress) internal view returns (bool success) {
+  /**
+   * @notice Return the deprecation status of a contract
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param contractAddress Ethereum address of the contract interface
+   * @return {"status" : "Return deprecation status (true/false) of the contract interface"}
+   */
+  function isContractDeprecated(Data storage self, address contractAddress) internal view returns (bool status) {
     bytes32 id = keccak256(abi.encodePacked('depcrecated', contractAddress));
     return self.Storage.getBool(id);
   }
 
   /**
-   * @notice Set the Universal Spending Period Limit as UNIX timestamp for GMT Period
-   * @dev This period is the same for all accounts and is updated monthly.
-   * @param self Internal reference to library
-   * @param period Update spending period for TSM system
-   * @return {"success" : "Returns true is successfully called from interface contract"}
+   * @notice Set the Account Spending Period Limit as UNIX timestamp
+   * @dev NOTE: Each account has it's own daily spending limit
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param account Ethereum address of the account holder
+   * @param period Unix timestamp of the spending period
+   * @return {"success" : "Returns true is successfully called from a contract"}
    */
   function setAccountSpendingPeriod(Data storage self, address account, uint period) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('limit.spending.period', account));
@@ -808,66 +989,151 @@ library TokenIOLib {
     return true;
   }
 
+  /**
+   * @notice Get the Account Spending Period Limit as UNIX timestamp
+   * @dev NOTE: Each account has it's own daily spending limit
+   * @dev NOTE: If the current spending period has expired, it will be set upon next `transfer()`
+   * or `transferFrom()` request
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param account Ethereum address of the account holder
+   * @return {"period" : "Returns Unix timestamp of the current spending period"}
+   */
   function getAccountSpendingPeriod(Data storage self, address account) internal view returns (uint period) {
     bytes32 id = keccak256(abi.encodePacked('limit.spending.period', account));
     return self.Storage.getUint(id);
   }
 
+  /**
+   * @notice Set the account spending limit amount
+   * @dev NOTE: Each account has it's own daily spending limit
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param account Ethereum address of the account holder
+   * @param limit Spending limit amount
+   * @return {"success" : "Returns true is successfully called from a contract"}
+   */
   function setAccountSpendingLimit(Data storage self, address account, uint limit) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('account.spending.limit', account));
     require(self.Storage.setUint(id, limit));
     return true;
   }
 
+  /**
+   * @notice Get the account spending limit amount
+   * @dev NOTE: Each account has it's own daily spending limit
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param account Ethereum address of the account holder
+   * @return {"limit" : "Returns the account spending limit amount"}
+   */
   function getAccountSpendingLimit(Data storage self, address account) internal view returns (uint limit) {
     bytes32 id = keccak256(abi.encodePacked('account.spending.limit', account));
     return self.Storage.getUint(id);
   }
 
+  /**
+   * @notice Set the account spending amount for the daily period
+   * @dev NOTE: Each account has it's own daily spending limit
+   * @dev NOTE: This transaction will throw if the new spending amount is greater than the limit
+   * @dev NOTE: This method is called in the `transfer()` and `transferFrom()` methods
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param account Ethereum address of the account holder
+   * @param amount Set the amount spent for the daily period
+   * @return {"success" : "Returns true is successfully called from a contract"}
+   */
   function setAccountSpendingAmount(Data storage self, address account, uint amount) internal returns (bool success) {
+
+    /// @dev NOTE: Always ensure the period is current when checking the daily spend limit
     require(updateAccountSpendingPeriod(self, account));
     uint updatedAmount = getAccountSpendingAmount(self, account).add(amount);
+
+    /// @dev Ensure the spend limit is greater than the amount spend for the period
     require(getAccountSpendingLimit(self, account) >= updatedAmount);
+
+    /// @dev Update the spending period amount if within limit
     bytes32 id = keccak256(abi.encodePacked('account.spending.amount', account, getAccountSpendingPeriod(self, account)));
     require(self.Storage.setUint(id, updatedAmount));
     return true;
   }
 
+  /**
+   * @notice Low-level API to ensure the account spending period is always current
+   * @dev NOTE: This method is internally called by `setAccountSpendingAmount()` to ensure
+   * spending period is always the most current daily period.
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param account Ethereum address of the account holder
+   * @return {"success" : "Returns true is successfully called from a contract"}
+   */
   function updateAccountSpendingPeriod(Data storage self, address account) internal returns (bool success) {
     uint begDate = getAccountSpendingPeriod(self, account);
     if (begDate > now) {
       return true;
     } else {
-      uint period = 86400; // 86400 Seconds in a Day
-      require(setAccountSpendingPeriod(self, account, begDate.add(((now.sub(begDate)).div(period).add(1)).mul(period))));
+      uint duration = 86400; // 86400 Seconds in a Day
+      require(setAccountSpendingPeriod(self, account, begDate.add(((now.sub(begDate)).div(duration).add(1)).mul(duration))));
       return true;
     }
   }
 
+  /**
+   * @notice Return the amount spent during the current period
+   * @dev NOTE: Each account has it's own daily spending limit
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param account Ethereum address of the account holder
+   * @return {"amount" : "Returns the amount spent by the account during the current period"}
+   */
   function getAccountSpendingAmount(Data storage self, address account) internal view returns (uint amount) {
     bytes32 id = keccak256(abi.encodePacked('account.spending.amount', account, getAccountSpendingPeriod(self, account)));
     return self.Storage.getUint(id);
   }
 
-  function getAccountSpendingRemaining(Data storage self, address account) internal returns (uint remainingLimit) {
+  /**
+   * @notice Return the amount remaining during the current period
+   * @dev NOTE: Each account has it's own daily spending limit
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param account Ethereum address of the account holder
+   * @return {"amount" : "Returns the amount remaining by the account during the current period"}
+   */
+  function getAccountSpendingRemaining(Data storage self, address account) internal view returns (uint remainingLimit) {
     return getAccountSpendingLimit(self, account).sub(getAccountSpendingAmount(self, account));
   }
 
+  /**
+   * @notice Set the foreign currency exchange rate to USD in basis points
+   * @dev NOTE: This value should always be relative to USD pair; e.g. JPY/USD, GBP/USD, etc.
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param currency The TokenIO currency symbol (e.g. USDx, JPYx, GBPx)
+   * @param bpsRate Basis point rate of foreign currency exchange rate to USD
+   * @return { "success": "Returns true if successfully called from another contract"}
+   */
   function setFxUSDBPSRate(Data storage self, string currency, uint bpsRate) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('fx.usd.rate', currency));
     require(self.Storage.setUint(id, bpsRate));
     return true;
   }
 
-  function getFxUSDBPSRate(Data storage self, string currency) internal view returns (uint amount) {
+  /**
+   * @notice Return the foreign currency USD exchanged amount in basis points
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param currency The TokenIO currency symbol (e.g. USDx, JPYx, GBPx)
+   * @return {"usdAmount" : "Returns the foreign currency amount in USD"}
+   */
+  function getFxUSDBPSRate(Data storage self, string currency) internal view returns (uint bpsRate) {
     bytes32 id = keccak256(abi.encodePacked('fx.usd.rate', currency));
     return self.Storage.getUint(id);
   }
 
+  /**
+   * @notice Return the foreign currency USD exchanged amount
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param currency The TokenIO currency symbol (e.g. USDx, JPYx, GBPx)
+   * @param fxAmount Amount of foreign currency to exchange into USD
+   * @return {"usdAmount" : "Returns the foreign currency amount in USD"}
+   */
   function getFxUSDAmount(Data storage self, string currency, uint fxAmount) internal view returns (uint usdAmount) {
     uint usdDecimals = getTokenDecimals(self, 'USDx');
     uint fxDecimals = getTokenDecimals(self, currency);
-    return ((fxAmount.mul(getFxUSDBPSRate(self, currency)).div(10000)).mul(10**usdDecimals)).div(10**fxDecimals);
+    /// @dev ensure decimal precision is normalized to USD decimals
+    uint usdAmount = ((fxAmount.mul(getFxUSDBPSRate(self, currency)).div(10000)).mul(10**usdDecimals)).div(10**fxDecimals);
+    return usdAmount;
   }
 
 

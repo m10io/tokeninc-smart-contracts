@@ -55,9 +55,9 @@ contract TokenIONameSpace is Ownable {
      * @notice Returns the address of the contract associated with the currency symbol
      * @notice This method may be deprecated or refactored to allow for multiple interfaces
      * @param  currency string Currency symbol of the token (e.g. USDx, JYPx, GBPx)
-     * @return bool		         Returns true if successfully called from another contract
+     * @return {"contractAddress": "Returns the token contract address associated with the currency"}
      */
-    function getTokenNameSpace(string currency) public view returns (address) {
+    function getTokenNameSpace(string currency) public view returns (address contractAddress) {
         return lib.getTokenNameSpace(currency);
     }
 
