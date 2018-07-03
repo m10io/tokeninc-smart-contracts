@@ -81,37 +81,37 @@ contract TokenIOERC20 is Ownable {
     }
 
     /* @notice Gets name of token
-     * @return {"name" : "Returns name of token"}
+     * @return {"_name" : "Returns name of token"}
      */
-    function name() public view returns (string name) {
+    function name() public view returns (string _name) {
         return lib.getTokenName(address(this));
     }
 
     /* @notice Gets symbol of token
-     * @return {"symbol" : "Returns symbol of token"}
+     * @return {"_symbol" : "Returns symbol of token"}
      */
-    function symbol() public view returns (string symbol) {
+    function symbol() public view returns (string _symbol) {
         return lib.getTokenSymbol(address(this));
     }
 
     /* @notice Gets three-letter-abbreviation of token
-     * @return {"tla" : "Returns three-letter-abbreviation of token"}
+     * @return {"_tla" : "Returns three-letter-abbreviation of token"}
      */
-    function tla() public view returns (string tla) {
+    function tla() public view returns (string _tla) {
         return lib.getTokenTLA(address(this));
     }
 
     /* @notice Gets version of token
-     * @return {"version" : "Returns version of token"}
+     * @return {"_version" : "Returns version of token"}
      */
-    function version() public view returns (string version) {
+    function version() public view returns (string _version) {
         return lib.getTokenVersion(address(this));
     }
 
     /* @notice Gets decimals of token
-     * @return {"decimals" : "Returns number of decimals"}
+     * @return {"_decimals" : "Returns number of decimals"}
      */
-    function decimals() public view returns (uint decimals) {
+    function decimals() public view returns (uint _decimals) {
         return lib.getTokenDecimals(lib.getTokenSymbol(address(this)));
     }
 
@@ -125,9 +125,9 @@ contract TokenIOERC20 is Ownable {
     /* @notice Gets allowance that spender has with approver
      * @param account Address of approver
      * @param spender Address of spender
-     * @return {"allowance" : "Returns allowance of given account and spender"}
+     * @return {"amount" : "Returns allowance of given account and spender"}
      */
-    function allowance(address account, address spender) public view returns (uint allowance) {
+    function allowance(address account, address spender) public view returns (uint amount) {
       return lib.getTokenAllowance(lib.getTokenSymbol(address(this)), account, spender);
     }
 

@@ -1126,9 +1126,9 @@ library TokenIOLib {
    * @param self Internal storage proxying TokenIOStorage contract
    * @param currency The TokenIO currency symbol (e.g. USDx, JPYx, GBPx)
    * @param fxAmount Amount of foreign currency to exchange into USD
-   * @return {"usdAmount" : "Returns the foreign currency amount in USD"}
+   * @return {"amount" : "Returns the foreign currency amount in USD"}
    */
-  function getFxUSDAmount(Data storage self, string currency, uint fxAmount) internal view returns (uint usdAmount) {
+  function getFxUSDAmount(Data storage self, string currency, uint fxAmount) internal view returns (uint amount) {
     uint usdDecimals = getTokenDecimals(self, 'USDx');
     uint fxDecimals = getTokenDecimals(self, currency);
     /// @dev ensure decimal precision is normalized to USD decimals
