@@ -31,7 +31,7 @@ import "./TokenIOLib.sol";
 
 
 contract TokenIOERC20 is Ownable {
-    /// @dev Set reference to TokenIOLib interface which proxies to TokenIOStorage
+    //// @dev Set reference to TokenIOLib interface which proxies to TokenIOStorage
     using TokenIOLib for TokenIOLib.Data;
     TokenIOLib.Data lib;
 
@@ -40,13 +40,13 @@ contract TokenIOERC20 is Ownable {
     * @param _storageContract     address of TokenIOStorage contract
     */
     constructor(address _storageContract) public {
-        /// @dev Set the storage contract for the interface
-        /// @dev This contract will be unable to use the storage constract until
-        /// @dev contract address is authorized with the storage contract
-        /// @dev Once authorized, Use the `setParams` method to set storage values
+        //// @dev Set the storage contract for the interface
+        //// @dev This contract will be unable to use the storage constract until
+        //// @dev contract address is authorized with the storage contract
+        //// @dev Once authorized, Use the `setParams` method to set storage values
         lib.Storage = TokenIOStorage(_storageContract);
 
-        /// @dev set owner to contract initiator
+        //// @dev set owner to contract initiator
         owner[msg.sender] = true;
     }
 
@@ -59,7 +59,7 @@ contract TokenIOERC20 is Ownable {
      @param _version Release version 'v0.0.1'
      @param _decimals Decimal precision
      @param _feeContract Address of fee contract
-     @return Returns true if successfully called from another contract
+     @return { "success" : "Returns true if successfully called from another contract"}
      */
      function setParams(
         string _name,
@@ -69,7 +69,7 @@ contract TokenIOERC20 is Ownable {
         uint _decimals,
         address _feeContract,
         uint _fxUSDBPSRate
-    ) onlyOwner public returns (bool) {
+    ) onlyOwner public returns (bool success) {
         require(lib.setTokenName(_name));
         require(lib.setTokenSymbol(_symbol));
         require(lib.setTokenTLA(_tla));
@@ -80,49 +80,56 @@ contract TokenIOERC20 is Ownable {
         return true;
     }
 
-    /* @notice Gets name of token
+    /**
+     * @notice Gets name of token
      * @return {"_name" : "Returns name of token"}
      */
     function name() public view returns (string _name) {
         return lib.getTokenName(address(this));
     }
 
-    /* @notice Gets symbol of token
+    /**
+     * @notice Gets symbol of token
      * @return {"_symbol" : "Returns symbol of token"}
      */
     function symbol() public view returns (string _symbol) {
         return lib.getTokenSymbol(address(this));
     }
 
-    /* @notice Gets three-letter-abbreviation of token
+    /**
+     * @notice Gets three-letter-abbreviation of token
      * @return {"_tla" : "Returns three-letter-abbreviation of token"}
      */
     function tla() public view returns (string _tla) {
         return lib.getTokenTLA(address(this));
     }
 
-    /* @notice Gets version of token
+    /**
+     * @notice Gets version of token
      * @return {"_version" : "Returns version of token"}
      */
     function version() public view returns (string _version) {
         return lib.getTokenVersion(address(this));
     }
 
-    /* @notice Gets decimals of token
+    /**
+     * @notice Gets decimals of token
      * @return {"_decimals" : "Returns number of decimals"}
      */
     function decimals() public view returns (uint _decimals) {
         return lib.getTokenDecimals(lib.getTokenSymbol(address(this)));
     }
 
-    /* @notice Gets total supply of token
+    /**
+     * @notice Gets total supply of token
      * @return {"supply" : "Returns current total supply of token"}
      */
     function totalSupply() public view returns (uint supply) {
       return lib.getTokenSupply(lib.getTokenSymbol(address(this)));
     }
 
-    /* @notice Gets allowance that spender has with approver
+    /**
+     * @notice Gets allowance that spender has with approver
      * @param account Address of approver
      * @param spender Address of spender
      * @return {"amount" : "Returns allowance of given account and spender"}
@@ -131,7 +138,8 @@ contract TokenIOERC20 is Ownable {
       return lib.getTokenAllowance(lib.getTokenSymbol(address(this)), account, spender);
     }
 
-    /* @notice Gets balance of account
+    /**
+     * @notice Gets balance of account
      * @param account Address for balance lookup
      * @return {"balance" : "Returns balance amount"}
      */
@@ -139,7 +147,8 @@ contract TokenIOERC20 is Ownable {
       return lib.getTokenBalance(lib.getTokenSymbol(address(this)), account);
     }
 
-    /* @notice Gets fee parameters
+    /**
+     * @notice Gets fee parameters
      * @return {
      "bps":"Fee amount as a mesuare of basis points",
      "min":"Minimum fee amount",
@@ -158,29 +167,32 @@ contract TokenIOERC20 is Ownable {
         );
     }
 
-    /* @notice Calculates fee of a given transfer amount
-     * @param amount [uint] transfer amount
-     * @return [uint] fee amount
+    /**
+     * @notice Calculates fee of a given transfer amount
+     * @param amount Amount to calculcate fee value
+     * @return {"fees": "Returns the calculated transaction fees based on the fee contract parameters"}
      */
-    function calculateFees(uint amount) public view returns (uint) {
+    function calculateFees(uint amount) public view returns (uint fees) {
       return lib.calculateFees(lib.getFeeContract(address(this)), amount);
     }
 
-    /* @notice transfers 'amount' from msg.sender to a receiving account 'to'
+    /**
+     * @notice transfers 'amount' from msg.sender to a receiving account 'to'
      * @param to Receiving address
      * @param amount Transfer amount
      * @return {"success" : "Returns true if transfer succeeds"}
      */
     function transfer(address to, uint amount) public notDeprecated returns (bool success) {
-      // @notice check that receiving account is verified
+      /// @notice check that receiving account is verified
       require(lib.verifyAccounts(msg.sender, to));
-      // @notice send transfer through library
-      // @dev !!! mutates storage state
+      /// @notice send transfer through library
+      /// @dev !!! mutates storage state
       require(lib.transfer(lib.getTokenSymbol(address(this)), to, amount, "0x0"));
       return true;
     }
 
-    /* @notice spender transfers from approvers account to the reciving account
+    /**
+     * @notice spender transfers from approvers account to the reciving account
      * @param from Approver's address
      * @param to Receiving address
      * @param amount Transfer amount
@@ -189,27 +201,29 @@ contract TokenIOERC20 is Ownable {
     function transferFrom(address from, address to, uint amount) public notDeprecated returns (bool success) {
         // @ notice checks from and to accounts are verified
         require(lib.verifyAccounts(from, to));
-        // @notice sends transferFrom through library
-        // @dev !!! mutates storage state
+        /// @notice sends transferFrom through library
+        /// @dev !!! mutates storage state
         require(lib.transferFrom(lib.getTokenSymbol(address(this)), from, to, amount, "0x0"));
         return true;
     }
 
-    /* @notice approves spender a given amount
+    /**
+     * @notice approves spender a given amount
      * @param spender Spender's address
      * @param amount Allowance amount
      * @return {"success" : "Returns true if approve succeeds"}
      */
     function approve(address spender, uint amount) public notDeprecated returns (bool success) {
-        // @notice checks approver and spenders accounts are verified
+        /// @notice checks approver and spenders accounts are verified
         require(lib.verifyAccounts(msg.sender, spender));
-        // @notice sends approve through library
-        // @dev !!! mtuates storage states
+        /// @notice sends approve through library
+        /// @dev !!! mtuates storage states
         require(lib.approveAllowance(spender, amount));
         return true;
     }
 
-    /* @notice gets currency status of contract
+    /**
+     * @notice gets currency status of contract
      * @return {"deprecated" : "Returns true if deprecated, false otherwise"}
      */
     function deprecateInterface() public onlyOwner returns (bool deprecated) {
@@ -218,7 +232,7 @@ contract TokenIOERC20 is Ownable {
     }
 
     modifier notDeprecated() {
-      // @notice throws if contract is deprecated
+      /// @notice throws if contract is deprecated
       require(!lib.isContractDeprecated(address(this)));
       _;
     }

@@ -22,6 +22,7 @@ functions, this simplifies the implementation of "user permissions".
 
  */
 contract Ownable {
+
   mapping(address => bool) public owner;
 
   event LogOwnershipTransferred(address indexed previousOwner, address indexed newOwner);

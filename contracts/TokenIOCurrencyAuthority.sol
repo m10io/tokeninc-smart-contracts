@@ -33,12 +33,13 @@ contract TokenIOCurrencyAuthority is Ownable {
     using TokenIOLib for TokenIOLib.Data;
     TokenIOLib.Data lib;
 
-    /*
+    /**
      * @notice Constructor method for CurrencyAuthority contract
      * @param _storageContract Address of TokenIOStorage contract
      */
     constructor(address _storageContract) public {
-        /* @notice Set the storage contract for the interface
+        /**
+         * @notice Set the storage contract for the interface
          * @dev This contract will be unable to use the storage constract until
          * @dev Contract address is authorized with the storage contract
          */
@@ -48,7 +49,8 @@ contract TokenIOCurrencyAuthority is Ownable {
         owner[msg.sender] = true;
     }
 
-    /* @notice Gets balance of sepcified account for a given currency
+    /**
+     * @notice Gets balance of sepcified account for a given currency
      * @param currency Currency symbol 'USDx'
      * @param account Sepcified account address
      * @return { "balance": "Returns account balance"}
@@ -57,7 +59,8 @@ contract TokenIOCurrencyAuthority is Ownable {
       return lib.getTokenBalance(currency, account);
     }
 
-    /* @notice Gets total supply of specified currency
+    /**
+     * @notice Gets total supply of specified currency
      * @param currency Currency symbol 'USDx'
      * @return { "supply": "Returns total supply of currency"}
      */
@@ -65,7 +68,8 @@ contract TokenIOCurrencyAuthority is Ownable {
       return lib.getTokenSupply(currency);
     }
 
-    /* @notice Updates account status. false: frozen, true: un-frozen
+    /**
+     * @notice Updates account status. false: frozen, true: un-frozen
      * @param account Sepcified account address
      * @param isAllowed Frozen status
      * @param issuerFirm Name of the issuer firm with authority on account holder;
@@ -78,7 +82,8 @@ contract TokenIOCurrencyAuthority is Ownable {
         return true;
     }
 
-    /* @notice Sets approval status of specified account
+    /**
+     * @notice Sets approval status of specified account
      * @param account Sepcified account address
      * @param isApproved Frozen status
      * @param issuerFirm Name of the issuer firm with authority on account holder;
@@ -96,7 +101,8 @@ contract TokenIOCurrencyAuthority is Ownable {
         return true;
     }
 
-    /* @notice Approves account and deposits specified amount of given currency
+    /**
+     * @notice Approves account and deposits specified amount of given currency
      * @param currency Currency symbol of amount to be deposited;
      * @param account Ethereum address of account holder;
      * @param amount Deposit amount for account holder;
@@ -169,7 +175,8 @@ contract TokenIOCurrencyAuthority is Ownable {
       return lib.getFxUSDAmount(currency, fxAmount);
     }
 
-    /* @notice Updates to new forwarded account
+    /**
+     * @notice Updates to new forwarded account
      * @param originalAccount [address]
      * @param updatedAccount [address]
      * @param issuerFirm Name of the issuer firm with authority on account holder;
@@ -182,7 +189,8 @@ contract TokenIOCurrencyAuthority is Ownable {
         return true;
     }
 
-    /* @notice Issues a specified account to recipient account of a given currency
+    /**
+     * @notice Issues a specified account to recipient account of a given currency
      * @param currency [string] currency symbol
      * @param amount [uint] issuance amount
      * @param issuerFirm Name of the issuer firm with authority on account holder;
@@ -196,7 +204,8 @@ contract TokenIOCurrencyAuthority is Ownable {
         return true;
     }
 
-    /* @notice Withdraws a specified amount of tokens of a given currency
+    /**
+     * @notice Withdraws a specified amount of tokens of a given currency
      * @param currency Currency symbol
      * @param account Ethereum address of account holder
      * @param amount Issuance amount
