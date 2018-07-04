@@ -97,11 +97,10 @@ module.exports = {
 }
 
 
-// CSV
-// "0x8cb2cebb0070b231d4ba4d3b747acaebdfbbd142",
-// "0x8cb2cebb0070b231d4ba4d3b747acaebdfbbd142",
 // "USD by token.io",
 // "USDx",
 // "USD",
 // "v0.1.2",
-// 2
+// 2,
+// "0x310bd4225ecef15ba21bab3fce87289ee6568f4f"
+// 10000

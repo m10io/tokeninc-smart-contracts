@@ -1,4 +1,5 @@
-// See <http://truffleframework.com/docs/advanced/configuration>
+require('dotenv').config()
+var HDWalletProvider = require("truffle-hdwallet-provider");
 
 module.exports = {
   networks: {
@@ -13,7 +14,12 @@ module.exports = {
       port: 4000,
       network_id: 9, // Match any network id
 	  gasLimit: 7e6
-    }
+      },
+      ropsten: {
+        provider: new HDWalletProvider(process.env.PHRASE, `https://ropsten.infura.io/kFvVxuVal7BFFAQuxgxi`),
+        network_id: 3,
+        gasLimit: 7e6
+      }
   },
   solc: {
     optimizer: {
