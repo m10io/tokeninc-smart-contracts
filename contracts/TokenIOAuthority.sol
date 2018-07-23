@@ -56,7 +56,8 @@ contract TokenIOAuthority is Ownable {
      */
     function setRegisteredFirm(string firmName, bool _authorized) public onlyAuthority(firmName, msg.sender) returns (bool success) {
         /// @notice set firm registration status
-        require(lib.setRegisteredFirm(firmName, _authorized));
+        require(lib.setRegisteredFirm(firmName, _authorized),
+            "Library call setRegisteredFirm failed. Check that the specified firm has been approved");
         return true;
     }
 
@@ -120,14 +121,16 @@ contract TokenIOAuthority is Ownable {
      */
     function setMasterFeeContract(address feeContract) public onlyOwner returns (bool success) {
         /// @notice set master fee contract
-        require(lib.setMasterFeeContract(feeContract));
+        require(lib.setMasterFeeContract(feeContract),
+            "Library call setMasterFeeContract failed.");
         return true;
       }
 
 
     modifier onlyAuthority(string firmName, address authority) {
         /// @notice throws if not an owner auuthority or not registered to the given firm
-        require(owner[authority] || lib.isRegisteredToFirm(firmName, authority));
+        require(owner[authority] || lib.isRegisteredToFirm(firmName, authority),
+            "Authority address is not an owner auuthority or not registered to the given firm");
         _;
     }
 
