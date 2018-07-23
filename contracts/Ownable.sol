@@ -54,6 +54,7 @@ contract Ownable {
     emit LogOwnershipTransferred(msg.sender, newOwner);
     owner[newOwner] = true;
     owner[msg.sender] = false;
+    return true;
   }
 
   /**

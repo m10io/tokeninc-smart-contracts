@@ -1,7 +1,7 @@
 const USDx = {
   // Ensure these values are ordered in the object for the respective param list
   // index in the erc20 contract setPrams() method.
-  tokenName: 'USD by token.io', // tokenName
+  tokenName: 'Token USD', // tokenName
   tokenSymbol: 'USDx', // tokenSymbol
   tokenTLA: 'USD', // tokenTLA
   tokenVersion: 'v0.1.3', // tokenVersion
@@ -13,7 +13,7 @@ const USDx = {
 const MXNx = {
   // Ensure these values are ordered in the object for the respective param list
   // index in the erc20 contract setPrams() method.
-  tokenName: 'MXN by token.io', // tokenName
+  tokenName: 'Token MXN', // tokenName
   tokenSymbol: 'MXNx', // tokenSymbol
   tokenTLA: 'MXN', // tokenTLA
   tokenVersion: 'v0.1.3', // tokenVersion
@@ -25,7 +25,7 @@ const MXNx = {
 const GBPx = {
   // Ensure these values are ordered in the object for the respective param list
   // index in the erc20 contract setPrams() method.
-  tokenName: 'GBP by token.io', // tokenName
+  tokenName: 'Token GBP', // tokenName
   tokenSymbol: 'GBPx', // tokenSymbol
   tokenTLA: 'GBP', // tokenTLA
   tokenVersion: 'v0.1.3', // tokenVersion
@@ -37,7 +37,7 @@ const GBPx = {
 const JPYx = {
   // Ensure these values are ordered in the object for the respective param list
   // index in the erc20 contract setPrams() method.
-  tokenName: 'JPY by token.io', // tokenName
+  tokenName: 'Token JPY', // tokenName
   tokenSymbol: 'JPYx', // tokenSymbol
   tokenTLA: 'JPY', // tokenTLA
   tokenVersion: 'v0.1.3', // tokenVersion
@@ -49,7 +49,7 @@ const JPYx = {
 const EURx = {
   // Ensure these values are ordered in the object for the respective param list
   // index in the erc20 contract setPrams() method.
-  tokenName: 'EUR by token.io', // tokenName
+  tokenName: 'Token EUR', // tokenName
   tokenSymbol: 'EURx', // tokenSymbol
   tokenTLA: 'EUR', // tokenTLA
   tokenVersion: 'v0.1.3', // tokenVersion
@@ -97,10 +97,10 @@ module.exports = {
 }
 
 
-// "USD by token.io",
+// "Token USD",
 // "USDx",
 // "USD",
 // "v0.1.2",
 // 2,
-// "0x310bd4225ecef15ba21bab3fce87289ee6568f4f"
+// "0x310bd4225ecef15ba21bab3fce87289ee6568f4f",
 // 10000

@@ -36,9 +36,10 @@ async function main() {
 								return await readContractJSON(file)
 						})
 				).map(async interface => {
-					const { bytecode, abi, contractName } = interface
-					ContractInfo[contractName] = { abi, bytecode }
-					return { bytecode, abi, contractName }
+					console.log('interface', interface);
+					const { bytecode, abi, contractName, networks } = interface
+					ContractInfo[contractName] = { abi, bytecode, networks }
+					return { bytecode, abi, contractName, networks }
 				}).then(async () => {
 					console.log('Save Contract Info: ', ContractInfo)
 					return await fs.writeFile(`${process.cwd()}/deployed/contracts.json`, JSON.stringify(ContractInfo), {

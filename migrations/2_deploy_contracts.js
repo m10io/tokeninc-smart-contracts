@@ -7,21 +7,12 @@ const TokenIOFX = artifacts.require("./TokenIOFX.sol")
 const TokenIOCurrencyAuthority = artifacts.require("./TokenIOCurrencyAuthority.sol")
 const TokenIOFeeContract = artifacts.require("./TokenIOFeeContract.sol")
 
-
 const { mode, development, production } = require('../token.config.js');
 const {
     AUTHORITY_DETAILS: { firmName, authorityAddress },
     TOKEN_DETAILS,
     FEE_PARAMS
 } = mode == 'production' ? production : development;
-
-module.exports = (deployer, network, accounts) => {
-    deployer.then(async () => {
-        await deployContracts(deployer, accounts)
-        console.log('### finished deploying contracts')
-    })
-    .catch(err => console.log('### error deploying contracts', err))
-}
 
 const deployContracts = async (deployer, accounts) => {
   try {
@@ -64,4 +55,13 @@ const deployContracts = async (deployer, accounts) => {
   } catch (err) {
       console.log('### error deploying contracts', err)
   }
+}
+
+
+module.exports = (deployer, network, accounts) => {
+    deployer.then(async () => {
+        await deployContracts(deployer, accounts)
+        console.log('### finished deploying contracts')
+    })
+    .catch(err => console.log('### error deploying contracts', err))
 }

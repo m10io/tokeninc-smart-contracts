@@ -545,7 +545,7 @@ library TokenIOLib {
    * @param amount Amount of tokens to freeze for account
    * @return { "success" : "Return true if successfully called from another contract"}
    */
-  function setTokenFrozenBalance(Data storage self, string currency, address account, uint amount) internal view returns (bool success) {
+  function setTokenFrozenBalance(Data storage self, string currency, address account, uint amount) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('token.frozen', currency, getForwardedAccount(self, account)));
     require(self.Storage.setUint(id, amount));
     return true;
@@ -584,7 +584,7 @@ library TokenIOLib {
    * @param accountB Ethereum address of second account holder to verify
    * @return { "verified" : "Returns true if both accounts are successfully verified" }
    */
-  function verifyAccounts(Data storage self, address accountA, address accountB) internal returns (bool verified) {
+  function verifyAccounts(Data storage self, address accountA, address accountB) internal view returns (bool verified) {
     require(verifyAccount(self, accountA));
     require(verifyAccount(self, accountB));
     return true;

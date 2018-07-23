@@ -13,13 +13,13 @@ module.exports = {
       host: "104.236.47.153",
       port: 4000,
       network_id: 9, // Match any network id
-	  gasLimit: 7e6
-      },
-      ropsten: {
-        provider: new HDWalletProvider(process.env.PHRASE, `https://ropsten.infura.io/kFvVxuVal7BFFAQuxgxi`),
-        network_id: 3,
-        gasLimit: 7e6
-      }
+	    gasLimit: 7e6
+    },
+    ropsten: {
+      provider: new HDWalletProvider(process.env.PHRASE, `https://ropsten.infura.io/${process.env.INFURA_API}`),
+      network_id: 3,
+      gasLimit: 47e5
+    }
   },
   solc: {
     optimizer: {
