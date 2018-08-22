@@ -65,12 +65,12 @@ Alternatively, run a single test:
 The following contracts have been deployed at the associated addresses corresponding to the Ethereum network deployed on.
 
 *Ropsten:*
-- TokenIOStorage.sol: **0x566cc456540de517249c1b99df7b443c3c1e7fbd**
-- TokenIOAuthority.sol: **0xee61b0cc2f1697b1d2c40254613b72e6d1763a18**
-- TokenIOCurrencyAuthority.sol: **0x8cb9ea9527d0d47a7c14c3366868605f2e8584fb**
-- TokenIOFeeContract.sol: **0x310bd4225ecef15ba21bab3fce87289ee6568f4f**
-- TokenIOFX.sol: **0x2a171070a2a1eb945cda041326a0516d728ac45b**
-- TokenIOERC20.sol: **0x768bcf023aa517054a0349939069802a006ce350**
+- TokenIOStorage.sol: **0x0**
+- TokenIOAuthority.sol: **0x0**
+- TokenIOCurrencyAuthority.sol: **0x0**
+- TokenIOFeeContract.sol: **0x0**
+- TokenIOFX.sol: **0x0**
+- TokenIOERC20.sol: **0x0**
 
 *TokenIO PoA TestNet:*
 - TokenIOStorage.sol: **0x0**
@@ -86,8 +86,8 @@ The following contracts have been deployed at the associated addresses correspon
 
 TokenIO provides mobile and web client applications to interact with smart contracts.
 
-- [Web Application](http://dc.token.io)
-- Mobile Application ([iOS](https://apple.com) / [Android](https://android.com))
+- [Web Application]()
+- Mobile Application ([iOS]() / [Android]())
 
 Alternatively, if you're a software developer, TokenIO contracts can be interacted with using the TokenIO JS Smart Contract SDK.
 

@@ -95,24 +95,23 @@ contract TokenIOMerchant is Ownable {
      * @param  merchant Ethereum address of merchant
      * @param  amount Amount of currency to send to merchant
      * @param  merchantPaysFees Provide option for merchant to pay the transaction fees
+     * @param  data Optional data to be included when paying the merchant (e.g. item receipt)
      * @return { "success" : "Returns true if successfully called from another contract"}
      */
-    function pay(string currency, address merchant, uint amount, bool merchantPaysFees) public returns (bool success) {
+    function pay(string currency, address merchant, uint amount, bool merchantPaysFees, bytes data) public returns (bool success) {
       uint fees = calculateFees(amount);
 
       /// @dev note the spending amount limit is gross of fees
       require(lib.setAccountSpendingAmount(msg.sender, lib.getFxUSDAmount(currency, amount)));
       require(lib.forceTransfer(currency, msg.sender, merchant, amount, data));
 
-      /// @dev "0x547846656573" == "TxFees"
-      bytes memory data = "0x547846656573";
       address feeContract = lib.getFeeContract(address(this));
-
       /// @dev If merchantPaysFees == true, the merchant will pay the fees to the fee contract;
+      /// @dev "0x547846656573" == "TxFees"
       if (merchantPaysFees) {
-        require(lib.forceTransfer(currency, merchant, feeContract, fees, data));
+        require(lib.forceTransfer(currency, merchant, feeContract, fees, "0x547846656573"));
       } else {
-        require(lib.forceTransfer(currency, msg.sender, feeContract, fees, data));
+        require(lib.forceTransfer(currency, msg.sender, feeContract, fees, "0x547846656573"));
       }
 
       return true;

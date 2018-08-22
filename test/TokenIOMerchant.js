@@ -43,7 +43,7 @@ contract("TokenIOFeeContract", function(accounts) {
 		const DEPOSIT_TX = await CA.deposit(CURRENCY_SYMBOL, TEST_ACCOUNT_1, DEPOSIT_AMOUNT, "Token, Inc.")
 		assert.equal(DEPOSIT_TX['receipt']['status'], "0x1", "Transaction should succeed.")
 
-		const TRANSFER_TX = await merchant.pay(CURRENCY_SYMBOL, MERCHANT_ACCOUNT, TRANSFER_AMOUNT, MERCHANT_PAYS_FEES)
+		const TRANSFER_TX = await merchant.pay(CURRENCY_SYMBOL, MERCHANT_ACCOUNT, TRANSFER_AMOUNT, MERCHANT_PAYS_FEES, "0x0")
 		assert.equal(TRANSFER_TX['receipt']['status'], "0x1", "Transaction should succeed.")
 
 		const FEE_CONTRACT_BALANCE = +(await token.balanceOf(feeContract.address)).toString();
