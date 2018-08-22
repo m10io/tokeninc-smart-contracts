@@ -1,5 +1,4 @@
 ###### Token, Inc. Smart Money -- Solidity Smart Contracts Documentation
-##### *NOTE: This document is for internal use only. Any external sharing, publication, or distribution with third parties and general audiences without permission and authorization by Token, Inc. is strictly Prohibited.*
 ---
 # Token Smart Money
 ### Solidity Smart Contract Architecture
@@ -108,6 +107,7 @@ Alternatively, if you're a software developer, TokenIO contracts can be interact
 - [TokenIOLib](./docs/TokenIOLib.md)
 - [TokenIONameSpace](./docs/TokenIONameSpace.md)
 - [TokenIOStorage](./docs/TokenIOStorage.md)
+- [TokenIOMerchant](./docs/TokenIOMerchant.md)
 
 ---
 #### Links to Smart Contract Source Code
@@ -122,12 +122,15 @@ Alternatively, if you're a software developer, TokenIO contracts can be interact
 - [TokenIOLib](./contracts/TokenIOLib.sol)
 - [TokenIONameSpace](./contracts/TokenIONameSpace.sol)
 - [TokenIOStorage](./contracts/TokenIOStorage.sol)
+- [TokenIOMerchant](./contracts/TokenIOMerchant.sol)
 
 ---
 #### Smart Contract Use Cases
 
 ---
 #### Audit Report
+
+- [BECHAIN ](./audits/v3AuditReport.pdf)
 
 ---
 ##### Footnotes
@@ -136,3 +139,4 @@ Alternatively, if you're a software developer, TokenIO contracts can be interact
 ---
 VERSION: v0.1.3
 DISCLOSURE: This document is intended for notes, documentation, and discussion for how the source code is written at a certain software version. Token, Inc. do not guarantee the correctness of this software or the accuracy of this documentation and is not held liable for any misinterpretation, unintentional use or misuse of the software. Token, Inc. will actively identify and resolve to the best ability, within reasonable limit, any known software limitations, bugs, or other vulnerabilities that might impact this software.
+##### COPYRIGHT 2018 Token, Inc.
