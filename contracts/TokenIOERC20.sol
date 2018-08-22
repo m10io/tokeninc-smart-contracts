@@ -18,7 +18,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 @title ERC20 Compliant Smart Contract for Token, Inc.
 
-@author Ryan Tate <ryan.michael.tate@gmail.com>, Sean Pollock <seanpollock3344@gmail.com>
+@author Ryan Tate <ryan.tate@token.io>, Sean Pollock <sean.pollock@token.io>
 
 @notice Contract uses generalized storage contract, `TokenIOStorage`, for
 upgradeability of interface contract.
@@ -183,9 +183,6 @@ contract TokenIOERC20 is Ownable {
     * @return {"success" : "Returns true if transfer succeeds"}
     */
     function transfer(address to, uint amount) public notDeprecated returns (bool success) {
-      /// @notice check that sending account is verified
-      /// @notice Receiving accounts can accept transfers only from verified accounts
-      require(lib.verifyAccount(msg.sender));
       /// @notice send transfer through library
       /// @dev !!! mutates storage state
       require(lib.transfer(lib.getTokenSymbol(address(this)), to, amount, "0x0"));
@@ -200,9 +197,6 @@ contract TokenIOERC20 is Ownable {
     * @return {"success" : "Returns true if transferFrom succeeds"}
     */
     function transferFrom(address from, address to, uint amount) public notDeprecated returns (bool success) {
-      /// @notice check that from and spender accounts are verified
-      /// @notice Receiving accounts can accept transfers only from verified accounts
-      require(lib.verifyAccounts(msg.sender, from));
       /// @notice sends transferFrom through library
       /// @dev !!! mutates storage state
       require(lib.transferFrom(lib.getTokenSymbol(address(this)), from, to, amount, "0x0"));
@@ -216,8 +210,6 @@ contract TokenIOERC20 is Ownable {
     * @return {"success" : "Returns true if approve succeeds"}
     */
     function approve(address spender, uint amount) public notDeprecated returns (bool success) {
-      /// @notice checks approver and spenders accounts are verified
-      require(lib.verifyAccounts(msg.sender, spender));
       /// @notice sends approve through library
       /// @dev !!! mtuates storage states
       require(lib.approveAllowance(spender, amount));

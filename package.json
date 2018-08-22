@@ -19,7 +19,8 @@
     "d7": "npx solmd ./contracts/TokenIOERC20.sol --dest ./docs/TokenIOERC20.md",
     "d8": "npx solmd ./contracts/TokenIONameSpace.sol --dest ./docs/TokenIONameSpace.md",
     "d9": "npx solmd ./contracts/TokenIOFX.sol --dest ./docs/TokenIOFX.md",
-    "docs": "npm run d0 && npm run d1 && npm run d2 && npm run d3 && npm run d4 && npm run d5 && npm run d6 && npm run d7 && npm run d8 && npm run d9"
+    "d10": "npx solmd ./contracts/TokenIOMerchant.sol --dest ./docs/TokenIOMerchant.md",
+    "docs": "npm run d0 && npm run d1 && npm run d2 && npm run d3 && npm run d4 && npm run d5 && npm run d6 && npm run d7 && npm run d8 && npm run d9 && npm run d10"
   },
   "keywords": [
     "Token",

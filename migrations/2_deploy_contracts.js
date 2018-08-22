@@ -6,6 +6,7 @@ const TokenIOAuthority = artifacts.require("./TokenIOAuthority.sol")
 const TokenIOFX = artifacts.require("./TokenIOFX.sol")
 const TokenIOCurrencyAuthority = artifacts.require("./TokenIOCurrencyAuthority.sol")
 const TokenIOFeeContract = artifacts.require("./TokenIOFeeContract.sol")
+const TokenIOMerchant = artifacts.require("./TokenIOMerchant.sol")
 
 const { mode, development, production } = require('../token.config.js');
 const {
@@ -36,6 +37,12 @@ const deployContracts = async (deployer, accounts) => {
       await storage.allowOwnership(authority.address)
       const currencyAuthority = await deployer.deploy(TokenIOCurrencyAuthority, storage.address)
       await storage.allowOwnership(currencyAuthority.address)
+
+      /* merchant contract */
+
+      const merchant = await deployer.deploy(TokenIOMerchant, storage.address)
+      await storage.allowOwnership(merchant.address)
+      await merchant.setParams(masterFeeContract.address)
 
       /* fx */
       const fx = await deployer.deploy(TokenIOFX, storage.address)

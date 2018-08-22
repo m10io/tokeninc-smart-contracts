@@ -17,7 +17,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 @title TokenIOStorage - Serves as derived contract for TokenIO contract and
 is used to upgrade interfaces in the event of deprecating the main contract.
 
-@author Ryan Tate <ryan.michael.tate@gmail.com>
+@author Ryan Tate <ryan.tate@token.io>, Sean Pollock <sean.pollock@token.io>
 
 @notice Storage contract
 

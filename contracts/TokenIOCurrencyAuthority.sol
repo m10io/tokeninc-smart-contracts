@@ -19,9 +19,9 @@ import "./TokenIOStorage.sol";
 import "./TokenIOLib.sol";
 
 /*
-@title TokenIO - ERC20 Compliant Smart Contract for Token, Inc.
+@title TokenIOCurrencyAuthority - Currency Authority Smart Contract for Token, Inc.
 
-@author Ryan Tate <ryan.michael.tate@gmail.com>, Sean Pollock <seanpollock3344@gmail.com>
+@author Ryan Tate <ryan.tate@token.io>, Sean Pollock <sean.pollock@token.io>
 
 @notice Contract uses generalized storage contract, `TokenIOStorage`, for
 upgradeability of interface contract.

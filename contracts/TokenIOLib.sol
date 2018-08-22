@@ -15,7 +15,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 @title TokenIOLib
 
-@author Ryan Tate <ryan.michael.tate@gmail.com>, Sean Pollock <seanpollock3344@gmail.com>
+@author Ryan Tate <ryan.tate@token.io>, Sean Pollock <sean.pollock@token.io>
 
 @notice This library proxies the TokenIOStorage contract for the interface contract,
 allowing the library and the interfaces to remain stateless, and share a universally
@@ -39,15 +39,16 @@ library TokenIOLib {
     TokenIOStorage Storage;
   }
 
-  event LogApproval(address indexed owner, address indexed spender, uint amount);
-  event LogDeposit(string currency, address indexed account, uint amount, string issuerFirm);
-  event LogWithdraw(string currency, address indexed account, uint amount, string issuerFirm);
-  event LogTransfer(string currency, address indexed from, address indexed to, uint amount, bytes data);
-  event LogKYCApproval(address indexed account, bool status, string issuerFirm);
-  event LogAccountStatus(address indexed account, bool status, string issuerFirm);
-  event LogFxSwap(string tokenASymbol,string tokenBSymbol,uint tokenAValue,uint tokenBValue, uint expiration, bytes32 transactionHash);
-  event LogAccountForward(address indexed originalAccount, address indexed forwardedAccount);
-  event LogNewAuthority(address indexed authority, string issuerFirm);
+  /// @notice Not using `Log` prefix for events to be consistent with ERC20 named events;
+  event Approval(address indexed owner, address indexed spender, uint amount);
+  event Deposit(string currency, address indexed account, uint amount, string issuerFirm);
+  event Withdraw(string currency, address indexed account, uint amount, string issuerFirm);
+  event Transfer(string currency, address indexed from, address indexed to, uint amount, bytes data);
+  event KYCApproval(address indexed account, bool status, string issuerFirm);
+  event AccountStatus(address indexed account, bool status, string issuerFirm);
+  event FxSwap(string tokenASymbol,string tokenBSymbol,uint tokenAValue,uint tokenBValue, uint expiration, bytes32 transactionHash);
+  event AccountForward(address indexed originalAccount, address indexed forwardedAccount);
+  event NewAuthority(address indexed authority, string issuerFirm);
 
   /**
    * @notice Set the token name for Token interfaces
@@ -112,7 +113,7 @@ library TokenIOLib {
    * @dev This method is not set to the address of the contract, rather is maped to currency
    * @dev To derive decimal value, divide amount by 10^decimal representation (e.g. 10132 / 10**2 == 101.32)
    * @param self Internal storage proxying TokenIOStorage contract
-   * @param currency TokenIO TSM currency symbol (e.g. USDx)
+   * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @param tokenDecimals Decimal representation of the token contract unit amount
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
@@ -204,7 +205,7 @@ library TokenIOLib {
    * @dev | This method has an `internal` view
    * @dev | This method is experimental and may be deprecated/refactored
    * @param self Internal storage proxying TokenIOStorage contract
-   * @param currency TokenIO TSM currency symbol (e.g. USDx)
+   * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
   function setTokenNameSpace(Data storage self, string currency) internal returns (bool success) {
@@ -229,7 +230,7 @@ library TokenIOLib {
       self.Storage.setBool(id, isApproved);
 
       /// @dev NOTE: Issuer is logged for setting account KYC status
-      emit LogKYCApproval(account, isApproved, issuerFirm);
+      emit KYCApproval(account, isApproved, issuerFirm);
       return true;
   }
 
@@ -249,7 +250,7 @@ library TokenIOLib {
     self.Storage.setBool(id, isAllowed);
 
     /// @dev NOTE: Issuer is logged for setting account status
-    emit LogAccountStatus(account, isAllowed, issuerFirm);
+    emit AccountStatus(account, isAllowed, issuerFirm);
     return true;
   }
 
@@ -319,7 +320,7 @@ library TokenIOLib {
    * @notice Get the contract interface address associated with token symbol
    * @dev | This method has an `internal` view
    * @param self Internal storage proxying TokenIOStorage contract
-   * @param currency TokenIO TSM currency symbol (e.g. USDx)
+   * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @return { "contractAddress" : "Returns the contract interface address for a symbol" }
    */
   function getTokenNameSpace(Data storage self, string currency) internal view returns (address contractAddress) {
@@ -384,7 +385,7 @@ library TokenIOLib {
    * @dev This method must be set by the token interface's setParams() method
    * @dev | This method has an `internal` view
    * @param self Internal storage proxying TokenIOStorage contract
-   * @param currency TokenIO TSM currency symbol (e.g. USDx)
+   * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @return {"tokenDecimals" : "Decimals of the token contract"}
    */
   function getTokenDecimals(Data storage self, string currency) internal view returns (uint tokenDecimals) {
@@ -489,7 +490,7 @@ library TokenIOLib {
    * @notice Get the token supply for a given TokenIO TSM currency symbol (e.g. USDx)
    * @dev | This method has an `internal` view
    * @param self Internal storage proxying TokenIOStorage contract
-   * @param currency TokenIO TSM currency symbol (e.g. USDx)
+   * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @return { "supply" : "Returns the token supply of the given currency"}
    */
   function getTokenSupply(Data storage self, string currency) internal view returns (uint supply) {
@@ -514,7 +515,7 @@ library TokenIOLib {
    * @notice Get the token balance for a given account
    * @dev | This method has an `internal` view
    * @param self Internal storage proxying TokenIOStorage contract
-   * @param currency TokenIO TSM currency symbol (e.g. USDx)
+   * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @param account Ethereum address of account holder
    * @return { "balance" : "Return the balance of a given account for a specified currency"}
    */
@@ -527,7 +528,7 @@ library TokenIOLib {
    * @notice Get the frozen token balance for a given account
    * @dev | This method has an `internal` view
    * @param self Internal storage proxying TokenIOStorage contract
-   * @param currency TokenIO TSM currency symbol (e.g. USDx)
+   * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @param account Ethereum address of account holder
    * @return { "frozenBalance" : "Return the frozen balance of a given account for a specified currency"}
    */
@@ -540,7 +541,7 @@ library TokenIOLib {
    * @notice Set the frozen token balance for a given account
    * @dev | This method has an `internal` view
    * @param self Internal storage proxying TokenIOStorage contract
-   * @param currency TokenIO TSM currency symbol (e.g. USDx)
+   * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @param account Ethereum address of account holder
    * @param amount Amount of tokens to freeze for account
    * @return { "success" : "Return true if successfully called from another contract"}
@@ -597,7 +598,7 @@ library TokenIOLib {
    * @param account Ethereum address of account holder to verify
    * @return { "verified" : "Returns true if account is successfully verified" }
    */
-  function verifyAccount(Data storage self, address account) internal returns (bool verified) {
+  function verifyAccount(Data storage self, address account) internal view returns (bool verified) {
     require(getKYCApproval(self, account));
     require(getAccountStatus(self, account));
     return true;
@@ -610,7 +611,7 @@ library TokenIOLib {
    * @dev | This method has an `internal` view
    * @dev | This method uses `forceTransfer()` low-level api
    * @param self Internal storage proxying TokenIOStorage contract
-   * @param currency TokenIO TSM currency symbol (e.g. USDx)
+   * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @param to Ethereum address of account to send currency amount to
    * @param amount Value of currency to transfer
    * @param data Arbitrary bytes data to include with the transaction
@@ -639,7 +640,7 @@ library TokenIOLib {
    * @dev | This method implements ERC20 transferFrom() method with approved spender behavior
    * @dev | msg.sender == spender; `updateAllowance()` reduces approved limit for account spender
    * @param self Internal storage proxying TokenIOStorage contract
-   * @param currency TokenIO TSM currency symbol (e.g. USDx)
+   * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @param from Ethereum address of account to send currency amount from
    * @param to Ethereum address of account to send currency amount to
    * @param amount Value of currency to transfer
@@ -673,7 +674,7 @@ library TokenIOLib {
    * @dev | This method does not include fees or approved allowances.
    * @dev | This method is only for authorized interfaces to use (e.g. TokenIOFX)
    * @param self Internal storage proxying TokenIOStorage contract
-   * @param currency TokenIO TSM currency symbol (e.g. USDx)
+   * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @param from Ethereum address of account to send currency amount from
    * @param to Ethereum address of account to send currency amount to
    * @param amount Value of currency to transfer
@@ -689,7 +690,7 @@ library TokenIOLib {
     require(self.Storage.setUint(id_a, self.Storage.getUint(id_a).sub(amount)));
     require(self.Storage.setUint(id_b, self.Storage.getUint(id_b).add(amount)));
 
-    emit LogTransfer(currency, from, to, amount, data);
+    emit Transfer(currency, from, to, amount, data);
 
     return true;
   }
@@ -699,7 +700,7 @@ library TokenIOLib {
    * @dev | This method is called inside the `transferFrom()` method
    * @dev | msg.sender == spender address
    * @param self Internal storage proxying TokenIOStorage contract
-   * @param currency TokenIO TSM currency symbol (e.g. USDx)
+   * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @param account Ethereum address of account holder
    * @param amount Value to reduce allowance by (i.e. the amount spent)
    * @return { "success" : "Return true if successfully called from another contract" }
@@ -729,7 +730,7 @@ library TokenIOLib {
     require(self.Storage.getUint(id_b) >= amount);
     require(self.Storage.setUint(id_a, amount));
 
-    emit LogApproval(msg.sender, spender, amount);
+    emit Approval(msg.sender, spender, amount);
 
     return true;
   }
@@ -739,7 +740,7 @@ library TokenIOLib {
    * @dev | The total supply of the token increases only when new funds are deposited 1:1
    * @dev | This method should only be called by authorized issuer firms
    * @param self Internal storage proxying TokenIOStorage contract
-   * @param currency TokenIO TSM currency symbol (e.g. USDx)
+   * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @param account Ethereum address of account holder to deposit funds for
    * @param amount Value of currency to deposit for account
    * @param issuerFirm Name of the issuing firm authorizing the deposit
@@ -755,7 +756,7 @@ library TokenIOLib {
     require(self.Storage.setUint(id_b, self.Storage.getUint(id_b).add(amount)));
     require(self.Storage.setUint(id_c, self.Storage.getUint(id_c).add(amount)));
 
-    emit LogDeposit(currency, account, amount, issuerFirm);
+    emit Deposit(currency, account, amount, issuerFirm);
 
     return true;
 
@@ -766,7 +767,7 @@ library TokenIOLib {
    * @dev | The total supply of the token decreases only when new funds are withdrawn 1:1
    * @dev | This method should only be called by authorized issuer firms
    * @param self Internal storage proxying TokenIOStorage contract
-   * @param currency TokenIO TSM currency symbol (e.g. USDx)
+   * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @param account Ethereum address of account holder to deposit funds for
    * @param amount Value of currency to withdraw for account
    * @param issuerFirm Name of the issuing firm authorizing the withdraw
@@ -781,7 +782,7 @@ library TokenIOLib {
     require(self.Storage.setUint(id_b, self.Storage.getUint(id_b).sub(amount)));
     require(self.Storage.setUint(id_c, self.Storage.getUint(id_c).sub(amount)));
 
-    emit LogWithdraw(currency, account, amount, issuerFirm);
+    emit Withdraw(currency, account, amount, issuerFirm);
 
     return true;
 
@@ -926,6 +927,9 @@ library TokenIOLib {
   ) internal returns (bool success) {
 
     bytes32 fxTxHash = keccak256(abi.encodePacked(requester, symbolA, symbolB, valueA, valueB, expiration));
+
+    /// @notice check that sender and requester accounts are verified
+    /// @notice Only verified accounts can perform currency swaps
     require(verifyAccounts(self, msg.sender, requester));
 
     /// @dev Ensure transaction has not yet been used;
@@ -945,7 +949,7 @@ library TokenIOLib {
     require(forceTransfer(self, symbolA, msg.sender, requester, valueA, "0x0"));
     require(forceTransfer(self, symbolB, requester, msg.sender, valueB, "0x0"));
 
-    emit LogFxSwap(symbolA, symbolB, valueA, valueB, expiration, fxTxHash);
+    emit FxSwap(symbolA, symbolB, valueA, valueB, expiration, fxTxHash);
 
     return true;
   }
