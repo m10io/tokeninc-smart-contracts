@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 
 /**
@@ -18,7 +18,7 @@ library SafeMath {
       return 0;
     }
     uint256 c = a * b;
-    require(c / a == b);
+    require(c / a == b, "Error: Unsafe multiplication operation!");
     return c;
   }
 
@@ -43,7 +43,7 @@ library SafeMath {
   */
   function sub(uint256 a, uint256 b) internal pure returns (uint256 result) {
     // @dev throws on overflow (i.e. if subtrahend is greater than minuend)
-    require(b <= a);
+    require(b <= a, "Error: Unsafe subtraction operation!");
     return a - b;
   }
 
@@ -55,7 +55,7 @@ library SafeMath {
   */
   function add(uint256 a, uint256 b) internal pure returns (uint256 result) {
     uint256 c = a + b;
-    require(c >= a);
+    require(c >= a, "Error: Unsafe addition operation!");
     return c;
   }
 }

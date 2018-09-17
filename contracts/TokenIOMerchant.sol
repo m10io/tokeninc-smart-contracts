@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 /*
 COPYRIGHT 2018 Token, Inc.
@@ -56,7 +56,8 @@ contract TokenIOMerchant is Ownable {
     function setParams(
       address feeContract
     ) onlyOwner public returns (bool success) {
-      require(lib.setFeeContract(feeContract));
+      require(lib.setFeeContract(feeContract),
+        "Error: Unable to set fee contract. Ensure contract is allowed by storage contract.");
       return true;
     }
 
@@ -102,15 +103,21 @@ contract TokenIOMerchant is Ownable {
     function pay(string currency, address merchant, uint amount, bool merchantPaysFees, bytes data) public returns (bool success) {
       uint fees = calculateFees(amount);
       /// @dev note the spending amount limit is gross of fees
-      require(lib.setAccountSpendingAmount(msg.sender, lib.getFxUSDAmount(currency, amount)));
-      require(lib.forceTransfer(currency, msg.sender, merchant, amount, data));
+      require(lib.setAccountSpendingAmount(msg.sender, lib.getFxUSDAmount(currency, amount)),
+        "Error: Unable to set account spending amount.");
+      require(lib.forceTransfer(currency, msg.sender, merchant, amount, data),
+        "Error: Unable to transfer funds to account");
 
       address feeContract = lib.getFeeContract(address(this));
       /// @dev If merchantPaysFees == true, the merchant will pay the fees to the fee contract;
       if (merchantPaysFees) {
-        require(lib.forceTransfer(currency, merchant, feeContract, fees, lib.getFeeMsg(feeContract)));
+        require(lib.forceTransfer(currency, merchant, feeContract, fees, lib.getFeeMsg(feeContract)),
+          "Error: Unable to transfer fees to fee contract.");
+
       } else {
-        require(lib.forceTransfer(currency, msg.sender, feeContract, fees, lib.getFeeMsg(feeContract)));
+        require(lib.forceTransfer(currency, msg.sender, feeContract, fees, lib.getFeeMsg(feeContract)),
+          "Error: Unable to transfer fees to fee contract.");
+          
       }
 
       return true;

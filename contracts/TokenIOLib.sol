@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 
 /**
@@ -59,7 +59,10 @@ library TokenIOLib {
    */
   function setTokenName(Data storage self, string tokenName) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('token.name', address(this)));
-    self.Storage.setString(id, tokenName);
+    require(
+      self.Storage.setString(id, tokenName),
+      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
+    );
     return true;
   }
 
@@ -73,7 +76,10 @@ library TokenIOLib {
    */
   function setTokenSymbol(Data storage self, string tokenSymbol) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('token.symbol', address(this)));
-    self.Storage.setString(id, tokenSymbol);
+    require(
+      self.Storage.setString(id, tokenSymbol),
+      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
+    );
     return true;
   }
 
@@ -87,7 +93,10 @@ library TokenIOLib {
    */
   function setTokenTLA(Data storage self, string tokenTLA) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('token.tla', address(this)));
-    self.Storage.setString(id, tokenTLA);
+    require(
+      self.Storage.setString(id, tokenTLA),
+      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
+    );
     return true;
   }
 
@@ -101,7 +110,10 @@ library TokenIOLib {
    */
   function setTokenVersion(Data storage self, string tokenVersion) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('token.version', address(this)));
-    self.Storage.setString(id, tokenVersion);
+    require(
+      self.Storage.setString(id, tokenVersion),
+      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
+    );
     return true;
   }
 
@@ -118,7 +130,10 @@ library TokenIOLib {
    */
   function setTokenDecimals(Data storage self, string currency, uint tokenDecimals) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('token.decimals', currency));
-    self.Storage.setUint(id, tokenDecimals);
+    require(
+      self.Storage.setUint(id, tokenDecimals),
+      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
+    );
     return true;
   }
 
@@ -133,7 +148,10 @@ library TokenIOLib {
    */
   function setFeeBPS(Data storage self, uint feeBPS) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('fee.bps', address(this)));
-    self.Storage.setUint(id, feeBPS);
+    require(
+      self.Storage.setUint(id, feeBPS),
+      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
+    );
     return true;
   }
 
@@ -148,7 +166,10 @@ library TokenIOLib {
    */
   function setFeeMin(Data storage self, uint feeMin) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('fee.min', address(this)));
-    self.Storage.setUint(id, feeMin);
+    require(
+      self.Storage.setUint(id, feeMin),
+      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
+    );
     return true;
   }
 
@@ -163,7 +184,10 @@ library TokenIOLib {
    */
   function setFeeMax(Data storage self, uint feeMax) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('fee.max', address(this)));
-    self.Storage.setUint(id, feeMax);
+    require(
+      self.Storage.setUint(id, feeMax),
+      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
+    );
     return true;
   }
 
@@ -178,7 +202,10 @@ library TokenIOLib {
    */
   function setFeeFlat(Data storage self, uint feeFlat) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('fee.flat', address(this)));
-    self.Storage.setUint(id, feeFlat);
+    require(
+      self.Storage.setUint(id, feeFlat),
+      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
+    );
     return true;
   }
 
@@ -193,7 +220,10 @@ library TokenIOLib {
    */
   function setFeeMsg(Data storage self, bytes feeMsg) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('fee.msg', address(this)));
-    self.Storage.setBytes(id, feeMsg);
+    require(
+      self.Storage.setBytes(id, feeMsg),
+      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
+    );
     return true;
   }
 
@@ -209,7 +239,10 @@ library TokenIOLib {
    */
   function setFeeContract(Data storage self, address feeContract) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('fee.account', address(this)));
-    self.Storage.setAddress(id, feeContract);
+    require(
+      self.Storage.setAddress(id, feeContract),
+      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
+    );
     return true;
   }
 
@@ -224,7 +257,10 @@ library TokenIOLib {
    */
   function setTokenNameSpace(Data storage self, string currency) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('token.namespace', currency));
-    self.Storage.setAddress(id, address(this));
+    require(
+      self.Storage.setAddress(id, address(this)),
+      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
+    );
     return true;
   }
 
@@ -241,7 +277,10 @@ library TokenIOLib {
    */
   function setKYCApproval(Data storage self, address account, bool isApproved, string issuerFirm) internal returns (bool success) {
       bytes32 id = keccak256(abi.encodePacked('account.kyc', getForwardedAccount(self, account)));
-      self.Storage.setBool(id, isApproved);
+      require(
+        self.Storage.setBool(id, isApproved),
+        "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
+      );
 
       /// @dev NOTE: Issuer is logged for setting account KYC status
       emit KYCApproval(account, isApproved, issuerFirm);
@@ -261,7 +300,10 @@ library TokenIOLib {
    */
   function setAccountStatus(Data storage self, address account, bool isAllowed, string issuerFirm) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('account.allowed', getForwardedAccount(self, account)));
-    self.Storage.setBool(id, isAllowed);
+    require(
+      self.Storage.setBool(id, isAllowed),
+      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
+    );
 
     /// @dev NOTE: Issuer is logged for setting account status
     emit AccountStatus(account, isAllowed, issuerFirm);
@@ -282,7 +324,10 @@ library TokenIOLib {
    */
   function setForwardedAccount(Data storage self, address originalAccount, address forwardedAccount) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('master.account', forwardedAccount));
-    self.Storage.setAddress(id, originalAccount);
+    require(
+      self.Storage.setAddress(id, originalAccount),
+      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
+    );
     return true;
   }
 
@@ -477,7 +522,10 @@ library TokenIOLib {
    */
   function setMasterFeeContract(Data storage self, address contractAddress) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('fee.contract.master'));
-    require(self.Storage.setAddress(id, contractAddress));
+    require(
+      self.Storage.setAddress(id, contractAddress),
+      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
+    );
     return true;
   }
 
@@ -574,7 +622,10 @@ library TokenIOLib {
    */
   function setTokenFrozenBalance(Data storage self, string currency, address account, uint amount) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('token.frozen', currency, getForwardedAccount(self, account)));
-    require(self.Storage.setUint(id, amount));
+    require(
+      self.Storage.setUint(id, amount),
+      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
+    );
     return true;
   }
 
@@ -612,8 +663,14 @@ library TokenIOLib {
    * @return { "verified" : "Returns true if both accounts are successfully verified" }
    */
   function verifyAccounts(Data storage self, address accountA, address accountB) internal view returns (bool verified) {
-    require(verifyAccount(self, accountA));
-    require(verifyAccount(self, accountB));
+    require(
+      verifyAccount(self, accountA),
+      "Error: Account is not verified for operation. Please ensure account has been KYC approved."
+    );
+    require(
+      verifyAccount(self, accountB),
+      "Error: Account is not verified for operation. Please ensure account has been KYC approved."
+    );
     return true;
   }
 
@@ -625,8 +682,14 @@ library TokenIOLib {
    * @return { "verified" : "Returns true if account is successfully verified" }
    */
   function verifyAccount(Data storage self, address account) internal view returns (bool verified) {
-    require(getKYCApproval(self, account));
-    require(getAccountStatus(self, account));
+    require(
+      getKYCApproval(self, account),
+      "Error: Account does not have KYC approval."
+    );
+    require(
+      getAccountStatus(self, account),
+      "Error: Account status is `false`. Account status must be `true`."
+    );
     return true;
   }
 
@@ -644,16 +707,24 @@ library TokenIOLib {
    * @return { "success" : "Return true if successfully called from another contract" }
    */
   function transfer(Data storage self, string currency, address to, uint amount, bytes data) internal returns (bool success) {
-    require(address(to) != 0x0);
+    require(address(to) != 0x0, "Error: `to` address cannot be null." );
+    require(amount > 0, "Error: `amount` must be greater than zero");
 
     address feeContract = getFeeContract(self, address(this));
     uint fees = calculateFees(self, feeContract, amount);
 
-    require(setAccountSpendingAmount(self, msg.sender, getFxUSDAmount(self, currency, amount)));
-    require(forceTransfer(self, currency, msg.sender, to, amount, data));
+    require(
+      setAccountSpendingAmount(self, msg.sender, getFxUSDAmount(self, currency, amount)),
+      "Error: Unable to set spending amount for account.");
+
+    require(
+      forceTransfer(self, currency, msg.sender, to, amount, data),
+      "Error: Unable to transfer funds to account.");
 
     // @dev transfer fees to fee contract
-    require(forceTransfer(self, currency, msg.sender, feeContract, fees, getFeeMsg(self, feeContract)));
+    require(
+      forceTransfer(self, currency, msg.sender, feeContract, fees, getFeeMsg(self, feeContract)),
+      "Error: Unable to transfer fees to fee contract.");
 
     return true;
   }
@@ -675,22 +746,37 @@ library TokenIOLib {
    * @return { "success" : "Return true if successfully called from another contract" }
    */
   function transferFrom(Data storage self, string currency, address from, address to, uint amount, bytes data) internal returns (bool success) {
-    require(address(to) != 0x0);
+    require(
+      address(to) != 0x0,
+      "Error: `to` address must not be null."
+    );
 
     address feeContract = getFeeContract(self, address(this));
     uint fees = calculateFees(self, feeContract, amount);
 
     /// @dev NOTE: This transaction will fail if the spending amount exceeds the daily limit
-    require(setAccountSpendingAmount(self, from, getFxUSDAmount(self, currency, amount)));
+    require(
+      setAccountSpendingAmount(self, from, getFxUSDAmount(self, currency, amount)),
+      "Error: Unable to set account spending amount."
+    );
 
     /// @dev Attempt to transfer the amount
-    require(forceTransfer(self, currency, from, to, amount, data));
+    require(
+      forceTransfer(self, currency, from, to, amount, data),
+      "Error: Unable to transfer funds to account."
+    );
 
     // @dev transfer fees to fee contract
-    require(forceTransfer(self, currency, from, feeContract, fees, getFeeMsg(self, feeContract)));
+    require(
+      forceTransfer(self, currency, from, feeContract, fees, getFeeMsg(self, feeContract)),
+      "Error: Unable to transfer fees to fee contract."
+    );
 
     /// @dev Attempt to update the spender allowance
-    require(updateAllowance(self, currency, from, amount));
+    require(
+      updateAllowance(self, currency, from, amount),
+      "Error: Unable to update allowance for spender."
+    );
 
     return true;
   }
@@ -709,13 +795,22 @@ library TokenIOLib {
    * @return { "success" : "Return true if successfully called from another contract" }
    */
   function forceTransfer(Data storage self, string currency, address from, address to, uint amount, bytes data) internal returns (bool success) {
-    require(address(to) != 0x0);
+    require(
+      address(to) != 0x0,
+      "Error: `to` address must not be null."
+    );
 
     bytes32 id_a = keccak256(abi.encodePacked('token.balance', currency, getForwardedAccount(self, from)));
     bytes32 id_b = keccak256(abi.encodePacked('token.balance', currency, getForwardedAccount(self, to)));
 
-    require(self.Storage.setUint(id_a, self.Storage.getUint(id_a).sub(amount)));
-    require(self.Storage.setUint(id_b, self.Storage.getUint(id_b).add(amount)));
+    require(
+      self.Storage.setUint(id_a, self.Storage.getUint(id_a).sub(amount)),
+      "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
+    );
+    require(
+      self.Storage.setUint(id_b, self.Storage.getUint(id_b).add(amount)),
+      "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
+    );
 
     emit Transfer(currency, from, to, amount, data);
 
@@ -734,7 +829,10 @@ library TokenIOLib {
    */
   function updateAllowance(Data storage self, string currency, address account, uint amount) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('token.allowance', currency, getForwardedAccount(self, account), getForwardedAccount(self, msg.sender)));
-    require(self.Storage.setUint(id, self.Storage.getUint(id).sub(amount)));
+    require(
+      self.Storage.setUint(id, self.Storage.getUint(id).sub(amount)),
+      "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
+    );
     return true;
   }
 
@@ -748,14 +846,29 @@ library TokenIOLib {
    * @return { "success" : "Return true if successfully called from another contract" }
    */
   function approveAllowance(Data storage self, address spender, uint amount) internal returns (bool success) {
+    require(spender != 0x0,
+        "Error: `spender` address cannot be null.");
+
     string memory currency = getTokenSymbol(self, address(this));
+
+    require(
+      getTokenFrozenBalance(self, currency, getForwardedAccount(self, spender)) == 0,
+      "Error: Spender must not have a frozen balance directly");
 
     bytes32 id_a = keccak256(abi.encodePacked('token.allowance', currency, getForwardedAccount(self, msg.sender), getForwardedAccount(self, spender)));
     bytes32 id_b = keccak256(abi.encodePacked('token.balance', currency, getForwardedAccount(self, msg.sender)));
 
-    require(self.Storage.getUint(id_a) == 0 || amount == 0);
-    require(self.Storage.getUint(id_b) >= amount);
-    require(self.Storage.setUint(id_a, amount));
+    require(
+      self.Storage.getUint(id_a) == 0 || amount == 0,
+      "Error: Allowance must be zero (0) before setting an updated allowance for spender.");
+
+    require(
+      self.Storage.getUint(id_b) >= amount,
+      "Error: Allowance cannot exceed msg.sender token balance.");
+
+    require(
+      self.Storage.setUint(id_a, amount),
+      "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
 
     emit Approval(msg.sender, spender, amount);
 
@@ -779,9 +892,12 @@ library TokenIOLib {
     bytes32 id_c = keccak256(abi.encodePacked('token.supply', currency));
 
 
-    require(self.Storage.setUint(id_a, self.Storage.getUint(id_a).add(amount)));
-    require(self.Storage.setUint(id_b, self.Storage.getUint(id_b).add(amount)));
-    require(self.Storage.setUint(id_c, self.Storage.getUint(id_c).add(amount)));
+    require(self.Storage.setUint(id_a, self.Storage.getUint(id_a).add(amount)),
+      "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
+    require(self.Storage.setUint(id_b, self.Storage.getUint(id_b).add(amount)),
+      "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
+    require(self.Storage.setUint(id_c, self.Storage.getUint(id_c).add(amount)),
+      "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
 
     emit Deposit(currency, account, amount, issuerFirm);
 
@@ -805,9 +921,15 @@ library TokenIOLib {
     bytes32 id_b = keccak256(abi.encodePacked('token.issued', currency, issuerFirm)); // possible for issuer to go negative
     bytes32 id_c = keccak256(abi.encodePacked('token.supply', currency));
 
-    require(self.Storage.setUint(id_a, self.Storage.getUint(id_a).sub(amount)));
-    require(self.Storage.setUint(id_b, self.Storage.getUint(id_b).sub(amount)));
-    require(self.Storage.setUint(id_c, self.Storage.getUint(id_c).sub(amount)));
+    require(
+      self.Storage.setUint(id_a, self.Storage.getUint(id_a).sub(amount)),
+      "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
+    require(
+      self.Storage.setUint(id_b, self.Storage.getUint(id_b).sub(amount)),
+      "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
+    require(
+      self.Storage.setUint(id_c, self.Storage.getUint(id_c).sub(amount)),
+      "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
 
     emit Withdraw(currency, account, amount, issuerFirm);
 
@@ -827,7 +949,10 @@ library TokenIOLib {
    */
   function setRegisteredFirm(Data storage self, string issuerFirm, bool approved) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('registered.firm', issuerFirm));
-    require(self.Storage.setBool(id, approved));
+    require(
+      self.Storage.setBool(id, approved),
+      "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
+    );
     return true;
   }
 
@@ -843,12 +968,21 @@ library TokenIOLib {
    * @return { "success" : "Return true if successfully called from another contract" }
    */
   function setRegisteredAuthority(Data storage self, string issuerFirm, address authorityAddress, bool approved) internal returns (bool success) {
-    require(isRegisteredFirm(self, issuerFirm));
+    require(
+      isRegisteredFirm(self, issuerFirm),
+      "Error: `issuerFirm` must be registered.");
+
     bytes32 id_a = keccak256(abi.encodePacked('registered.authority', issuerFirm, authorityAddress));
     bytes32 id_b = keccak256(abi.encodePacked('registered.authority.firm', authorityAddress));
 
-    require(self.Storage.setBool(id_a, approved));
-    require(self.Storage.setString(id_b, issuerFirm));
+    require(
+      self.Storage.setBool(id_a, approved),
+      "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
+
+    require(
+      self.Storage.setString(id_b, issuerFirm),
+      "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
+
 
     return true;
   }
@@ -919,7 +1053,14 @@ library TokenIOLib {
    */
   function setTxStatus(Data storage self, bytes32 txHash) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('tx.status', txHash));
-    require(self.Storage.setBool(id, true));
+    /// @dev Ensure transaction has not yet been used;
+    require(!getTxStatus(self, txHash),
+      "Error: Transaction status must be false before setting the transaction status.");
+
+    /// @dev Update the status of the transaction;
+    require(self.Storage.setBool(id, true),
+      "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
+
     return true;
   }
 
@@ -957,24 +1098,32 @@ library TokenIOLib {
 
     /// @notice check that sender and requester accounts are verified
     /// @notice Only verified accounts can perform currency swaps
-    require(verifyAccounts(self, msg.sender, requester));
-
-    /// @dev Ensure transaction has not yet been used;
-    require(!getTxStatus(self, fxTxHash));
+    require(
+      verifyAccounts(self, msg.sender, requester),
+      "Error: Only verified accounts can perform currency swaps.");
 
     /// @dev Immediately set this transaction to be confirmed before updating any params;
-    require(setTxStatus(self, fxTxHash));
+    require(
+      setTxStatus(self, fxTxHash),
+      "Error: Failed to set transaction status to fulfilled.");
 
     /// @dev Ensure contract has not yet expired;
-    require(expiration >= now);
+    require(expiration >= now, "Error: Transaction has expired!");
 
     /// @dev Recover the address of the signature from the hashed digest;
     /// @dev Ensure it equals the requester's address
-    require(ecrecover(fxTxHash, sigV, sigR, sigS) == requester);
+    require(
+      ecrecover(fxTxHash, sigV, sigR, sigS) == requester,
+      "Error: Address derived from transaction signature does not match the requester address");
 
     /// @dev Transfer funds from each account to another.
-    require(forceTransfer(self, symbolA, msg.sender, requester, valueA, "0x0"));
-    require(forceTransfer(self, symbolB, requester, msg.sender, valueB, "0x0"));
+    require(
+      forceTransfer(self, symbolA, msg.sender, requester, valueA, "0x0"),
+      "Error: Unable to transfer funds to account.");
+
+    require(
+      forceTransfer(self, symbolB, requester, msg.sender, valueB, "0x0"),
+      "Error: Unable to transfer funds to account.");
 
     emit FxSwap(symbolA, symbolB, valueA, valueB, expiration, fxTxHash);
 
@@ -990,8 +1139,14 @@ library TokenIOLib {
    * @return {"success" : "Returns true if successfully called from another contract"}
    */
   function setDeprecatedContract(Data storage self, address contractAddress) internal returns (bool success) {
+    require(contractAddress != 0x0,
+        "Error: cannot deprecate a null address.");
+
     bytes32 id = keccak256(abi.encodePacked('depcrecated', contractAddress));
-    require(self.Storage.setBool(id, true));
+
+    require(self.Storage.setBool(id, true),
+      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract.");
+
     return true;
   }
 
@@ -1016,7 +1171,9 @@ library TokenIOLib {
    */
   function setAccountSpendingPeriod(Data storage self, address account, uint period) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('limit.spending.period', account));
-    require(self.Storage.setUint(id, period));
+    require(self.Storage.setUint(id, period),
+      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract.");
+
     return true;
   }
 
@@ -1044,7 +1201,9 @@ library TokenIOLib {
    */
   function setAccountSpendingLimit(Data storage self, address account, uint limit) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('account.spending.limit', account));
-    require(self.Storage.setUint(id, limit));
+    require(self.Storage.setUint(id, limit),
+      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract.");
+
     return true;
   }
 
@@ -1073,15 +1232,21 @@ library TokenIOLib {
   function setAccountSpendingAmount(Data storage self, address account, uint amount) internal returns (bool success) {
 
     /// @dev NOTE: Always ensure the period is current when checking the daily spend limit
-    require(updateAccountSpendingPeriod(self, account));
+    require(updateAccountSpendingPeriod(self, account),
+      "Error: Unable to update account spending period.");
+
     uint updatedAmount = getAccountSpendingAmount(self, account).add(amount);
 
     /// @dev Ensure the spend limit is greater than the amount spend for the period
-    require(getAccountSpendingLimit(self, account) >= updatedAmount);
+    require(
+      getAccountSpendingLimit(self, account) >= updatedAmount,
+      "Error: Account cannot exceed its daily spend limit.");
 
     /// @dev Update the spending period amount if within limit
     bytes32 id = keccak256(abi.encodePacked('account.spending.amount', account, getAccountSpendingPeriod(self, account)));
-    require(self.Storage.setUint(id, updatedAmount));
+    require(self.Storage.setUint(id, updatedAmount),
+      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract.");
+
     return true;
   }
 
@@ -1098,8 +1263,11 @@ library TokenIOLib {
     if (begDate > now) {
       return true;
     } else {
-      uint duration = 86400; // 86400 Seconds in a Day
-      require(setAccountSpendingPeriod(self, account, begDate.add(((now.sub(begDate)).div(duration).add(1)).mul(duration))));
+      uint duration = 86400; // 86400 seconds in a day
+      require(
+        setAccountSpendingPeriod(self, account, begDate.add(((now.sub(begDate)).div(duration).add(1)).mul(duration))),
+        "Error: Unable to update account spending period.");
+
       return true;
     }
   }
@@ -1137,7 +1305,10 @@ library TokenIOLib {
    */
   function setFxUSDBPSRate(Data storage self, string currency, uint bpsRate) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('fx.usd.rate', currency));
-    require(self.Storage.setUint(id, bpsRate));
+    require(
+      self.Storage.setUint(id, bpsRate),
+      "Error: Unable to update account spending period.");
+
     return true;
   }
 

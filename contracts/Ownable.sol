@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 
 
@@ -27,7 +27,7 @@ contract Ownable {
 
   event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
   event AllowOwnership(address indexed allowedAddress);
-  event DisallowOwnership(address indexed allowedAddress);
+  event RevokeOwnership(address indexed allowedAddress);
 
   /**
    * @dev The Ownable constructor sets the original `owner` of the contract to the sender
@@ -41,7 +41,7 @@ contract Ownable {
    * @dev Throws if called by any account other than the owner.
    */
   modifier onlyOwner() {
-    require(owner[msg.sender]);
+    require(owner[msg.sender], "Error: Transaction sender is not allowed by the contract.");
     _;
   }
 
@@ -51,7 +51,7 @@ contract Ownable {
    * @return {"success" : "Returns true when successfully transferred ownership"}
    */
   function transferOwnership(address newOwner) public onlyOwner returns (bool success) {
-    require(newOwner != address(0));
+    require(newOwner != address(0), "Error: newOwner cannot be null!");
     emit OwnershipTransferred(msg.sender, newOwner);
     owner[newOwner] = true;
     owner[msg.sender] = false;
@@ -76,7 +76,7 @@ contract Ownable {
    */
   function removeOwnership(address allowedAddress) public onlyOwner returns (bool success) {
     owner[allowedAddress] = false;
-    emit DisallowOwnership(allowedAddress);
+    emit RevokeOwnership(allowedAddress);
     return true;
   }
 

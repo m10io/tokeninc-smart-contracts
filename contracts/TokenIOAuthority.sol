@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 /*
 COPYRIGHT 2018 Token, Inc.
@@ -56,7 +56,10 @@ contract TokenIOAuthority is Ownable {
      */
     function setRegisteredFirm(string firmName, bool _authorized) public onlyAuthority(firmName, msg.sender) returns (bool success) {
         /// @notice set firm registration status
-        require(lib.setRegisteredFirm(firmName, _authorized));
+        require(
+          lib.setRegisteredFirm(firmName, _authorized),
+          "Error: Failed to register firm with storage contract! Please check your arguments."
+        );
         return true;
     }
 
@@ -69,7 +72,10 @@ contract TokenIOAuthority is Ownable {
      */
     function setRegisteredAuthority(string firmName, address authority, bool _authorized) public onlyAuthority(firmName, msg.sender) returns (bool success) {
         /// @notice set authority of firm to given status
-        require(lib.setRegisteredAuthority(firmName, authority, _authorized));
+        require(
+          lib.setRegisteredAuthority(firmName, authority, _authorized),
+          "Error: Failed to register authority for issuer firm with storage contract! Please check your arguments and ensure firmName is registered before allowing an authority of said firm"
+        );
         return true;
     }
 
@@ -120,14 +126,19 @@ contract TokenIOAuthority is Ownable {
      */
     function setMasterFeeContract(address feeContract) public onlyOwner returns (bool success) {
         /// @notice set master fee contract
-        require(lib.setMasterFeeContract(feeContract));
+        require(
+          lib.setMasterFeeContract(feeContract),
+          "Error: Unable to set master fee contract. Please ensure fee contract has the correct parameters."
+        );
         return true;
       }
 
 
     modifier onlyAuthority(string firmName, address authority) {
         /// @notice throws if not an owner authority or not registered to the given firm
-        require(owner[authority] || lib.isRegisteredToFirm(firmName, authority));
+        require(owner[authority] || lib.isRegisteredToFirm(firmName, authority),
+          "Error: Transaction sender does not have permission for this operation!"
+        );
         _;
     }
 

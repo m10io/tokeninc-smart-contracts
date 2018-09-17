@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 import "./Ownable.sol";
 import "./TokenIOStorage.sol";
@@ -62,11 +62,11 @@ contract TokenIOFeeContract is Ownable {
 	 * returns {"success" : "Returns true if successfully called from another contract"}
 	 */
 	function setFeeParams(uint feeBps, uint feeMin, uint feeMax, uint feeFlat, bytes feeMsg) public onlyOwner returns (bool success) {
-		require(lib.setFeeBPS(feeBps));
-		require(lib.setFeeMin(feeMin));
-		require(lib.setFeeMax(feeMax));
-		require(lib.setFeeFlat(feeFlat));
-		require(lib.setFeeMsg(feeMsg));
+		require(lib.setFeeBPS(feeBps), "Error: Unable to set fee contract basis points.");
+		require(lib.setFeeMin(feeMin), "Error: Unable to set fee contract minimum fee.");
+		require(lib.setFeeMax(feeMax), "Error: Unable to set fee contract maximum fee.");
+		require(lib.setFeeFlat(feeFlat), "Error: Unable to set fee contract flat fee.");
+		require(lib.setFeeMsg(feeMsg), "Error: Unable to set fee contract default message.");
 		return true;
 	}
 
@@ -118,8 +118,10 @@ contract TokenIOFeeContract is Ownable {
 	 * @return {"success": "Returns ture if successfully called from another contract"}
 	 */
 	function transferCollectedFees(string currency, address to, uint amount, bytes data) public onlyOwner returns (bool success) {
-		require(lib.verifyAccount(to));
-		require(lib.forceTransfer(currency, address(this), to, amount, data));
+		require(
+			lib.forceTransfer(currency, address(this), to, amount, data),
+			"Error: unable to transfer fees to account."
+		);
 		return true;
 	}
 

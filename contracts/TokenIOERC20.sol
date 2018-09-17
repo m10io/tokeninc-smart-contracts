@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 import "./Ownable.sol";
 import "./TokenIOStorage.sol";
@@ -70,13 +70,20 @@ contract TokenIOERC20 is Ownable {
     address _feeContract,
     uint _fxUSDBPSRate
     ) onlyOwner public returns (bool success) {
-      require(lib.setTokenName(_name));
-      require(lib.setTokenSymbol(_symbol));
-      require(lib.setTokenTLA(_tla));
-      require(lib.setTokenVersion(_version));
-      require(lib.setTokenDecimals(_symbol, _decimals));
-      require(lib.setFeeContract(_feeContract));
-      require(lib.setFxUSDBPSRate(_symbol, _fxUSDBPSRate));
+      require(lib.setTokenName(_name),
+        "Error: Unable to set token name. Please check arguments.");
+      require(lib.setTokenSymbol(_symbol),
+        "Error: Unable to set token symbol. Please check arguments.");
+      require(lib.setTokenTLA(_tla),
+        "Error: Unable to set token TLA. Please check arguments.");
+      require(lib.setTokenVersion(_version),
+        "Error: Unable to set token version. Please check arguments.");
+      require(lib.setTokenDecimals(_symbol, _decimals),
+        "Error: Unable to set token decimals. Please check arguments.");
+      require(lib.setFeeContract(_feeContract),
+        "Error: Unable to set fee contract. Please check arguments.");
+      require(lib.setFxUSDBPSRate(_symbol, _fxUSDBPSRate),
+        "Error: Unable to set fx USD basis points rate. Please check arguments.");
       return true;
     }
 
@@ -185,7 +192,10 @@ contract TokenIOERC20 is Ownable {
     function transfer(address to, uint amount) public notDeprecated returns (bool success) {
       /// @notice send transfer through library
       /// @dev !!! mutates storage state
-      require(lib.transfer(lib.getTokenSymbol(address(this)), to, amount, "0x0"));
+      require(
+        lib.transfer(lib.getTokenSymbol(address(this)), to, amount, "0x0"),
+        "Error: Unable to transfer funds. Please check your parameters."
+      );
       return true;
     }
 
@@ -199,7 +209,10 @@ contract TokenIOERC20 is Ownable {
     function transferFrom(address from, address to, uint amount) public notDeprecated returns (bool success) {
       /// @notice sends transferFrom through library
       /// @dev !!! mutates storage state
-      require(lib.transferFrom(lib.getTokenSymbol(address(this)), from, to, amount, "0x0"));
+      require(
+        lib.transferFrom(lib.getTokenSymbol(address(this)), from, to, amount, "0x0"),
+        "Error: Unable to transfer funds. Please check your parameters and ensure the spender has the approved amount of funds to transfer."
+      );
       return true;
     }
 
@@ -212,7 +225,10 @@ contract TokenIOERC20 is Ownable {
     function approve(address spender, uint amount) public notDeprecated returns (bool success) {
       /// @notice sends approve through library
       /// @dev !!! mtuates storage states
-      require(lib.approveAllowance(spender, amount));
+      require(
+        lib.approveAllowance(spender, amount),
+        "Error: Unable to approve allowance for spender. Please ensure spender is not null and does not have a frozen balance."
+      );
       return true;
     }
 
@@ -221,13 +237,15 @@ contract TokenIOERC20 is Ownable {
     * @return {"deprecated" : "Returns true if deprecated, false otherwise"}
     */
     function deprecateInterface() public onlyOwner returns (bool deprecated) {
-      require(lib.setDeprecatedContract(address(this)));
+      require(lib.setDeprecatedContract(address(this)),
+        "Error: Unable to deprecate contract!");
       return true;
     }
 
     modifier notDeprecated() {
       /// @notice throws if contract is deprecated
-      require(!lib.isContractDeprecated(address(this)));
+      require(!lib.isContractDeprecated(address(this)),
+        "Error: Contract has been deprecated, cannot perform operation!");
       _;
     }
 

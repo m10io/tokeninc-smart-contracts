@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 
 /*
@@ -78,7 +78,10 @@ contract TokenIOCurrencyAuthority is Ownable {
     function freezeAccount(address account, bool isAllowed, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool success) {
         // @notice updates account status
         // @dev !!! mutates storage state
-        require(lib.setAccountStatus(account, isAllowed, issuerFirm));
+        require(
+          lib.setAccountStatus(account, isAllowed, issuerFirm),
+          "Error: Unable to freeze account. Please check issuerFirm and firm authority are registered"
+        );
         return true;
     }
 
@@ -92,12 +95,24 @@ contract TokenIOCurrencyAuthority is Ownable {
     function approveKYC(address account, bool isApproved, uint limit, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool success) {
         // @notice updates kyc approval status
         // @dev !!! mutates storage state
-        require(lib.setKYCApproval(account, isApproved, issuerFirm));
+        require(
+          lib.setKYCApproval(account, isApproved, issuerFirm),
+          "Error: Unable to approve account. Please check issuerFirm and firm authority are registered"
+        );
         // @notice updates account statuss
         // @dev !!! mutates storage state
-        require(lib.setAccountStatus(account, isApproved, issuerFirm));
-        require(lib.setAccountSpendingLimit(account, limit));
-        require(lib.setAccountSpendingPeriod(account, (now + 86400)));
+        require(
+          lib.setAccountStatus(account, isApproved, issuerFirm),
+          "Error: Unable to set account status. Please check issuerFirm and firm authority are registered"
+        );
+        require(
+          lib.setAccountSpendingLimit(account, limit),
+          "Error: Unable to set initial spending limit for account. Please check issuerFirm and firm authority are registered"
+        );
+        require(
+          lib.setAccountSpendingPeriod(account, (now + 86400)),
+          "Error: Unable to set spending period for account. Please check issuerFirm and firm authority are registered"
+        );
         return true;
     }
 
@@ -112,13 +127,28 @@ contract TokenIOCurrencyAuthority is Ownable {
     function approveKYCAndDeposit(string currency, address account, uint amount, uint limit, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool success) {
         /// @notice updates kyc approval status
         /// @dev !!! mutates storage state
-        require(lib.setKYCApproval(account, true, issuerFirm));
+        require(
+          lib.setKYCApproval(account, true, issuerFirm),
+          "Error: Unable to approve account. Please check issuerFirm and firm authority are registered"
+        );
         /// @notice updates kyc approval status
         /// @dev !!! mutates storage state
-        require(lib.setAccountStatus(account, true, issuerFirm));
-        require(lib.deposit(currency, account, amount, issuerFirm));
-        require(lib.setAccountSpendingLimit(account, limit));
-        require(lib.setAccountSpendingPeriod(account, (now + 86400)));
+        require(
+          lib.setAccountStatus(account, true, issuerFirm),
+          "Error: Unable to set account status. Please check issuerFirm and firm authority are registered"
+        );
+        require(
+          lib.deposit(currency, account, amount, issuerFirm),
+          "Error: Unable to deposit funds. Please check issuerFirm and firm authority are registered"
+        );
+        require(
+          lib.setAccountSpendingLimit(account, limit),
+          "Error: Unable to set initial spending limit for account. Please check issuerFirm and firm authority are registered"
+        );
+        require(
+          lib.setAccountSpendingPeriod(account, (now + 86400)),
+          "Error: Unable to set spending period for account. Please check issuerFirm and firm authority are registered"
+        );
         return true;
     }
 
@@ -130,7 +160,10 @@ contract TokenIOCurrencyAuthority is Ownable {
      * @return { "success": "Returns true if successfully called from another contract"}
      */
     function setAccountSpendingLimit(address account, uint limit, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool success) {
-      require(lib.setAccountSpendingLimit(account, limit));
+      require(
+        lib.setAccountSpendingLimit(account, limit),
+        "Error: Unable to set initial spending limit for account. Please check issuerFirm and firm authority are registered"
+      );
       return true;
     }
 
@@ -161,7 +194,10 @@ contract TokenIOCurrencyAuthority is Ownable {
      * @return { "success": "Returns true if successfully called from another contract"}
      */
     function setFxBpsRate(string currency, uint bpsRate, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool success) {
-      require(lib.setFxUSDBPSRate(currency, bpsRate));
+      require(
+        lib.setFxUSDBPSRate(currency, bpsRate),
+        "Error: Unable to set FX USD basis points rate. Please ensure issuerFirm is authorized"
+      );
       return true;
     }
 
@@ -185,7 +221,10 @@ contract TokenIOCurrencyAuthority is Ownable {
     function approveForwardedAccount(address originalAccount, address updatedAccount, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool success) {
         // @notice updatesa forwarded account
         // @dev !!! mutates storage state
-        require(lib.setForwardedAccount(originalAccount, updatedAccount));
+        require(
+          lib.setForwardedAccount(originalAccount, updatedAccount),
+          "Error: Unable to set forwarded address for account. Please check issuerFirm and firm authority are registered"
+        );
         return true;
     }
 
@@ -197,10 +236,16 @@ contract TokenIOCurrencyAuthority is Ownable {
      * @return { "success": "Returns true if successfully called from another contract"}
      */
     function deposit(string currency, address account, uint amount, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool success) {
-        require(lib.verifyAccount(account));
+        require(
+          lib.verifyAccount(account),
+          "Error: Account is not verified!"
+        );
         // @notice depositing tokens to account
         // @dev !!! mutates storage state
-        require(lib.deposit(currency, account, amount, issuerFirm));
+        require(
+          lib.deposit(currency, account, amount, issuerFirm),
+          "Error: Unable to deposit funds. Please check issuerFirm and firm authority are registered"
+        );
         return true;
     }
 
@@ -213,10 +258,16 @@ contract TokenIOCurrencyAuthority is Ownable {
      * @return { "success": "Returns true if successfully called from another contract"}
      */
     function withdraw(string currency, address account, uint amount, string issuerFirm) public onlyAuthority(issuerFirm, msg.sender) returns (bool success) {
-        require(lib.verifyAccount(account));
+        require(
+          lib.verifyAccount(account),
+          "Error: Account is not verified!"
+        );
         // @notice withdrawing from account
         // @dev !!! mutates storage state
-        require(lib.withdraw(currency, account, amount, issuerFirm));
+        require(
+          lib.withdraw(currency, account, amount, issuerFirm),
+          "Error: Unable to withdraw funds. Please check issuerFirm and firm authority are registered and have issued funds that can be withdrawn"
+        );
         return true;
     }
 
@@ -224,9 +275,12 @@ contract TokenIOCurrencyAuthority is Ownable {
      * @notice Ensure only authorized currency firms and authorities can modify protected methods
      * @dev authority must be registered to an authorized firm to use protected methods
      */
-    modifier onlyAuthority(string _firmName, address _authority) {
+    modifier onlyAuthority(string firmName, address authority) {
         // @notice throws if authority account is not registred to the given firm
-        require(lib.isRegisteredToFirm(_firmName, _authority));
+        require(
+          lib.isRegisteredToFirm(firmName, authority),
+          "Error: issuerFirm and/or firm authority are not registered"
+        );
         _;
     }
 
