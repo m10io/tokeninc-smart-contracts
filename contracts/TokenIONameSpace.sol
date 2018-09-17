@@ -37,7 +37,7 @@ contract TokenIONameSpace is Ownable {
     TokenIOLib.Data lib;
 
     /**
-  	* @notice Constructor method for ERC20 contract
+  	* @notice Constructor method for TokenIONameSpace contract
   	* @param _storageContract     address of TokenIOStorage contract
   	*/
   	constructor(address _storageContract) public {

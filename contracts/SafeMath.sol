@@ -18,7 +18,7 @@ library SafeMath {
       return 0;
     }
     uint256 c = a * b;
-    assert(c / a == b);
+    require(c / a == b);
     return c;
   }
 
@@ -29,9 +29,9 @@ library SafeMath {
   * @return {"result" : "Returns quotient"}
   */
   function div(uint256 a, uint256 b) internal pure returns (uint256 result) {
-    // @dev assert(b > 0); // Solidity automatically throws when dividing by 0
+    // @dev require(b > 0); // Solidity automatically throws when dividing by 0
     uint256 c = a / b;
-    // @dev assert(a == b * c + a % b); // There is no case in which this doesn't hold
+    // @dev require(a == b * c + a % b); // There is no case in which this doesn't hold
     return c;
   }
 
@@ -43,7 +43,7 @@ library SafeMath {
   */
   function sub(uint256 a, uint256 b) internal pure returns (uint256 result) {
     // @dev throws on overflow (i.e. if subtrahend is greater than minuend)
-    assert(b <= a);
+    require(b <= a);
     return a - b;
   }
 
@@ -55,7 +55,7 @@ library SafeMath {
   */
   function add(uint256 a, uint256 b) internal pure returns (uint256 result) {
     uint256 c = a + b;
-    assert(c >= a);
+    require(c >= a);
     return c;
   }
 }

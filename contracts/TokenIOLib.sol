@@ -1,5 +1,4 @@
 pragma solidity ^0.4.24;
-pragma experimental ABIEncoderV2;
 
 
 /**
@@ -180,6 +179,21 @@ library TokenIOLib {
   function setFeeFlat(Data storage self, uint feeFlat) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('fee.flat', address(this)));
     self.Storage.setUint(id, feeFlat);
+    return true;
+  }
+
+  /**
+   * @notice Set fee message for contract interface
+   * @dev Default fee messages can be set by the TokenIOFeeContract (e.g. "tx_fees")
+   * @dev Fee messages vary by contract interface specified `feeContract`
+   * @dev | This method has an `internal` view
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param feeMsg Fee message included in a transaction with fees
+   * @return {"success" : "Returns true when successfully called from another contract"}
+   */
+  function setFeeMsg(Data storage self, bytes feeMsg) internal returns (bool success) {
+    bytes32 id = keccak256(abi.encodePacked('fee.msg', address(this)));
+    self.Storage.setBytes(id, feeMsg);
     return true;
   }
 
@@ -442,6 +456,18 @@ library TokenIOLib {
   }
 
   /**
+   * @notice Get the flat message of the contract address; typically TokenIOFeeContract
+   * @dev | This method has an `internal` view
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param contractAddress Contract address of the queryable interface
+   * @return { "feeMsg" : "Returns the fee message (bytes) associated with the contract address"}
+   */
+  function getFeeMsg(Data storage self, address contractAddress) internal view returns (bytes feeMsg) {
+    bytes32 id = keccak256(abi.encodePacked('fee.msg', contractAddress));
+    return self.Storage.getBytes(id);
+  }
+
+  /**
    * @notice Set the master fee contract used as the default fee contract when none is provided
    * @dev | This method has an `internal` view
    * @dev | This value is set in the TokenIOAuthority contract
@@ -625,8 +651,9 @@ library TokenIOLib {
 
     require(setAccountSpendingAmount(self, msg.sender, getFxUSDAmount(self, currency, amount)));
     require(forceTransfer(self, currency, msg.sender, to, amount, data));
-    /// @dev "0x547846656573" == "TxFees"
-    require(forceTransfer(self, currency, msg.sender, feeContract, fees, "0x547846656573"));
+
+    // @dev transfer fees to fee contract
+    require(forceTransfer(self, currency, msg.sender, feeContract, fees, getFeeMsg(self, feeContract)));
 
     return true;
   }
@@ -659,8 +686,8 @@ library TokenIOLib {
     /// @dev Attempt to transfer the amount
     require(forceTransfer(self, currency, from, to, amount, data));
 
-    /// @dev "0x547846656573" == "TxFees"
-    require(forceTransfer(self, currency, from, feeContract, fees, "0x547846656573"));
+    // @dev transfer fees to fee contract
+    require(forceTransfer(self, currency, from, feeContract, fees, getFeeMsg(self, feeContract)));
 
     /// @dev Attempt to update the spender allowance
     require(updateAllowance(self, currency, from, amount));

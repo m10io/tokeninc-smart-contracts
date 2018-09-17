@@ -126,7 +126,7 @@ contract TokenIOAuthority is Ownable {
 
 
     modifier onlyAuthority(string firmName, address authority) {
-        /// @notice throws if not an owner auuthority or not registered to the given firm
+        /// @notice throws if not an owner authority or not registered to the given firm
         require(owner[authority] || lib.isRegisteredToFirm(firmName, authority));
         _;
     }

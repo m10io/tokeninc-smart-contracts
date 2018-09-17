@@ -61,11 +61,12 @@ contract TokenIOFeeContract is Ownable {
 	 * @param feeFlat Flat transaction fee
 	 * returns {"success" : "Returns true if successfully called from another contract"}
 	 */
-	function setFeeParams(uint feeBps, uint feeMin, uint feeMax, uint feeFlat) public onlyOwner returns (bool success) {
+	function setFeeParams(uint feeBps, uint feeMin, uint feeMax, uint feeFlat, bytes feeMsg) public onlyOwner returns (bool success) {
 		require(lib.setFeeBPS(feeBps));
 		require(lib.setFeeMin(feeMin));
 		require(lib.setFeeMax(feeMax));
 		require(lib.setFeeFlat(feeFlat));
+		require(lib.setFeeMsg(feeMsg));
 		return true;
 	}
 
@@ -79,12 +80,13 @@ contract TokenIOFeeContract is Ownable {
 		"feeContract": "Address of this contract"
 	}
 	*/
-	function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, address feeContract) {
+	function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, bytes feeMsg, address feeContract) {
 			return (
 					lib.getFeeBPS(address(this)),
 					lib.getFeeMin(address(this)),
 					lib.getFeeMax(address(this)),
 					lib.getFeeFlat(address(this)),
+					lib.getFeeMsg(address(this)),
 					address(this)
 			);
 	}

@@ -25,8 +25,9 @@ contract Ownable {
 
   mapping(address => bool) public owner;
 
-  event LogOwnershipTransferred(address indexed previousOwner, address indexed newOwner);
-  event LogAllowOwnership(address indexed allowedAddress);
+  event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+  event AllowOwnership(address indexed allowedAddress);
+  event DisallowOwnership(address indexed allowedAddress);
 
   /**
    * @dev The Ownable constructor sets the original `owner` of the contract to the sender
@@ -51,20 +52,31 @@ contract Ownable {
    */
   function transferOwnership(address newOwner) public onlyOwner returns (bool success) {
     require(newOwner != address(0));
-    emit LogOwnershipTransferred(msg.sender, newOwner);
+    emit OwnershipTransferred(msg.sender, newOwner);
     owner[newOwner] = true;
     owner[msg.sender] = false;
     return true;
   }
 
   /**
-   * @dev Allows interface contracts to access contract methods (e.g. Storage contract)
+   * @dev Allows interface contracts and accounts to access contract methods (e.g. Storage contract)
    * @param allowedAddress The address of new owner
    * @return {"success" : "Returns true when successfully allowed ownership"}
    */
   function allowOwnership(address allowedAddress) public onlyOwner returns (bool success) {
     owner[allowedAddress] = true;
-    emit LogAllowOwnership(allowedAddress);
+    emit AllowOwnership(allowedAddress);
+    return true;
+  }
+
+  /**
+   * @dev Disallows interface contracts and accounts to access contract methods (e.g. Storage contract)
+   * @param allowedAddress The address to disallow ownership
+   * @return {"success" : "Returns true when successfully allowed ownership"}
+   */
+  function removeOwnership(address allowedAddress) public onlyOwner returns (bool success) {
+    owner[allowedAddress] = false;
+    emit DisallowOwnership(allowedAddress);
     return true;
   }
 

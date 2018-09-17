@@ -67,7 +67,8 @@ const FEE_PARAMS = {
     feeBps: 2, // bps fee
     feeMin: 0, // min fee
     feeMax: 100, // max fee
-    feeFlat: 2 // flat fee
+    feeFlat: 2, // flat fee
+    feeMsg: "0x547846656573"
 }
 
 module.exports = {

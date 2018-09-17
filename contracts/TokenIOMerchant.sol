@@ -32,7 +32,7 @@ contract TokenIOMerchant is Ownable {
     TokenIOLib.Data lib;
 
     /**
-     * @notice Constructor method for Authority contract
+     * @notice Constructor method for Merchant contract
      * @param _storageContract Ethereum Address of TokenIOStorage contract
      */
     constructor(address _storageContract) public {
@@ -70,12 +70,13 @@ contract TokenIOMerchant is Ownable {
     "contract":"Address of fee contract"
     }
     */
-    function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, address feeAccount) {
+    function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, bytes feeMsg, address feeAccount) {
       return (
         lib.getFeeBPS(lib.getFeeContract(address(this))),
         lib.getFeeMin(lib.getFeeContract(address(this))),
         lib.getFeeMax(lib.getFeeContract(address(this))),
         lib.getFeeFlat(lib.getFeeContract(address(this))),
+        lib.getFeeMsg(lib.getFeeContract(address(this))),
         lib.getFeeContract(address(this))
       );
     }
@@ -100,18 +101,16 @@ contract TokenIOMerchant is Ownable {
      */
     function pay(string currency, address merchant, uint amount, bool merchantPaysFees, bytes data) public returns (bool success) {
       uint fees = calculateFees(amount);
-
       /// @dev note the spending amount limit is gross of fees
       require(lib.setAccountSpendingAmount(msg.sender, lib.getFxUSDAmount(currency, amount)));
       require(lib.forceTransfer(currency, msg.sender, merchant, amount, data));
 
       address feeContract = lib.getFeeContract(address(this));
       /// @dev If merchantPaysFees == true, the merchant will pay the fees to the fee contract;
-      /// @dev "0x547846656573" == "TxFees"
       if (merchantPaysFees) {
-        require(lib.forceTransfer(currency, merchant, feeContract, fees, "0x547846656573"));
+        require(lib.forceTransfer(currency, merchant, feeContract, fees, lib.getFeeMsg(feeContract)));
       } else {
-        require(lib.forceTransfer(currency, msg.sender, feeContract, fees, "0x547846656573"));
+        require(lib.forceTransfer(currency, msg.sender, feeContract, fees, lib.getFeeMsg(feeContract)));
       }
 
       return true;

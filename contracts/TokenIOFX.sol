@@ -1,6 +1,4 @@
 pragma solidity ^0.4.24;
-/* pragma experimental ABIEncoderV2; */
-
 
 import "./Ownable.sol";
 import "./TokenIOLib.sol";
@@ -39,7 +37,7 @@ contract TokenIOFX is Ownable {
 
 
   /**
-	* @notice Constructor method for ERC20 contract
+	* @notice Constructor method for TokenIOFX contract
 	* @param _storageContract Address of TokenIOStorage contract
 	*/
 	constructor(address _storageContract) public {
