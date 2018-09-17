@@ -1,43 +1,74 @@
-var TokenIO = artifacts.require("./TokenIO.sol");
-var SafeMath = artifacts.require("./SafeMath.sol");
+const SafeMath = artifacts.require("./SafeMath.sol")
+const TokenIOLib = artifacts.require("./TokenIOLib.sol")
+const TokenIOStorage = artifacts.require("./TokenIOStorage.sol")
+const TokenIOERC20 = artifacts.require("./TokenIOERC20.sol")
+const TokenIOAuthority = artifacts.require("./TokenIOAuthority.sol")
+const TokenIOFX = artifacts.require("./TokenIOFX.sol")
+const TokenIOCurrencyAuthority = artifacts.require("./TokenIOCurrencyAuthority.sol")
+const TokenIOFeeContract = artifacts.require("./TokenIOFeeContract.sol")
+const TokenIOMerchant = artifacts.require("./TokenIOMerchant.sol")
 
-// NOTE: When using truffle console, if the config file changes ensure to restart
-// truffle console before attempting to `migrate --reset` as the config Variables
-// seem to be cached between each migration run.
-// TODO: Report issue on truffle github
-
-const { mode, development, production, tokenDetails } = require('../token.config.js');
-const { admin, feeAccount } = mode == 'production' ? production : development;
-
+const { mode, development, production } = require('../token.config.js');
 const {
-  tokenName,
-  tokenSymbol,
-  tokenTLA,
-  tokenVersion,
-  tokenDecimals
-} = tokenDetails
+    AUTHORITY_DETAILS: { firmName, authorityAddress },
+    TOKEN_DETAILS,
+    FEE_PARAMS
+} = mode == 'production' ? production : development;
 
-module.exports = async function(deployer, network) {
-	var token, storage;
-	// Deploy SafeMath Library
-	deployer.deploy(SafeMath).then(() => {
-		// Link SafeMath library to both TokenIO & TokenIOLib
-		return deployer.link(SafeMath, [ TokenIO ]);
-	}).then(() => {
-		// Deploy TokenIO
-		return deployer.deploy(
-      TokenIO,
-      admin,
-      feeAccount,
-      tokenName,
-      tokenSymbol,
-      tokenTLA,
-      tokenVersion,
-      tokenDecimals
-    )
-	}).then((_token) => {
-		token = _token
-	}).catch((error) => {
-		console.log('DEPLOYMENT ERROR: ', error)
-	})
+const deployContracts = async (deployer, accounts) => {
+  try {
+      /* library */
+      const safeMath = await deployer.deploy(SafeMath)
+      await deployer.link(SafeMath, [TokenIOLib])
+      const tokenIOLib = await deployer.deploy(TokenIOLib)
+      await deployer.link(TokenIOLib,
+          [TokenIOStorage, TokenIOERC20, TokenIOAuthority, TokenIOCurrencyAuthority, TokenIOFX, TokenIOFeeContract])
+
+      /* storage */
+      const storage = await deployer.deploy(TokenIOStorage)
+
+      /* master fee contract */
+      const masterFeeContract = await deployer.deploy(TokenIOFeeContract, storage.address)
+      await storage.allowOwnership(masterFeeContract.address)
+      await masterFeeContract.setFeeParams(...Object.keys(FEE_PARAMS).map((p) => { return FEE_PARAMS[p] }))
+
+      /* authority contracts */
+      const authority = await deployer.deploy(TokenIOAuthority, storage.address)
+      await storage.allowOwnership(authority.address)
+      const currencyAuthority = await deployer.deploy(TokenIOCurrencyAuthority, storage.address)
+      await storage.allowOwnership(currencyAuthority.address)
+
+      /* merchant contract */
+
+      const merchant = await deployer.deploy(TokenIOMerchant, storage.address)
+      await storage.allowOwnership(merchant.address)
+      await merchant.setParams(masterFeeContract.address)
+
+      /* fx */
+      const fx = await deployer.deploy(TokenIOFX, storage.address)
+      await storage.allowOwnership(fx.address)
+
+      /* registration */
+      await authority.setRegisteredFirm(firmName, true)
+      await authority.setRegisteredAuthority(firmName, accounts[0], true)
+      await authority.setMasterFeeContract(masterFeeContract.address)
+
+      /* token */
+      const token = await deployer.deploy(TokenIOERC20, storage.address)
+      await storage.allowOwnership(token.address)
+      await token.setParams(...Object.keys(TOKEN_DETAILS[0]).map((k) => { return TOKEN_DETAILS[0][k] }))
+
+      return true
+  } catch (err) {
+      console.log('### error deploying contracts', err)
+  }
+}
+
+
+module.exports = (deployer, network, accounts) => {
+    deployer.then(async () => {
+        await deployContracts(deployer, accounts)
+        console.log('### finished deploying contracts')
+    })
+    .catch(err => console.log('### error deploying contracts', err))
 }

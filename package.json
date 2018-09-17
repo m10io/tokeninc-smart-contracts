@@ -7,7 +7,20 @@
     "test": "test"
   },
   "scripts": {
-    "test": "truffle test"
+    "test": "npx truffle test",
+    "dev": "npx truffle develop",
+    "d0": "npx solmd ./contracts/Ownable.sol --dest ./docs/Ownable.md",
+    "d1": "npx solmd ./contracts/SafeMath.sol --dest ./docs/SafeMath.md",
+    "d2": "npx solmd ./contracts/TokenIOStorage.sol --dest ./docs/TokenIOStorage.md",
+    "d3": "npx solmd ./contracts/TokenIOLib.sol --dest ./docs/TokenIOLib.md",
+    "d4": "npx solmd ./contracts/TokenIOAuthority.sol --dest ./docs/TokenIOAuthority.md",
+    "d5": "npx solmd ./contracts/TokenIOCurrencyAuthority.sol --dest ./docs/TokenIOCurrencyAuthority.md",
+    "d6": "npx solmd ./contracts/TokenIOFeeContract.sol --dest ./docs/TokenIOFeeContract.md",
+    "d7": "npx solmd ./contracts/TokenIOERC20.sol --dest ./docs/TokenIOERC20.md",
+    "d8": "npx solmd ./contracts/TokenIONameSpace.sol --dest ./docs/TokenIONameSpace.md",
+    "d9": "npx solmd ./contracts/TokenIOFX.sol --dest ./docs/TokenIOFX.md",
+    "d10": "npx solmd ./contracts/TokenIOMerchant.sol --dest ./docs/TokenIOMerchant.md",
+    "docs": "npm run d0 && npm run d1 && npm run d2 && npm run d3 && npm run d4 && npm run d5 && npm run d6 && npm run d7 && npm run d8 && npm run d9 && npm run d10"
   },
   "keywords": [
     "Token",
@@ -19,10 +32,18 @@
   ],
   "author": "Ryan Tate <ryan.michael.tate@gmail.com>",
   "license": "SEE LICENSE IN LICENSE.md",
+  "repository": "https://github.com/tokenio/tokeninc-smart-contracts.git",
   "dependencies": {
     "bluebird": "^3.5.1",
     "ethereumjs-util": "^5.1.5",
     "ethers": "^3.0.15",
     "zeppelin-solidity": "1.8.0"
+  },
+  "devDependencies": {
+    "dotenv": "^6.0.0",
+    "solc": "^0.4.24",
+    "solmd": "^0.3.0",
+    "truffle": "^4.1.12",
+    "truffle-hdwallet-provider": "0.0.5"
   }
 }
