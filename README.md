@@ -130,6 +130,7 @@ Alternatively, if you're a software developer, TokenIO contracts can be interact
 ---
 #### Audit Report
 
+- [SOLIDIFIED](./audits/v3SolidifiedAuditReport.pdf)
 - [BECHAIN ](./audits/v3AuditReport.pdf)
 
 ---
