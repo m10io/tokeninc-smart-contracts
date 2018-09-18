@@ -1,3 +1,5 @@
+const { delay } = require('bluebird')
+
 const SafeMath = artifacts.require("./SafeMath.sol")
 const TokenIOLib = artifacts.require("./TokenIOLib.sol")
 const TokenIOStorage = artifacts.require("./TokenIOStorage.sol")
@@ -18,45 +20,44 @@ const {
 const deployContracts = async (deployer, accounts) => {
   try {
       /* library */
-      const safeMath = await deployer.deploy(SafeMath)
-      await deployer.link(SafeMath, [TokenIOLib])
-      const tokenIOLib = await deployer.deploy(TokenIOLib)
+      // const safeMath = await deployer.deploy(SafeMath)
+      // await deployer.link(SafeMath, [TokenIOLib])
+      // const tokenIOLib = await deployer.deploy(TokenIOLib)
       await deployer.link(TokenIOLib,
           [TokenIOStorage, TokenIOERC20, TokenIOAuthority, TokenIOCurrencyAuthority, TokenIOFX, TokenIOFeeContract])
 
       /* storage */
-      const storage = await deployer.deploy(TokenIOStorage)
+      const storage = await TokenIOStorage.deployed() // await deployer.deploy(TokenIOStorage)
 
       /* master fee contract */
-      const masterFeeContract = await deployer.deploy(TokenIOFeeContract, storage.address)
-      await storage.allowOwnership(masterFeeContract.address)
-      await masterFeeContract.setFeeParams(...Object.keys(FEE_PARAMS).map((p) => { return FEE_PARAMS[p] }))
+      // const masterFeeContract = await deployer.deploy(TokenIOFeeContract, storage.address)
+      // await storage.allowOwnership(masterFeeContract.address)
+      // await masterFeeContract.setFeeParams(...Object.keys(FEE_PARAMS).map((p) => { return FEE_PARAMS[p] }))
 
       /* authority contracts */
-      const authority = await deployer.deploy(TokenIOAuthority, storage.address)
-      await storage.allowOwnership(authority.address)
-      const currencyAuthority = await deployer.deploy(TokenIOCurrencyAuthority, storage.address)
-      await storage.allowOwnership(currencyAuthority.address)
+      // const authority = await deployer.deploy(TokenIOAuthority, storage.address)
+      // await storage.allowOwnership(authority.address)
+      // const currencyAuthority = await deployer.deploy(TokenIOCurrencyAuthority, storage.address)
+      // await storage.allowOwnership(currencyAuthority.address)
 
       /* merchant contract */
-
-      const merchant = await deployer.deploy(TokenIOMerchant, storage.address)
-      await storage.allowOwnership(merchant.address)
-      await merchant.setParams(masterFeeContract.address)
+      // const merchant = await deployer.deploy(TokenIOMerchant, storage.address)
+      // await storage.allowOwnership(merchant.address)
+      // await merchant.setParams(masterFeeContract.address)
 
       /* fx */
-      const fx = await deployer.deploy(TokenIOFX, storage.address)
-      await storage.allowOwnership(fx.address)
+      // const fx = await deployer.deploy(TokenIOFX, storage.address)
+      // await storage.allowOwnership(fx.address)
 
       /* registration */
-      await authority.setRegisteredFirm(firmName, true)
-      await authority.setRegisteredAuthority(firmName, accounts[0], true)
-      await authority.setMasterFeeContract(masterFeeContract.address)
+      // await authority.setRegisteredFirm(firmName, true)
+      // await authority.setRegisteredAuthority(firmName, accounts[0], true)
+      // await authority.setMasterFeeContract(masterFeeContract.address)
 
       /* token */
       const token = await deployer.deploy(TokenIOERC20, storage.address)
       await storage.allowOwnership(token.address)
-      await token.setParams(...Object.keys(TOKEN_DETAILS[0]).map((k) => { return TOKEN_DETAILS[0][k] }))
+      await token.setParams(...Object.values(TOKEN_DETAILS['USDx']).map((v) => { return v }))
 
       return true
   } catch (err) {

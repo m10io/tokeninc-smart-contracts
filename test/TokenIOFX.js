@@ -11,19 +11,8 @@ const {
 	TOKEN_DETAILS
 } = mode == 'production' ? production : development;
 
-const USDx = TOKEN_DETAILS[0]
-
-const { addresses, abi, bytecode } = require('../deployed/TokenIOERC20--development.json')
-
-/*
-- [ ] load deployed token contracts;
-- [ ] Create Request Address;
-- [ ] Provide Requester Address w/ GBP Balance;
-- [ ] Sign a message for requester;
-- [ ] Send signed message to execSwap() function
-- [ ] Check Balances
-*/
-
+const USDx = TOKEN_DETAILS['USDx']
+const EURx = TOKEN_DETAILS['EURx']
 
 
 contract("TokenIOFX", function(accounts) {
@@ -50,8 +39,8 @@ contract("TokenIOFX", function(accounts) {
 
 		await storage.allowOwnership(TOKEN_A.address)
 		await storage.allowOwnership(TOKEN_B.address)
-		await TOKEN_A.setParams(...Object.keys(TOKEN_DETAILS[0]).map((param) => { return TOKEN_DETAILS[0][param] }))
-		await TOKEN_B.setParams(...Object.keys(TOKEN_DETAILS[3]).map((param) => { return TOKEN_DETAILS[3][param] }))
+		await TOKEN_A.setParams(...Object.values(USDx).map((v) => { return v }))
+		await TOKEN_B.setParams(...Object.values(EURx).map((v) => { return v }))
 
 		REQUESTER_WALLET = await Wallet.createRandom()
 	})
@@ -61,11 +50,11 @@ contract("TokenIOFX", function(accounts) {
 		TOKEN_B_SYMBOL = await TOKEN_B.symbol()
 
 		assert.equal(TOKEN_A_SYMBOL, "USDx", "Initiated Token should be USDx")
-		assert.equal(TOKEN_B_SYMBOL, "JPYx", "Initiated Token should be JPYx")
+		assert.equal(TOKEN_B_SYMBOL, "EURx", "Initiated Token should be EURx")
 
 	})
 
-	it("Should Deposit JPYx into REQUESTER_WALLET account", async () => {
+	it("Should Deposit EURx into REQUESTER_WALLET account", async () => {
 		const CA = await TokenIOCurrencyAuthority.deployed();
 
 		const APPROVE_REQUESTER = await CA.approveKYC(REQUESTER_WALLET.address, true, SPENDING_LIMIT, "Token, Inc.")
@@ -93,7 +82,7 @@ contract("TokenIOFX", function(accounts) {
 
 		const message = utils.solidityKeccak256(
 			[ 'address', 'string', 'string', 'uint256', 'uint256', 'uint256' ],
-			[ REQUESTER_WALLET.address, 'USDx', 'JPYx', REQUESTER_DESIRED_AMOUNT, REQUESTER_OFFERED_AMOUNT, expiration ]
+			[ REQUESTER_WALLET.address, 'USDx', 'EURx', REQUESTER_DESIRED_AMOUNT, REQUESTER_OFFERED_AMOUNT, expiration ]
 		)
 
 		const signingKey = new SigningKey(REQUESTER_WALLET.privateKey)

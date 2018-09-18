@@ -1,5 +1,7 @@
 pragma solidity 0.4.24;
 
+import "./SafeMath.sol";
+import "./TokenIOStorage.sol";
 
 /**
 COPYRIGHT 2018 Token, Inc.
@@ -22,10 +24,6 @@ available storage contract between interfaces.
 
 
 */
-
-
-import "./SafeMath.sol";
-import "./TokenIOStorage.sol";
 
 
 library TokenIOLib {

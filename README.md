@@ -64,21 +64,21 @@ Alternatively, run a single test:
 
 The following contracts have been deployed at the associated addresses corresponding to the Ethereum network deployed on.
 
-*Ropsten:*
+<!-- *Ropsten:*
 - TokenIOStorage.sol: **0x0**
 - TokenIOAuthority.sol: **0x0**
 - TokenIOCurrencyAuthority.sol: **0x0**
 - TokenIOFeeContract.sol: **0x0**
 - TokenIOFX.sol: **0x0**
-- TokenIOERC20.sol: **0x0**
+- TokenIOERC20.sol: **0x0** -->
 
-*TokenIO PoA TestNet:*
-- TokenIOStorage.sol: **0x0**
-- TokenIOAuthority.sol: **0x0**
-- TokenIOCurrencyAuthority.sol: **0x0**
-- TokenIOFeeContract.sol: **0x0**
-- TokenIOFX.sol: **0x0**
-- TokenIOERC20.sol: **0x0**
+*Ethereum Main Network:*
+- TokenIOStorage.sol: [**0xe8f0b03249a078cbb1cc5b58addb6c289952a036**](https://etherscan.io/address/0xe8f0b03249a078cbb1cc5b58addb6c289952a036#code)
+- TokenIOAuthority.sol: [**0x4cd9ce52daef9234897d7cba73857347c6b4d11b**](https://etherscan.io/address/0x4cd9ce52daef9234897d7cba73857347c6b4d11b#code)
+- TokenIOCurrencyAuthority.sol: [**0x768bcf023aa517054a0349939069802a006ce350**](https://etherscan.io/address/0x768bcf023aa517054a0349939069802a006ce350#code)
+- TokenIOFeeContract.sol: [**0x0149e0aaea12ed0fa6ca63175051d17fd2e5afae**](https://etherscan.io/address/0x0149e0aaea12ed0fa6ca63175051d17fd2e5afae#code)
+- TokenIOFX.sol: [**0x741090779fb989fcf39468cc3719de45666f3cc7**](https://etherscan.io/address/0x741090779fb989fcf39468cc3719de45666f3cc7#code)
+- TokenIOERC20.sol (USDx): [**0x40d378cb3a6ae236e504482e31af36edce336daa**](https://etherscan.io/address/0x40d378cb3a6ae236e504482e31af36edce336daa#code)
 
 ---
 

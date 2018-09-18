@@ -10,7 +10,7 @@ const { AUTHORITY_DETAILS: { firmName, authorityAddress }, TOKEN_DETAILS, FEE_PA
 
 contract("TokenIOERC20", function(accounts) {
     // pull in usdx params
-    const USDx = TOKEN_DETAILS[0]
+    const USDx = TOKEN_DETAILS['USDx']
 
     // create test accounts
     const TEST_ACCOUNT_1 = accounts[0]
@@ -55,6 +55,7 @@ contract("TokenIOERC20", function(accounts) {
         const TOKEN_FEE_MIN = FEE_PARAMS.feeMin
         const TOKEN_FEE_MAX = FEE_PARAMS.feeMax
         const TOKEN_FEE_FLAT = FEE_PARAMS.feeFlat
+        const TOKEN_FEE_MSG = FEE_PARAMS.feeMsg
         const TOKEN_FEE_ACCOUNT = (await TokenIOFeeContract.deployed()).address
 
         const erc20 = await TokenIOERC20.deployed()
@@ -63,12 +64,14 @@ contract("TokenIOERC20", function(accounts) {
         const feeMin = feeParams[1]
         const feeMax = feeParams[2]
         const feeFlat = feeParams[3]
-        const feeAccount = feeParams[4]
+        const feeMsg = feeParams[4]
+        const feeAccount = feeParams[5]
 
         assert.equal(feeBps, TOKEN_FEE_BPS, "Token feeBps should be set in the storage contract.")
         assert.equal(feeMin, TOKEN_FEE_MIN, "Token feeMin should be set in the storage contract.")
         assert.equal(feeMax, TOKEN_FEE_MAX, "Token feeMax should be set in the storage contract.")
         assert.equal(feeFlat, TOKEN_FEE_FLAT, "Token feeFlat should be set in the storage contract.")
+        assert.equal(feeMsg, TOKEN_FEE_MSG, "Token feeMsg should be set in the storage contract.")
         assert.equal(feeAccount, TOKEN_FEE_ACCOUNT, "Token feeAccount should be set in the storage contract.")
     })
 
@@ -77,7 +80,7 @@ contract("TokenIOERC20", function(accounts) {
     it(`BALANCE_OF
         :should get balance of account1`, async () => {
         const erc20 = await TokenIOERC20.deployed()
-        await erc20.setParams(...Object.keys(TOKEN_DETAILS[0]).map((param) => { return TOKEN_DETAILS[0][param] }))
+        await erc20.setParams(...Object.values(TOKEN_DETAILS['USDx']).map((v) => { return v }))
 
         const balance = await erc20.balanceOf(TEST_ACCOUNT_1)
         assert.equal(balance, 0)
@@ -86,7 +89,7 @@ contract("TokenIOERC20", function(accounts) {
     it(`ALLOWANCE
         :should return allowance of account2 on behalf of account 1`, async () => {
           const erc20 = await TokenIOERC20.deployed()
-          await erc20.setParams(...Object.keys(TOKEN_DETAILS[0]).map((param) => { return TOKEN_DETAILS[0][param] }))
+          await erc20.setParams(...Object.values(TOKEN_DETAILS['USDx']).map((v) => { return v }))
 
           const allowance = await erc20.allowance(TEST_ACCOUNT_1, TEST_ACCOUNT_2)
           assert.equal(allowance, 0)
@@ -104,7 +107,7 @@ contract("TokenIOERC20", function(accounts) {
         const kycReceipt2= await CA.approveKYC(TEST_ACCOUNT_2, true, LIMIT_AMOUNT, "Token, Inc.")
         const kycReceipt3= await CA.approveKYC(TEST_ACCOUNT_3, true, LIMIT_AMOUNT, "Token, Inc.")
 
-        await erc20.setParams(...Object.keys(TOKEN_DETAILS[0]).map((param) => { return TOKEN_DETAILS[0][param] }))
+        await erc20.setParams(...Object.values(TOKEN_DETAILS['USDx']).map((v) => { return v }))
         await storage.allowOwnership(erc20.address)
         const tokenSymbol = await erc20.symbol()
         const depositReceipt = await CA.deposit(tokenSymbol, TEST_ACCOUNT_1, DEPOSIT_AMOUNT, "Token, Inc.")

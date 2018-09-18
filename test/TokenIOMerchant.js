@@ -12,7 +12,7 @@ const {
   TOKEN_DETAILS
 } = mode == 'production' ? production : development;
 
-const USDx = TOKEN_DETAILS[0]
+const USDx = TOKEN_DETAILS['USDx']
 
 
 contract("TokenIOFeeContract", function(accounts) {
