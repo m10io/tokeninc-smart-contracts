@@ -1,5 +1,9 @@
 pragma solidity 0.4.24;
 
+import "./Ownable.sol";
+import "./TokenIOStorage.sol";
+import "./TokenIOLib.sol";
+
 /*
 COPYRIGHT 2018 Token, Inc.
 
@@ -9,21 +13,17 @@ PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
 
 
-/**
 @title TokenIOMerchant - Merchant Interface Smart Contract for Token, Inc.
 
 @author Ryan Tate <ryan.tate@token.io>, Sean Pollock <sean.pollock@token.io>
 
 @notice Contract uses generalized storage contract, `TokenIOStorage`, for
 upgradeability of interface contract.
+
 */
 
-import "./Ownable.sol";
-import "./TokenIOStorage.sol";
-import "./TokenIOLib.sol";
 
 contract TokenIOMerchant is Ownable {
 
@@ -117,7 +117,7 @@ contract TokenIOMerchant is Ownable {
       } else {
         require(lib.forceTransfer(currency, msg.sender, feeContract, fees, lib.getFeeMsg(feeContract)),
           "Error: Unable to transfer fees to fee contract.");
-          
+
       }
 
       return true;

@@ -1,5 +1,8 @@
 pragma solidity 0.4.24;
 
+import "./Ownable.sol";
+import "./TokenIOStorage.sol";
+import "./TokenIOLib.sol";
 
 /*
 
@@ -12,13 +15,6 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-*/
-
-import "./Ownable.sol";
-import "./TokenIOStorage.sol";
-import "./TokenIOLib.sol";
-
-/*
 @title TokenIOCurrencyAuthority - Currency Authority Smart Contract for Token, Inc.
 
 @author Ryan Tate <ryan.tate@token.io>, Sean Pollock <sean.pollock@token.io>

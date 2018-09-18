@@ -1,10 +1,10 @@
 const USDx = {
   // Ensure these values are ordered in the object for the respective param list
   // index in the erc20 contract setPrams() method.
-  tokenName: 'Token USD', // tokenName
+  tokenName: 'TokenX USD', // tokenName
   tokenSymbol: 'USDx', // tokenSymbol
   tokenTLA: 'USD', // tokenTLA
-  tokenVersion: 'v0.1.3', // tokenVersion
+  tokenVersion: 'v0.3.0', // tokenVersion
   tokenDecimals: 2, // tokenDecimals
   feeContract: "0x0", // fee account
   fxBPSRate: 10000
@@ -13,10 +13,10 @@ const USDx = {
 const MXNx = {
   // Ensure these values are ordered in the object for the respective param list
   // index in the erc20 contract setPrams() method.
-  tokenName: 'Token MXN', // tokenName
+  tokenName: 'TokenX MXN', // tokenName
   tokenSymbol: 'MXNx', // tokenSymbol
   tokenTLA: 'MXN', // tokenTLA
-  tokenVersion: 'v0.1.3', // tokenVersion
+  tokenVersion: 'v0.3.0', // tokenVersion
   tokenDecimals: 2, // tokenDecimals
   feeContract: "0x0", // fee account
   fxBPSRate: 510
@@ -25,10 +25,10 @@ const MXNx = {
 const GBPx = {
   // Ensure these values are ordered in the object for the respective param list
   // index in the erc20 contract setPrams() method.
-  tokenName: 'Token GBP', // tokenName
+  tokenName: 'TokenX GBP', // tokenName
   tokenSymbol: 'GBPx', // tokenSymbol
   tokenTLA: 'GBP', // tokenTLA
-  tokenVersion: 'v0.1.3', // tokenVersion
+  tokenVersion: 'v0.3.0', // tokenVersion
   tokenDecimals: 2, // tokenDecimals
   feeContract: "0x0", // fee account
   fxBPSRate: 13200
@@ -37,10 +37,10 @@ const GBPx = {
 const JPYx = {
   // Ensure these values are ordered in the object for the respective param list
   // index in the erc20 contract setPrams() method.
-  tokenName: 'Token JPY', // tokenName
+  tokenName: 'TokenX JPY', // tokenName
   tokenSymbol: 'JPYx', // tokenSymbol
   tokenTLA: 'JPY', // tokenTLA
-  tokenVersion: 'v0.1.3', // tokenVersion
+  tokenVersion: 'v0.3.0', // tokenVersion
   tokenDecimals: 0, // tokenDecimals
   feeContract: "0x0", // fee account
   fxBPSRate: 90
@@ -49,14 +49,22 @@ const JPYx = {
 const EURx = {
   // Ensure these values are ordered in the object for the respective param list
   // index in the erc20 contract setPrams() method.
-  tokenName: 'Token EUR', // tokenName
+  tokenName: 'TokenX EUR', // tokenName
   tokenSymbol: 'EURx', // tokenSymbol
   tokenTLA: 'EUR', // tokenTLA
-  tokenVersion: 'v0.1.3', // tokenVersion
+  tokenVersion: 'v0.3.0', // tokenVersion
   tokenDecimals: 2, // tokenDecimals
   feeContract: "0x0", // fee account
   fxBPSRate: 11700
 }
+
+const TOKEN_DETAILS = {
+  USDx,
+  EURx,
+  // MXNx,
+  // GBPx,
+  // JPYx,
+};
 
 const AUTHORITY_DETAILS = {
   firmName: "Token, Inc.",
@@ -72,26 +80,14 @@ const FEE_PARAMS = {
 }
 
 module.exports = {
-  mode: 'development',
+  mode: 'production',
   development: {
-    TOKEN_DETAILS: [
-        USDx,
-        MXNx,
-        GBPx,
-        JPYx,
-        EURx,
-    ],
+    TOKEN_DETAILS,
     AUTHORITY_DETAILS,
     FEE_PARAMS
   },
   production: {
-    TOKEN_DETAILS: [
-        USDx,
-        MXNx,
-        GBPx,
-        JPYx,
-        EURx,
-    ],
+    TOKEN_DETAILS,
     AUTHORITY_DETAILS,
     FEE_PARAMS
   }

@@ -11,7 +11,7 @@ const {
   TOKEN_DETAILS
 } = mode == 'production' ? production : development;
 
-const USDx = TOKEN_DETAILS[0]
+const USDx = TOKEN_DETAILS['USDx']
 
 // Goal of this unit test is to check if the token values can be accessible directly from the contract;
 // Test deprecating a contract and rehydrating a new token contract with the updated version,

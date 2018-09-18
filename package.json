@@ -9,6 +9,7 @@
   "scripts": {
     "test": "npx truffle test",
     "dev": "npx truffle develop",
+    "deploy_live": "npx truffle migrate --network mainnet --reset",
     "d0": "npx solmd ./contracts/Ownable.sol --dest ./docs/Ownable.md",
     "d1": "npx solmd ./contracts/SafeMath.sol --dest ./docs/SafeMath.md",
     "d2": "npx solmd ./contracts/TokenIOStorage.sol --dest ./docs/TokenIOStorage.md",
@@ -37,6 +38,7 @@
     "bluebird": "^3.5.1",
     "ethereumjs-util": "^5.1.5",
     "ethers": "^3.0.15",
+    "web3-provider-engine": "^14.0.6",
     "zeppelin-solidity": "1.8.0"
   },
   "devDependencies": {
