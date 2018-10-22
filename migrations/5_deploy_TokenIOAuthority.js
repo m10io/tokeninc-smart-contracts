@@ -2,6 +2,7 @@ const { delay } = require('bluebird')
 
 const TokenIOStorage = artifacts.require("./TokenIOStorage.sol")
 const TokenIOAuthority = artifacts.require("./TokenIOAuthority.sol")
+const TokenIOFeeContract = artifacts.require("./TokenIOFeeContract.sol")
 
 const { mode, development, production } = require('../token.config.js');
 const {
@@ -16,6 +17,8 @@ const deployContracts = async (deployer, accounts) => {
       /* authority contracts */
       const authority = await deployer.deploy(TokenIOAuthority, storage.address)
       await storage.allowOwnership(authority.address)
+
+      const masterFeeContract = await TokenIOFeeContract.deployed()
 
       /* registration */
       await authority.setRegisteredFirm(firmName, true)

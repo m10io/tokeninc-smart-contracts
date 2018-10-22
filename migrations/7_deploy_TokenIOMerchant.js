@@ -10,7 +10,7 @@ const deployContracts = async (deployer, accounts) => {
       const storage = await TokenIOStorage.deployed()
 
       /* master fee contract */
-      const masterFeeContract = await deployer.deployed(TokenIOFeeContract)
+      const masterFeeContract = await TokenIOFeeContract.deployed()
 
       /* merchant contract */
       const merchant = await deployer.deploy(TokenIOMerchant, storage.address)
