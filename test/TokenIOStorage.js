@@ -24,7 +24,7 @@ contract("TokenIOStorage", function(accounts) {
 	const TEST_ACCOUNT_1 = accounts[0]
 	const TEST_ACCOUNT_2 = accounts[1]
 	const DEPOSIT_AMOUNT = 10000e2
-    const SPENDING_LIMIT = DEPOSIT_AMOUNT/2
+  const SPENDING_LIMIT = DEPOSIT_AMOUNT/2
 
 	it("Should get the token details directly from the storage contract", async () => {
 		const storage = await TokenIOStorage.deployed()
