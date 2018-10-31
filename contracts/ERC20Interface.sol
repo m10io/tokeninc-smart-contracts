@@ -8,6 +8,8 @@ pragma solidity ^0.4.24;
 interface ERC20Interface {
   function totalSupply() external view returns (uint256);
 
+  function decimals() external view returns (uint256);
+
   function balanceOf(address who) external view returns (uint256);
 
   function allowance(address owner, address spender)
