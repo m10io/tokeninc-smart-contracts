@@ -17,7 +17,7 @@ const USDc = {
   tokenSymbol: 'USDc', // tokenSymbol
   tokenTLA: 'USD', // tokenTLA
   tokenVersion: 'v1.0.1', // tokenVersion
-  tokenDecimals: 2, // tokenDecimals
+  tokenDecimals: 6, // tokenDecimals
   feeContract: "0x0", // fee account
   fxBPSRate: 10000
 }
