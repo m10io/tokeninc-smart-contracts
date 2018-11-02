@@ -41,6 +41,7 @@ contract TokenIOStableSwap is Ownable {
   event StableSwap(address fromAsset, address toAsset, address requestedBy, uint amount, string currency);
   event TransferredHoldings(address asset, address to, uint amount);
   event AllowedERC20Asset(address asset, string currency);
+  event RemovedERC20Asset(address asset, string currency);
 
   /**
   * @notice Constructor method for TokenIOStableSwap contract
@@ -62,22 +63,40 @@ contract TokenIOStableSwap is Ownable {
 	 * @notice This method may be deprecated or refactored to allow for multiple interfaces
 	 * @param  asset Ethereum address of the ERC20 compliant smart contract to allow the swap
 	 * @param  currency string Currency symbol of the token (e.g. `USD`, `EUR`, `GBP`, `JPY`, `AUD`, `CAD`, `CHF`, `NOK`, `NZD`, `SEK`)
+   * @param feeBps Basis points Swap Fee
+	 * @param feeMin Minimum Swap Fees
+	 * @param feeMax Maximum Swap Fee
+	 * @param feeFlat Flat Swap Fee
 	 * @return { "success" : "Returns true if successfully called from another contract"}
 	 */
-	function allowAsset(address asset, string currency) public onlyOwner notDeprecated returns (bool success) {
+	function allowAsset(address asset, string currency, uint feeBps, uint feeMin, uint feeMax, uint feeFlat) public onlyOwner notDeprecated returns (bool success) {
 		bytes32 id = keccak256(abi.encodePacked('allowed.stable.asset', asset, currency));
     require(
       lib.Storage.setBool(id, true),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
     );
 
-    /// @notice set TLA for the asset;
-    require(setAssetTLA(asset, currency));
+    /// @notice set Currency for the asset;
+    require(setAssetCurrency(asset, currency), 'Error: Unable to set Currency for asset');
+
+    /// @notice set the Fee Params for the asset
+    require(setAssetFeeParams(asset, feeBps, feeMin, feeMax, feeFlat), 'Error: Unable to set fee params for asset');
 
     /// @dev Log Allow ERC20 Asset
     emit AllowedERC20Asset(asset, currency);
 		return true;
 	}
+
+  function removeAsset(address asset) public onlyOwner notDeprecated returns (bool success) {
+    string memory currency = getAssetCurrency(asset);
+    bytes32 id = keccak256(abi.encodePacked('allowed.stable.asset', asset, currency));
+    require(
+      lib.Storage.setBool(id, false),
+      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
+    );
+    emit RemovedERC20Asset(asset, currency);
+    return true;
+  }
 
 	/**
 	 * @notice Return boolean if the asset is an allowed stable asset for the corresponding currency
@@ -97,11 +116,11 @@ contract TokenIOStableSwap is Ownable {
   /**
    * Set the Three Letter Abbrevation for the currency associated to the asset
    * @param asset Ethereum address of the asset to set the currency for
-   * @param currency string TLA of the asset
+   * @param currency string Currency of the asset (NOTE: This is the currency for the asset)
    * @return { "success" : "Returns true if successfully called from another contract"}
    */
-  function setAssetTLA(address asset, string currency) public onlyOwner returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('asset.tla', asset));
+  function setAssetCurrency(address asset, string currency) public onlyOwner returns (bool success) {
+    bytes32 id = keccak256(abi.encodePacked('asset.currency', asset));
     require(
       lib.Storage.setString(id, currency),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
@@ -110,12 +129,12 @@ contract TokenIOStableSwap is Ownable {
   }
 
   /**
-   * Get the TLA for an associated asset;
+   * Get the Currency for an associated asset;
    * @param asset Ethereum address of the asset to get the currency for
-   * @return {"tla": "Returns the TLA of the asset if the asset has been allowed."}
+   * @return {"currency": "Returns the Currency of the asset if the asset has been allowed."}
    */
-  function getAssetTLA(address asset) public view returns (string tla) {
-    bytes32 id = keccak256(abi.encodePacked('asset.tla', asset));
+  function getAssetCurrency(address asset) public view returns (string currency) {
+    bytes32 id = keccak256(abi.encodePacked('asset.currency', asset));
     return lib.Storage.getString(id);
   }
 
@@ -133,8 +152,8 @@ contract TokenIOStableSwap is Ownable {
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
     );
 
-    /// @notice set TLA for the asset;
-    require(setAssetTLA(asset, currency));
+    /// @notice set Currency for the asset;
+    require(setAssetCurrency(asset, currency));
 
     return true;
 	}
@@ -153,10 +172,10 @@ contract TokenIOStableSwap is Ownable {
   /**
    * @notice Set BPS, Min, Max, and Flat fee params for asset
    * @param asset Ethereum address of the asset to set fees for.
-   * @param feeBps Basis points transaction fee
-	 * @param feeMin Minimum transaction fees
-	 * @param feeMax Maximum transaction fee
-	 * @param feeFlat Flat transaction fee
+   * @param feeBps Basis points Swap Fee
+	 * @param feeMin Minimum Swap Fees
+	 * @param feeMax Maximum Swap Fee
+	 * @param feeFlat Flat Swap Fee
 	 * @return { "success" : "Returns true if successfully called from another contract"}
    */
   function setAssetFeeParams(address asset, uint feeBps, uint feeMin, uint feeMax, uint feeFlat) public onlyOwner notDeprecated returns (bool success) {
@@ -197,7 +216,7 @@ contract TokenIOStableSwap is Ownable {
    */
 	function convert(address fromAsset, address toAsset, uint amount) public notDeprecated returns (bool success) {
     /// @notice lookup currency from one of the assets, check if allowed by both assets.
-    string memory currency = getAssetTLA(fromAsset);
+    string memory currency = getAssetCurrency(fromAsset);
     uint fromDecimals = ERC20Interface(fromAsset).decimals();
     uint toDecimals = ERC20Interface(toAsset).decimals();
 
@@ -228,11 +247,12 @@ contract TokenIOStableSwap is Ownable {
 		} else if(isTokenXContract(fromAsset, currency)) {
       ///@dev Transfer the asset to the user;
       /// @notice Amount received from withdraw is net of fees.
-      uint netAmountTo = amount.sub(calcAssetFees(toAsset, amount));
+      uint convertedAmount = (amount.mul(10**toDecimals)).div(10**fromDecimals);
+      uint fees = calcAssetFees(toAsset, convertedAmount);
+      uint netAmountTo = convertedAmount.sub(fees);
       /// @dev Ensure amount is converted for the correct decimal representation;
-      uint convertedAmountTo = (netAmountTo.mul(10**fromDecimals)).div(10**toDecimals);
       require(
-      	ERC20Interface(toAsset).transfer(msg.sender, convertedAmountTo),
+      	ERC20Interface(toAsset).transfer(msg.sender, netAmountTo),
       	'Unable to call the requested erc20 contract.'
       );
 

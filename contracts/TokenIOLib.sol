@@ -771,6 +771,7 @@ library TokenIOLib {
     );
 
     /// @dev Attempt to update the spender allowance
+    /// @notice this will throw if the allowance has not been set.
     require(
       updateAllowance(self, currency, from, amount),
       "Error: Unable to update allowance for spender."
