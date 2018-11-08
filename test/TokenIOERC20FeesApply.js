@@ -1,6 +1,6 @@
 const TokenIOCurrencyAuthority = artifacts.require("./TokenIOCurrencyAuthority.sol");
 const TokenIOStorage = artifacts.require("./TokenIOStorage.sol")
-const TokenIOERC20Unlimited = artifacts.require("./TokenIOERC20Unlimited.sol")
+const TokenIOERC20FeesApply = artifacts.require("./TokenIOERC20FeesApply.sol")
 const TokenIOFeeContract = artifacts.require("./TokenIOFeeContract.sol")
 const { mode, development, production } = require('../token.config.js')
 const { utils } = require('ethers')
@@ -8,7 +8,7 @@ const { utils } = require('ethers')
 const { AUTHORITY_DETAILS: { firmName, authorityAddress }, TOKEN_DETAILS, FEE_PARAMS } = mode
     == 'production' ? production : development //set stage
 
-contract("TokenIOERC20Unlimited", function(accounts) {
+contract("TokenIOERC20FeesApply", function(accounts) {
     // pull in usdx params
     const USDx = TOKEN_DETAILS['USDx']
 
@@ -33,7 +33,7 @@ contract("TokenIOERC20Unlimited", function(accounts) {
         const TOKEN_DECIMALS = USDx.tokenDecimals
 
 
-        const erc20 = await TokenIOERC20Unlimited.deployed()
+        const erc20 = await TokenIOERC20FeesApply.deployed()
         const name = await erc20.name()
         const symbol = await erc20.symbol()
         const tla = await erc20.tla()
@@ -51,7 +51,7 @@ contract("TokenIOERC20Unlimited", function(accounts) {
 
     it(`BALANCE_OF
         :should get balance of account1`, async () => {
-        const erc20 = await TokenIOERC20Unlimited.deployed()
+        const erc20 = await TokenIOERC20FeesApply.deployed()
         await erc20.setParams(...Object.values(TOKEN_DETAILS['USDx']).map((v) => { return v }))
 
         const balance = await erc20.balanceOf(TEST_ACCOUNT_1)
@@ -60,7 +60,7 @@ contract("TokenIOERC20Unlimited", function(accounts) {
 
     it(`ALLOWANCE
         :should return allowance of account2 on behalf of account 1`, async () => {
-          const erc20 = await TokenIOERC20Unlimited.deployed()
+          const erc20 = await TokenIOERC20FeesApply.deployed()
           await erc20.setParams(...Object.values(TOKEN_DETAILS['USDx']).map((v) => { return v }))
 
           const allowance = await erc20.allowance(TEST_ACCOUNT_1, TEST_ACCOUNT_2)
@@ -72,7 +72,7 @@ contract("TokenIOERC20Unlimited", function(accounts) {
     it(`TRANSFER
         :should supply uints, debiting the sender and crediting the receiver`, async () => {
         const storage = await TokenIOStorage.deployed()
-        const erc20 = await TokenIOERC20Unlimited.deployed()
+        const erc20 = await TokenIOERC20FeesApply.deployed()
         const CA = await TokenIOCurrencyAuthority.deployed();
 
         const kycReceipt1 = await CA.approveKYC(TEST_ACCOUNT_1, true, LIMIT_AMOUNT, "Token, Inc.")
@@ -95,7 +95,7 @@ contract("TokenIOERC20Unlimited", function(accounts) {
         const balance2b = +(await erc20.balanceOf(TEST_ACCOUNT_2)).toString()
 
         // calc fees
-        // const TX_FEES = +(await erc20.calculateFees(TRANSFER_AMOUNT)).toString()
+        const TX_FEES = +(await erc20.calculateFees(TRANSFER_AMOUNT)).toString()
 
         // check spending limit remaining
         // Spending limit should remain unchanged!
@@ -106,7 +106,7 @@ contract("TokenIOERC20Unlimited", function(accounts) {
             "Remaining spending amount should remain equal to set limit amount")
 
         // calculate correct current balance
-        assert.equal(balance1b, (DEPOSIT_AMOUNT-TRANSFER_AMOUNT))
+        assert.equal(balance1b, (DEPOSIT_AMOUNT-TRANSFER_AMOUNT-TX_FEES))
         assert.equal(balance2b, TRANSFER_AMOUNT)
     })
 
@@ -115,7 +115,7 @@ contract("TokenIOERC20Unlimited", function(accounts) {
         :should give allowance of remaining balance of account 1 to account 2
         allowances[account1][account2]: 0 --> 100`, async () => {
         const storage = await TokenIOStorage.deployed()
-        const erc20 = await TokenIOERC20Unlimited.deployed()
+        const erc20 = await TokenIOERC20FeesApply.deployed()
         const CA = await TokenIOCurrencyAuthority.deployed();
 
         const balance1a = +(await erc20.balanceOf(TEST_ACCOUNT_1))
@@ -131,7 +131,7 @@ contract("TokenIOERC20Unlimited", function(accounts) {
     it(`TRANSFER_FROM
         :account 2 should spend funds transfering from account1 to account 3  on behalf of account1`, async () => {
         const storage = await TokenIOStorage.deployed()
-        const erc20 = await TokenIOERC20Unlimited.deployed()
+        const erc20 = await TokenIOERC20FeesApply.deployed()
         const CA = await TokenIOCurrencyAuthority.deployed();
 
 
@@ -148,16 +148,17 @@ contract("TokenIOERC20Unlimited", function(accounts) {
         const TRANSFER_FROM_AMOUNT = +(await CA.getAccountSpendingRemaining(TEST_ACCOUNT_1)).toString()
         const transferFromReceipt = await erc20.transferFrom(TEST_ACCOUNT_1, TEST_ACCOUNT_3, TRANSFER_FROM_AMOUNT, { from: TEST_ACCOUNT_2 })
 
-        // const TX_FEES = +(await erc20.calculateFees(TRANSFER_FROM_AMOUNT)).toString()
+        const TX_FEES = +(await erc20.calculateFees(TRANSFER_FROM_AMOUNT)).toString()
         const TEST_ACT_1_END_BALANCE = +(await erc20.balanceOf(TEST_ACCOUNT_1))
-        assert.equal(TEST_ACT_1_END_BALANCE, (TEST_ACT_1_BEG_BALANCE-TRANSFER_FROM_AMOUNT), "Ending balance should be net of transfer amount and fees")
+        assert.equal(TEST_ACT_1_END_BALANCE, (TEST_ACT_1_BEG_BALANCE-TRANSFER_FROM_AMOUNT-TX_FEES), "Ending balance should be net of transfer amount and fees")
 
         const TEST_ACT_3_END_BALANCE = +(await erc20.balanceOf(TEST_ACCOUNT_3)).toString()
         assert.equal(TEST_ACT_3_END_BALANCE, TRANSFER_FROM_AMOUNT, "TEST_ACCOUNT_3 Balance should equal transfer amount");
 
         const END_ALLOWANCE = +(await erc20.allowance(TEST_ACCOUNT_1, TEST_ACCOUNT_2)).toString()
-        assert.equal(END_ALLOWANCE, (TEST_ACT_1_BEG_BALANCE-TRANSFER_FROM_AMOUNT), "Allowance should be reduced by amount transferred")
+        assert.equal(END_ALLOWANCE, (TEST_ACT_1_BEG_BALANCE-TRANSFER_FROM_AMOUNT-TX_FEES), "Allowance should be reduced by amount transferred")
 
     })
+
 
 })
