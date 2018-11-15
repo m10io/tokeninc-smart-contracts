@@ -199,17 +199,26 @@ contract TokenIOERC20FeesApply is Ownable {
     function transfer(address to, uint amount) public notDeprecated returns (bool success) {
       address feeContract = lib.getFeeContract(address(this));
       string memory currency = lib.getTokenSymbol(address(this));
+      uint fees = calculateFees(amount);
 
-      /// @notice send transfer through library
-      /// @dev !!! mutates storage state
-      require(
-        lib.forceTransfer(currency, msg.sender, to, amount, "0x0"),
-        "Error: Unable to transfer funds to account.");
+      bytes32 id_a = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(msg.sender)));
+      bytes32 id_b = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(to)));
+      bytes32 id_c = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(feeContract)));
 
-      // @dev transfer fees to fee contract
       require(
-        lib.forceTransfer(currency, msg.sender, feeContract, calculateFees(amount), lib.getFeeMsg(feeContract)),
-        "Error: Unable to transfer fees to fee contract.");
+        lib.Storage.setUint(id_a, lib.Storage.getUint(id_a).sub(amount.add(fees))),
+        "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
+      );
+
+      require(
+        lib.Storage.setUint(id_b, lib.Storage.getUint(id_b).add(amount)),
+        "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
+      );
+
+      require(
+        lib.Storage.setUint(id_c, lib.Storage.getUint(id_c).add(fees)),
+        "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
+      );
 
       emit Transfer(msg.sender, to, amount);
 
@@ -228,16 +237,23 @@ contract TokenIOERC20FeesApply is Ownable {
       string memory currency = lib.getTokenSymbol(address(this));
       uint fees = calculateFees(amount);
 
-      /// @notice sends transferFrom through library
-      /// @dev !!! mutates storage state
+      bytes32 id_a = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(from)));
+      bytes32 id_b = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(to)));
+      bytes32 id_c = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(feeContract)));
+
       require(
-        lib.forceTransfer(currency, from, to, amount, "0x0"),
-        "Error: Unable to transfer funds. Please check your parameters and ensure the spender has the approved amount of funds to transfer."
+        lib.Storage.setUint(id_a, lib.Storage.getUint(id_a).sub(amount.add(fees))),
+        "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
       );
 
       require(
-        lib.forceTransfer(currency, from, feeContract, fees, lib.getFeeMsg(feeContract)),
-        "Error: Unable to transfer funds. Please check your parameters and ensure the spender has the approved amount of funds to transfer."
+        lib.Storage.setUint(id_b, lib.Storage.getUint(id_b).add(amount)),
+        "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
+      );
+
+      require(
+        lib.Storage.setUint(id_c, lib.Storage.getUint(id_c).add(fees)),
+        "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
       );
 
       /// @notice This transaction will fail if the msg.sender does not have an approved allowance.
