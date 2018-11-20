@@ -4,6 +4,7 @@ const TokenIOStorage = artifacts.require("./TokenIOStorage.sol")
 const TokenIOStableSwap = artifacts.require("./TokenIOStableSwap.sol")
 const TokenIOERC20 = artifacts.require("./TokenIOERC20.sol")
 const TokenIOERC20Unlimited = artifacts.require("./TokenIOERC20Unlimited.sol")
+const TokenIOProxyProvider = artifacts.require("./TokenIOProxyProvider.sol")
 
 const deployContracts = async (deployer, accounts) => {
   try {
@@ -34,6 +35,16 @@ const deployContracts = async (deployer, accounts) => {
       const feeFlat = 0;
       const params3 = [ USDC, "USD",  feeBps, feeMin, feeMax, feeFlat ]
       await swap.allowAsset(...params3);
+
+      /* proxy provider */
+      const proxyProvider = await TokenIOProxyProvider.deployed()
+      const proxy = await proxyProvider.getProxyContract('TokenIOStableSwap')
+
+      if (proxy != '0x0000000000000000000000000000000000000000') {
+        proxyProvider.updateProxy(proxy, swap.address, 'TokenIOStableSwap')
+      } else {
+        proxyProvider.newProxy(swap.address, 'TokenIOStableSwap')
+      }
 
       return true
   } catch (err) {

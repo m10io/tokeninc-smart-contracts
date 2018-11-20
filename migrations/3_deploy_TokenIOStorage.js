@@ -7,6 +7,8 @@ const deployContracts = async (deployer, accounts) => {
       /* storage */
       await deployer.deploy(TokenIOStorage)
 
+
+
       return true
   } catch (err) {
       console.log('### error deploying contracts', err)

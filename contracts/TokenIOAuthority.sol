@@ -125,14 +125,22 @@ contract TokenIOAuthority is Ownable {
      * @return { "success" : "Returns true if lib.setMasterFeeContract succeeds" }
      */
     function setMasterFeeContract(address feeContract) public onlyOwner returns (bool success) {
-        /// @notice set master fee contract
-        require(
-          lib.setMasterFeeContract(feeContract),
-          "Error: Unable to set master fee contract. Please ensure fee contract has the correct parameters."
-        );
-        return true;
-      }
+      /// @notice set master fee contract
+      require(
+        lib.setMasterFeeContract(feeContract),
+        "Error: Unable to set master fee contract. Please ensure fee contract has the correct parameters."
+      );
+      return true;
+    }
 
+    function setKYCRequired(bool required) public onlyOwner returns (bool success) {
+      /// @notice set master fee contract
+      require(
+        lib.Storage.setBool(keccak256(abi.encodePacked('kyc.required')), required),
+        "Error: Unable to set KYC requirement."
+      );
+      return true;
+    }
 
     modifier onlyAuthority(string firmName, address authority) {
         /// @notice throws if not an owner authority or not registered to the given firm

@@ -196,14 +196,22 @@ contract TokenIOERC20FeesApply is Ownable {
     * @param amount Transfer amount
     * @return {"success" : "Returns true if transfer succeeds"}
     */
-    function transfer(address to, uint amount) public notDeprecated returns (bool success) {
-      address feeContract = lib.getFeeContract(address(this));
+    function transfer(address to, uint amount) public notDeprecated hasKYC(msg.sender, to) returns (bool success) {
       string memory currency = lib.getTokenSymbol(address(this));
       uint fees = calculateFees(amount);
 
       bytes32 id_a = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(msg.sender)));
       bytes32 id_b = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(to)));
-      bytes32 id_c = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(feeContract)));
+
+      if (fees > 0) {
+        address feeContract = lib.getFeeContract(address(this));
+        bytes32 id_c = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(feeContract)));
+        require(
+          lib.Storage.setUint(id_c, lib.Storage.getUint(id_c).add(fees)),
+          "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
+        );
+      }
+
 
       require(
         lib.Storage.setUint(id_a, lib.Storage.getUint(id_a).sub(amount.add(fees))),
@@ -212,11 +220,6 @@ contract TokenIOERC20FeesApply is Ownable {
 
       require(
         lib.Storage.setUint(id_b, lib.Storage.getUint(id_b).add(amount)),
-        "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
-      );
-
-      require(
-        lib.Storage.setUint(id_c, lib.Storage.getUint(id_c).add(fees)),
         "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
       );
 
@@ -232,14 +235,22 @@ contract TokenIOERC20FeesApply is Ownable {
     * @param amount Transfer amount
     * @return {"success" : "Returns true if transferFrom succeeds"}
     */
-    function transferFrom(address from, address to, uint amount) public notDeprecated returns (bool success) {
-      address feeContract = lib.getFeeContract(address(this));
+    function transferFrom(address from, address to, uint amount) public notDeprecated hasKYC(from, to) returns (bool success) {
       string memory currency = lib.getTokenSymbol(address(this));
       uint fees = calculateFees(amount);
 
       bytes32 id_a = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(from)));
       bytes32 id_b = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(to)));
-      bytes32 id_c = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(feeContract)));
+
+      /* if (fees > 0) {
+        address feeContract = lib.getFeeContract(address(this));
+        bytes32 id_c = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(feeContract)));
+        require(
+          lib.Storage.setUint(id_c, lib.Storage.getUint(id_c).add(fees)),
+          "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
+        );
+      } */
+
 
       require(
         lib.Storage.setUint(id_a, lib.Storage.getUint(id_a).sub(amount.add(fees))),
@@ -248,11 +259,6 @@ contract TokenIOERC20FeesApply is Ownable {
 
       require(
         lib.Storage.setUint(id_b, lib.Storage.getUint(id_b).add(amount)),
-        "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
-      );
-
-      require(
-        lib.Storage.setUint(id_c, lib.Storage.getUint(id_c).add(fees)),
         "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
       );
 
@@ -272,7 +278,7 @@ contract TokenIOERC20FeesApply is Ownable {
     * @param amount Allowance amount
     * @return {"success" : "Returns true if approve succeeds"}
     */
-    function approve(address spender, uint amount) public notDeprecated returns (bool success) {
+    function approve(address spender, uint amount) public notDeprecated hasKYC(msg.sender, spender) returns (bool success) {
       /// @notice sends approve through library
       /// @dev !!! mtuates storage states
       require(
@@ -297,6 +303,14 @@ contract TokenIOERC20FeesApply is Ownable {
       require(!lib.isContractDeprecated(address(this)),
         "Error: Contract has been deprecated, cannot perform operation!");
       _;
+    }
+
+    modifier hasKYC(address from, address to) {
+      if (lib.Storage.getBool(keccak256(abi.encodePacked('kyc.required')))) {
+        // require accounts to be KYC'd if kyc is required;
+        require(lib.verifyAccounts(from, to));
+        _;
+      } _;
     }
 
   }

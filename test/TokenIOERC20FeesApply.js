@@ -47,6 +47,33 @@ contract("TokenIOERC20FeesApply", function(accounts) {
         assert.equal(decimals, TOKEN_DECIMALS, "Token decimals should be set in the storage contract.")
     })
 
+    it(`FEE_PARAMS
+        :should correctly set fee parameters according to config file 'token.config.js'
+        [bps, min, max, flat, account]`, async () => {
+        const TOKEN_FEE_BPS = FEE_PARAMS.feeBps
+        const TOKEN_FEE_MIN = FEE_PARAMS.feeMin
+        const TOKEN_FEE_MAX = FEE_PARAMS.feeMax
+        const TOKEN_FEE_FLAT = FEE_PARAMS.feeFlat
+        const TOKEN_FEE_MSG = FEE_PARAMS.feeMsg
+        const TOKEN_FEE_ACCOUNT = (await TokenIOFeeContract.deployed()).address
+
+        const erc20 = await TokenIOERC20FeesApply.deployed()
+        const feeParams = await erc20.getFeeParams()
+        const feeBps = feeParams[0]
+        const feeMin = feeParams[1]
+        const feeMax = feeParams[2]
+        const feeFlat = feeParams[3]
+        const feeMsg = feeParams[4]
+        const feeAccount = feeParams[5]
+
+        assert.equal(feeBps, TOKEN_FEE_BPS, "Token feeBps should be set in the storage contract.")
+        assert.equal(feeMin, TOKEN_FEE_MIN, "Token feeMin should be set in the storage contract.")
+        assert.equal(feeMax, TOKEN_FEE_MAX, "Token feeMax should be set in the storage contract.")
+        assert.equal(feeFlat, TOKEN_FEE_FLAT, "Token feeFlat should be set in the storage contract.")
+        assert.equal(feeMsg, TOKEN_FEE_MSG, "Token feeMsg should be set in the storage contract.")
+        assert.equal(feeAccount, TOKEN_FEE_ACCOUNT, "Token feeAccount should be set in the storage contract.")
+    })
+
     /* GETTERS */
 
     it(`BALANCE_OF
