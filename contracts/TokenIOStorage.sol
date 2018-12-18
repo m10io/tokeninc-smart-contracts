@@ -54,6 +54,19 @@ contract TokenIOStorage is Ownable {
 		/// @dev only the derived contract can use the internal methods;
 		/// @dev key == `keccak256(param1, param2...)`
 		/// @dev Nested mapping can be achieved using multiple params in keccak256 hash;
+    
+    struct FeeData {
+        uint maxFee;
+        uint minFee;
+        uint bpsFee;
+        uint flatFee;
+    }
+
+    mapping(address => bool) internal isDeprecated;
+    mapping(address => address) internal feeContracts;
+    mapping(address => string) internal tokenSymbol;
+    mapping(address => FeeData) internal fees;
+    
     mapping(bytes32 => uint256)    internal uIntStorage;
     mapping(bytes32 => string)     internal stringStorage;
     mapping(bytes32 => address)    internal addressStorage;
@@ -76,7 +89,7 @@ contract TokenIOStorage is Ownable {
      * @param _value The Address value to be set
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function setAddress(bytes32 _key, address _value) public onlyOwner returns (bool success) {
+    function setAddress(bytes32 _key, address _value) external onlyOwner returns (bool success) {
         addressStorage[_key] = _value;
         return true;
     }
@@ -87,7 +100,7 @@ contract TokenIOStorage is Ownable {
      * @param _value The Uint value to be set
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function setUint(bytes32 _key, uint _value) public onlyOwner returns (bool success) {
+    function setUint(bytes32 _key, uint _value) external onlyOwner returns (bool success) {
         uIntStorage[_key] = _value;
         return true;
     }
@@ -98,7 +111,7 @@ contract TokenIOStorage is Ownable {
      * @param _value The String value to be set
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function setString(bytes32 _key, string _value) public onlyOwner returns (bool success) {
+    function setString(bytes32 _key, string _value) external onlyOwner returns (bool success) {
         stringStorage[_key] = _value;
         return true;
     }
@@ -109,7 +122,7 @@ contract TokenIOStorage is Ownable {
      * @param _value The Bytes value to be set
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function setBytes(bytes32 _key, bytes _value) public onlyOwner returns (bool success) {
+    function setBytes(bytes32 _key, bytes _value) external onlyOwner returns (bool success) {
         bytesStorage[_key] = _value;
         return true;
     }
@@ -120,7 +133,7 @@ contract TokenIOStorage is Ownable {
      * @param _value The Bool value to be set
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function setBool(bytes32 _key, bool _value) public onlyOwner returns (bool success) {
+    function setBool(bytes32 _key, bool _value) external onlyOwner returns (bool success) {
         boolStorage[_key] = _value;
         return true;
     }
@@ -131,7 +144,7 @@ contract TokenIOStorage is Ownable {
      * @param _value The Int value to be set
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function setInt(bytes32 _key, int _value) public onlyOwner returns (bool success) {
+    function setInt(bytes32 _key, int _value) external onlyOwner returns (bool success) {
         intStorage[_key] = _value;
         return true;
     }
@@ -145,7 +158,7 @@ contract TokenIOStorage is Ownable {
      * @param _key Pointer identifier for value in storage
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function deleteAddress(bytes32 _key) public onlyOwner returns (bool success) {
+    function deleteAddress(bytes32 _key) external onlyOwner returns (bool success) {
         delete addressStorage[_key];
         return true;
     }
@@ -155,7 +168,7 @@ contract TokenIOStorage is Ownable {
      * @param _key Pointer identifier for value in storage
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function deleteUint(bytes32 _key) public onlyOwner returns (bool success) {
+    function deleteUint(bytes32 _key) external onlyOwner returns (bool success) {
         delete uIntStorage[_key];
         return true;
     }
@@ -165,7 +178,7 @@ contract TokenIOStorage is Ownable {
      * @param _key Pointer identifier for value in storage
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function deleteString(bytes32 _key) public onlyOwner returns (bool success) {
+    function deleteString(bytes32 _key) external onlyOwner returns (bool success) {
         delete stringStorage[_key];
         return true;
     }
@@ -175,7 +188,7 @@ contract TokenIOStorage is Ownable {
      * @param _key Pointer identifier for value in storage
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function deleteBytes(bytes32 _key) public onlyOwner returns (bool success) {
+    function deleteBytes(bytes32 _key) external onlyOwner returns (bool success) {
         delete bytesStorage[_key];
         return true;
     }
@@ -185,7 +198,7 @@ contract TokenIOStorage is Ownable {
      * @param _key Pointer identifier for value in storage
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function deleteBool(bytes32 _key) public onlyOwner returns (bool success) {
+    function deleteBool(bytes32 _key) external onlyOwner returns (bool success) {
         delete boolStorage[_key];
         return true;
     }
@@ -195,7 +208,7 @@ contract TokenIOStorage is Ownable {
      * @param _key Pointer identifier for value in storage
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function deleteInt(bytes32 _key) public onlyOwner returns (bool success) {
+    function deleteInt(bytes32 _key) external onlyOwner returns (bool success) {
         delete intStorage[_key];
         return true;
     }
@@ -207,7 +220,7 @@ contract TokenIOStorage is Ownable {
      * @param _key Pointer identifier for value in storage
      * @return { "_value" : "Returns the Address value associated with the id key" }
      */
-    function getAddress(bytes32 _key) public view returns (address _value) {
+    function getAddress(bytes32 _key) external view returns (address _value) {
         return addressStorage[_key];
     }
 
@@ -216,7 +229,7 @@ contract TokenIOStorage is Ownable {
      * @param _key Pointer identifier for value in storage
      * @return { "_value" : "Returns the Uint value associated with the id key" }
      */
-    function getUint(bytes32 _key) public view returns (uint _value) {
+    function getUint(bytes32 _key) external view returns (uint _value) {
         return uIntStorage[_key];
     }
 
@@ -225,7 +238,7 @@ contract TokenIOStorage is Ownable {
      * @param _key Pointer identifier for value in storage
      * @return { "_value" : "Returns the String value associated with the id key" }
      */
-    function getString(bytes32 _key) public view returns (string _value) {
+    function getString(bytes32 _key) external view returns (string _value) {
         return stringStorage[_key];
     }
 
@@ -234,7 +247,7 @@ contract TokenIOStorage is Ownable {
      * @param _key Pointer identifier for value in storage
      * @return { "_value" : "Returns the Bytes value associated with the id key" }
      */
-    function getBytes(bytes32 _key) public view returns (bytes _value) {
+    function getBytes(bytes32 _key) external view returns (bytes _value) {
         return bytesStorage[_key];
     }
 
@@ -243,7 +256,7 @@ contract TokenIOStorage is Ownable {
      * @param _key Pointer identifier for value in storage
      * @return { "_value" : "Returns the Bool value associated with the id key" }
      */
-    function getBool(bytes32 _key) public view returns (bool _value) {
+    function getBool(bytes32 _key) external view returns (bool _value) {
         return boolStorage[_key];
     }
 
@@ -252,8 +265,45 @@ contract TokenIOStorage is Ownable {
      * @param _key Pointer identifier for value in storage
      * @return { "_value" : "Returns the Int value associated with the id key" }
      */
-    function getInt(bytes32 _key) public view returns (int _value) {
+    function getInt(bytes32 _key) external view returns (int _value) {
         return intStorage[_key];
     }
 
+    function getDeprecated(address _address) external view returns (bool _value) {
+        return isDeprecated[_address];
+    }
+
+    function setDeprecated(address _address, bool _value) external onlyOwner returns (bool success) {
+        isDeprecated[_address] = _value;
+        return true;
+    }
+
+    function getFeeContract(address _address) external view returns (address _value) {
+        return feeContracts[_address];
+    }
+
+    function setFeeContract(address _address, address _value) external onlyOwner returns (bool success) {
+        feeContracts[_address] = _value;
+        return true;
+    }
+
+    function getTokenSymbol(address _address) external view returns (string _value) {
+        return tokenSymbol[_address];
+    }
+
+    function setTokenSymbol(address _address, string _value) external onlyOwner returns (bool success) {
+        tokenSymbol[_address] = _value;
+        return true;
+    }
+
+    function getFees(address _address) external view returns (uint maxFee, uint minFee, uint bpsFee, uint flatFee) {
+        FeeData memory feeData = fees[_address];
+        return (feeData.maxFee, feeData.minFee, feeData.bpsFee, feeData.flatFee);
+    }
+
+    function setFees(address _address, uint maxFee, uint minFee, uint bpsFee, uint flatFee) external onlyOwner returns (bool success) {
+        FeeData memory feeData = FeeData(maxFee, minFee, bpsFee, flatFee);
+        fees[_address] = feeData;
+        return true;
+    }
 }

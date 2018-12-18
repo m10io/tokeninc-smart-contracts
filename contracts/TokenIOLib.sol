@@ -73,9 +73,8 @@ library TokenIOLib {
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
   function setTokenSymbol(Data storage self, string tokenSymbol) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('token.symbol', address(this)));
     require(
-      self.Storage.setString(id, tokenSymbol),
+      self.Storage.setTokenSymbol(address(this), tokenSymbol),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
     );
     return true;
@@ -135,76 +134,8 @@ library TokenIOLib {
     return true;
   }
 
-  /**
-   * @notice Set basis point fee for contract interface
-   * @dev Transaction fees can be set by the TokenIOFeeContract
-   * @dev Fees vary by contract interface specified `feeContract`
-   * @dev | This method has an `internal` view
-   * @param self Internal storage proxying TokenIOStorage contract
-   * @param feeBPS Basis points fee for interface contract transactions
-   * @return {"success" : "Returns true when successfully called from another contract"}
-   */
-  function setFeeBPS(Data storage self, uint feeBPS) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('fee.bps', address(this)));
-    require(
-      self.Storage.setUint(id, feeBPS),
-      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
-    );
-    return true;
-  }
-
-  /**
-   * @notice Set minimum fee for contract interface
-   * @dev Transaction fees can be set by the TokenIOFeeContract
-   * @dev Fees vary by contract interface specified `feeContract`
-   * @dev | This method has an `internal` view
-   * @param self Internal storage proxying TokenIOStorage contract
-   * @param feeMin Minimum fee for interface contract transactions
-   * @return {"success" : "Returns true when successfully called from another contract"}
-   */
-  function setFeeMin(Data storage self, uint feeMin) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('fee.min', address(this)));
-    require(
-      self.Storage.setUint(id, feeMin),
-      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
-    );
-    return true;
-  }
-
-  /**
-   * @notice Set maximum fee for contract interface
-   * @dev Transaction fees can be set by the TokenIOFeeContract
-   * @dev Fees vary by contract interface specified `feeContract`
-   * @dev | This method has an `internal` view
-   * @param self Internal storage proxying TokenIOStorage contract
-   * @param feeMax Maximum fee for interface contract transactions
-   * @return {"success" : "Returns true when successfully called from another contract"}
-   */
-  function setFeeMax(Data storage self, uint feeMax) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('fee.max', address(this)));
-    require(
-      self.Storage.setUint(id, feeMax),
-      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
-    );
-    return true;
-  }
-
-  /**
-   * @notice Set flat fee for contract interface
-   * @dev Transaction fees can be set by the TokenIOFeeContract
-   * @dev Fees vary by contract interface specified `feeContract`
-   * @dev | This method has an `internal` view
-   * @param self Internal storage proxying TokenIOStorage contract
-   * @param feeFlat Flat fee for interface contract transactions
-   * @return {"success" : "Returns true when successfully called from another contract"}
-   */
-  function setFeeFlat(Data storage self, uint feeFlat) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('fee.flat', address(this)));
-    require(
-      self.Storage.setUint(id, feeFlat),
-      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
-    );
-    return true;
+  function setFees(Data storage self, uint maxFee, uint minFee, uint bpsFee, uint flatFee) internal returns (bool success) {
+      return self.Storage.setFees(address(this), maxFee, minFee, bpsFee, flatFee);
   }
 
   /**
@@ -236,9 +167,8 @@ library TokenIOLib {
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
   function setFeeContract(Data storage self, address feeContract) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('fee.account', address(this)));
     require(
-      self.Storage.setAddress(id, feeContract),
+      self.Storage.setFeeContract(address(this), feeContract),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
     );
     return true;
@@ -407,8 +337,7 @@ library TokenIOLib {
    * @return {"tokenSymbol" : "Symbol of the token contract"}
    */
   function getTokenSymbol(Data storage self, address contractAddress) internal view returns (string tokenSymbol) {
-    bytes32 id = keccak256(abi.encodePacked('token.symbol', contractAddress));
-    return self.Storage.getString(id);
+    return self.Storage.getTokenSymbol(contractAddress);
   }
 
   /**
@@ -450,52 +379,8 @@ library TokenIOLib {
     return self.Storage.getUint(id);
   }
 
-  /**
-   * @notice Get the basis points fee of the contract address; typically TokenIOFeeContract
-   * @dev | This method has an `internal` view
-   * @param self Internal storage proxying TokenIOStorage contract
-   * @param contractAddress Contract address of the queryable interface
-   * @return { "feeBps" : "Returns the basis points fees associated with the contract address"}
-   */
-  function getFeeBPS(Data storage self, address contractAddress) internal view returns (uint feeBps) {
-    bytes32 id = keccak256(abi.encodePacked('fee.bps', contractAddress));
-    return self.Storage.getUint(id);
-  }
-
-  /**
-   * @notice Get the minimum fee of the contract address; typically TokenIOFeeContract
-   * @dev | This method has an `internal` view
-   * @param self Internal storage proxying TokenIOStorage contract
-   * @param contractAddress Contract address of the queryable interface
-   * @return { "feeMin" : "Returns the minimum fees associated with the contract address"}
-   */
-  function getFeeMin(Data storage self, address contractAddress) internal view returns (uint feeMin) {
-    bytes32 id = keccak256(abi.encodePacked('fee.min', contractAddress));
-    return self.Storage.getUint(id);
-  }
-
-  /**
-   * @notice Get the maximum fee of the contract address; typically TokenIOFeeContract
-   * @dev | This method has an `internal` view
-   * @param self Internal storage proxying TokenIOStorage contract
-   * @param contractAddress Contract address of the queryable interface
-   * @return { "feeMax" : "Returns the maximum fees associated with the contract address"}
-   */
-  function getFeeMax(Data storage self, address contractAddress) internal view returns (uint feeMax) {
-    bytes32 id = keccak256(abi.encodePacked('fee.max', contractAddress));
-    return self.Storage.getUint(id);
-  }
-
-  /**
-   * @notice Get the flat fee of the contract address; typically TokenIOFeeContract
-   * @dev | This method has an `internal` view
-   * @param self Internal storage proxying TokenIOStorage contract
-   * @param contractAddress Contract address of the queryable interface
-   * @return { "feeFlat" : "Returns the flat fees associated with the contract address"}
-   */
-  function getFeeFlat(Data storage self, address contractAddress) internal view returns (uint feeFlat) {
-    bytes32 id = keccak256(abi.encodePacked('fee.flat', contractAddress));
-    return self.Storage.getUint(id);
+  function getFees(Data storage self, address contractAddress) internal view returns (uint maxFee, uint minFee, uint bpsFee, uint flatFee) {
+      return self.Storage.getFees(contractAddress);
   }
 
   /**
@@ -519,9 +404,8 @@ library TokenIOLib {
    * @return { "success" : "Returns true when successfully called from another contract"}
    */
   function setMasterFeeContract(Data storage self, address contractAddress) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('fee.contract.master'));
     require(
-      self.Storage.setAddress(id, contractAddress),
+      self.Storage.setFeeContract(0, contractAddress),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
     );
     return true;
@@ -534,8 +418,7 @@ library TokenIOLib {
    * @return { "masterFeeContract" : "Returns the master fee contract set for TSM."}
    */
   function getMasterFeeContract(Data storage self) internal view returns (address masterFeeContract) {
-    bytes32 id = keccak256(abi.encodePacked('fee.contract.master'));
-    return self.Storage.getAddress(id);
+    return self.Storage.getFeeContract(0);
   }
 
   /**
@@ -548,9 +431,8 @@ library TokenIOLib {
    * @return { "feeContract" : "Returns the fee contract associated with a contract interface"}
    */
   function getFeeContract(Data storage self, address contractAddress) internal view returns (address feeContract) {
-    bytes32 id = keccak256(abi.encodePacked('fee.account', contractAddress));
 
-    address feeAccount = self.Storage.getAddress(id);
+    address feeAccount = self.Storage.getFeeContract(contractAddress);
     if (feeAccount == 0x0) {
       return getMasterFeeContract(self);
     } else {
@@ -637,10 +519,13 @@ library TokenIOLib {
    */
   function calculateFees(Data storage self, address contractAddress, uint amount) internal view returns (uint calculatedFees) {
 
-    uint maxFee = self.Storage.getUint(keccak256(abi.encodePacked('fee.max', contractAddress)));
-    uint minFee = self.Storage.getUint(keccak256(abi.encodePacked('fee.min', contractAddress)));
-    uint bpsFee = self.Storage.getUint(keccak256(abi.encodePacked('fee.bps', contractAddress)));
-    uint flatFee = self.Storage.getUint(keccak256(abi.encodePacked('fee.flat', contractAddress)));
+    uint maxFee;
+    uint minFee;
+    uint bpsFee;
+    uint flatFee;
+
+    (maxFee, minFee, bpsFee, flatFee) = self.Storage.getFees(contractAddress);
+
     uint fees = ((amount.mul(bpsFee)).div(10000)).add(flatFee);
 
     if (fees > maxFee) {
@@ -1156,8 +1041,9 @@ library TokenIOLib {
    * @return {"status" : "Return deprecation status (true/false) of the contract interface"}
    */
   function isContractDeprecated(Data storage self, address contractAddress) internal view returns (bool status) {
-    bytes32 id = keccak256(abi.encodePacked('depcrecated', contractAddress));
-    return self.Storage.getBool(id);
+    //bytes32 id = keccak256(abi.encodePacked('depcrecated', contractAddress));
+    //return self.Storage.getBool(id);
+    return self.Storage.getDeprecated(contractAddress);
   }
 
   /**

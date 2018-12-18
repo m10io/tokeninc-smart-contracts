@@ -170,15 +170,9 @@ contract TokenIOERC20FeesApply is Ownable {
       }
     */
     function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, bytes feeMsg, address feeAccount) {
-      address feeContract = lib.getFeeContract(address(this));
-      return (
-        lib.getFeeBPS(feeContract),
-        lib.getFeeMin(feeContract),
-        lib.getFeeMax(feeContract),
-        lib.getFeeFlat(feeContract),
-        lib.getFeeMsg(feeContract),
-        feeContract
-      );
+      feeAccount = lib.getFeeContract(address(this));
+      (max, min, bps, flat) = lib.getFees(feeAccount);
+      feeMsg = lib.getFeeMsg(feeAccount);
     }
 
     /**
@@ -186,8 +180,12 @@ contract TokenIOERC20FeesApply is Ownable {
     * @param amount Amount to calculcate fee value
     * @return {"fees": "Returns the calculated transaction fees based on the fee contract parameters"}
     */
-    function calculateFees(uint amount) public view returns (uint fees) {
-      return lib.calculateFees(lib.getFeeContract(address(this)), amount);
+    function calculateFees(uint amount) external view returns (uint fees) {
+      return calculateFees(lib.getFeeContract(address(this)), amount);
+    }
+
+    function calculateFees(address feeContract, uint amount) internal view returns (uint fees) {
+      return lib.calculateFees(feeContract, amount);
     }
 
     /**
@@ -197,32 +195,29 @@ contract TokenIOERC20FeesApply is Ownable {
     * @return {"success" : "Returns true if transfer succeeds"}
     */
     function transfer(address to, uint amount) public notDeprecated returns (bool success) {
-      address feeContract = lib.getFeeContract(address(this));
-      string memory currency = lib.getTokenSymbol(address(this));
-      uint fees = calculateFees(amount);
-
-      bytes32 id_a = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(msg.sender)));
-      bytes32 id_b = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(to)));
-      bytes32 id_c = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(feeContract)));
-
-      require(
-        lib.Storage.setUint(id_a, lib.Storage.getUint(id_a).sub(amount.add(fees))),
-        "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
-      );
-
-      require(
-        lib.Storage.setUint(id_b, lib.Storage.getUint(id_b).add(amount)),
-        "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
-      );
-
-      require(
-        lib.Storage.setUint(id_c, lib.Storage.getUint(id_c).add(fees)),
-        "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
-      );
-
-      emit Transfer(msg.sender, to, amount);
-
-      return true;
+        address feeContract = lib.getFeeContract(address(this));
+        string memory currency = lib.getTokenSymbol(address(this));
+        uint fees = calculateFees(feeContract, amount);
+        
+        bytes32 id_a = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(msg.sender)));
+        bytes32 id_b = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(to)));
+        bytes32 id_c = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(feeContract)));
+        
+        require(
+            lib.Storage.setUint(id_a, lib.Storage.getUint(id_a).sub(amount.add(fees))),
+            "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
+        );
+        require(
+            lib.Storage.setUint(id_c, lib.Storage.getUint(id_c).add(fees)),
+            "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
+        );
+        require(
+            lib.Storage.setUint(id_b, lib.Storage.getUint(id_b).add(amount)),
+            "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
+        );
+        
+        emit Transfer(msg.sender, to, amount);
+        return true;
     }
 
     /**
@@ -235,7 +230,7 @@ contract TokenIOERC20FeesApply is Ownable {
     function transferFrom(address from, address to, uint amount) public notDeprecated returns (bool success) {
       address feeContract = lib.getFeeContract(address(this));
       string memory currency = lib.getTokenSymbol(address(this));
-      uint fees = calculateFees(amount);
+      uint fees = calculateFees(feeContract, amount);
 
       bytes32 id_a = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(from)));
       bytes32 id_b = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(to)));
