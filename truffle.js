@@ -6,10 +6,10 @@ const NonceTrackerSubprovider = require("web3-provider-engine/subproviders/nonce
 module.exports = {
   networks: {
     develop: {
-      host: "0.0.0.0",
-      port: 9545,
-      network_id: "*", // Match any network id
-      gas: 7e6
+      host: "127.0.0.1",
+      port: 7545,
+      network_id: "5777", // Match any network id
+      gas: 6000000
     },
     poa: {
       host: "104.236.47.153",
@@ -26,7 +26,7 @@ module.exports = {
         return wallet;
       },
       network_id: 3,
-      gas: 47e5
+      gas: 8000000
     },
     mainnet: {
       provider: () => {
