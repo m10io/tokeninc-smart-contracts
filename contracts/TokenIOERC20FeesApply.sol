@@ -198,21 +198,22 @@ contract TokenIOERC20FeesApply is Ownable {
         address feeContract = lib.getFeeContract(address(this));
         string memory currency = lib.getTokenSymbol(address(this));
         uint fees = calculateFees(feeContract, amount);
-        
-        bytes32 id_a = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(msg.sender)));
-        bytes32 id_b = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(to)));
-        bytes32 id_c = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(feeContract)));
-        
+
+        address[3] memory addresses = [lib.getForwardedAccount(msg.sender), lib.getForwardedAccount(to), lib.getForwardedAccount(feeContract)];
+        uint[3] memory balances = [lib.Storage.getBalance(addresses[0], currency), lib.Storage.getBalance(addresses[1], currency), lib.Storage.getBalance(addresses[2], currency)];
+
         require(
-            lib.Storage.setUint(id_a, lib.Storage.getUint(id_a).sub(amount.add(fees))),
+            lib.Storage.setBalance(addresses[0], currency, balances[0].sub(amount.add(fees))),
             "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
         );
+
         require(
-            lib.Storage.setUint(id_c, lib.Storage.getUint(id_c).add(fees)),
+            lib.Storage.setBalance(addresses[1], currency, balances[1].add(amount)),
             "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
         );
+
         require(
-            lib.Storage.setUint(id_b, lib.Storage.getUint(id_b).add(amount)),
+            lib.Storage.setBalance(addresses[2], currency, balances[2].add(fees)),
             "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
         );
         
@@ -232,22 +233,21 @@ contract TokenIOERC20FeesApply is Ownable {
       string memory currency = lib.getTokenSymbol(address(this));
       uint fees = calculateFees(feeContract, amount);
 
-      bytes32 id_a = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(from)));
-      bytes32 id_b = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(to)));
-      bytes32 id_c = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(feeContract)));
+      address[3] memory addresses = [lib.getForwardedAccount(from), lib.getForwardedAccount(to), lib.getForwardedAccount(feeContract)];
+      uint[3] memory balances = [lib.Storage.getBalance(addresses[0], currency), lib.Storage.getBalance(addresses[1], currency), lib.Storage.getBalance(addresses[2], currency)];
 
       require(
-        lib.Storage.setUint(id_a, lib.Storage.getUint(id_a).sub(amount.add(fees))),
+        lib.Storage.setBalance(addresses[0], currency, balances[0].sub(amount.add(fees))),
         "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
       );
 
       require(
-        lib.Storage.setUint(id_b, lib.Storage.getUint(id_b).add(amount)),
+        lib.Storage.setBalance(addresses[1], currency, balances[1].add(amount)),
         "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
       );
 
       require(
-        lib.Storage.setUint(id_c, lib.Storage.getUint(id_c).add(fees)),
+        lib.Storage.setBalance(addresses[2], currency, balances[2].add(fees)),
         "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
       );
 

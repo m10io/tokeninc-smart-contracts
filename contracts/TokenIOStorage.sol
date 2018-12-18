@@ -66,6 +66,8 @@ contract TokenIOStorage is Ownable {
     mapping(address => address) internal feeContracts;
     mapping(address => string) internal tokenSymbol;
     mapping(address => FeeData) internal fees;
+    mapping(address => mapping(string => uint256)) internal balances;
+    mapping(address => address) internal relatedAccounts;
     
     mapping(bytes32 => uint256)    internal uIntStorage;
     mapping(bytes32 => string)     internal stringStorage;
@@ -304,6 +306,25 @@ contract TokenIOStorage is Ownable {
     function setFees(address _address, uint maxFee, uint minFee, uint bpsFee, uint flatFee) external onlyOwner returns (bool success) {
         FeeData memory feeData = FeeData(maxFee, minFee, bpsFee, flatFee);
         fees[_address] = feeData;
+        return true;
+    }
+    
+    function getRelatedAccount(address _address) external view returns (address value) {
+        address relatedAddress = relatedAccounts[_address];
+        return (0x0 != relatedAddress) ? relatedAddress : _address;
+    }
+
+    function setRelatedAccount(address _address, address _related) external onlyOwner returns (bool success) {
+        relatedAccounts[_address] = _related;
+        return true;
+    }
+    
+    function getBalance(address _address, string _currency) external view returns (uint256 value) {
+        return balances[_address][_currency];
+    }
+
+    function setBalance(address _address, string _currency, uint _value) external onlyOwner returns (bool success) {
+        balances[_address][_currency] = _value;
         return true;
     }
 }

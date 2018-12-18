@@ -82,13 +82,14 @@ contract("TokenIOERC20FeesApply", function(accounts) {
         await erc20.setParams(...Object.values(TOKEN_DETAILS['USDx']).map((v) => { return v }))
         await storage.allowOwnership(erc20.address)
         const tokenSymbol = await erc20.symbol()
+        assert.equal(tokenSymbol, 'USDx', "Incorrect token symbol")
         const depositReceipt = await CA.deposit(tokenSymbol, TEST_ACCOUNT_1, DEPOSIT_AMOUNT, "Token, Inc.")
 
         const balance1 = +(await erc20.balanceOf(TEST_ACCOUNT_1)).toString()
         const balance2 = +(await erc20.balanceOf(TEST_ACCOUNT_2)).toString()
 
-        assert.equal(balance1, DEPOSIT_AMOUNT)
-        assert.equal(balance2, 0)
+        assert.equal(balance1, DEPOSIT_AMOUNT, "first account should contain all the deposit initially")
+        assert.equal(balance2, 0, "Second account should have zero balance")
 
         const transferReceipt = await erc20.transfer(TEST_ACCOUNT_2, TRANSFER_AMOUNT)
         const balance1b = +(await erc20.balanceOf(TEST_ACCOUNT_1)).toString()
