@@ -166,14 +166,9 @@ contract TokenIOERC20 is Ownable {
     */
     function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, bytes feeMsg, address feeAccount) {
       address feeContract = lib.getFeeContract(address(this));
-      return (
-        lib.getFeeBPS(feeContract),
-        lib.getFeeMin(feeContract),
-        lib.getFeeMax(feeContract),
-        lib.getFeeFlat(feeContract),
-        lib.getFeeMsg(feeContract),
-        feeContract
-      );
+      (max, min, bps, flat) = lib.getFees(feeContract);
+      feeMsg = lib.getFeeMsg(feeContract);
+      feeAccount = feeContract;
     }
 
     /**

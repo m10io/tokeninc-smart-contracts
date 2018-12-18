@@ -62,10 +62,7 @@ contract TokenIOFeeContract is Ownable {
 	 * returns {"success" : "Returns true if successfully called from another contract"}
 	 */
 	function setFeeParams(uint feeBps, uint feeMin, uint feeMax, uint feeFlat, bytes feeMsg) public onlyOwner returns (bool success) {
-		require(lib.setFeeBPS(feeBps), "Error: Unable to set fee contract basis points.");
-		require(lib.setFeeMin(feeMin), "Error: Unable to set fee contract minimum fee.");
-		require(lib.setFeeMax(feeMax), "Error: Unable to set fee contract maximum fee.");
-		require(lib.setFeeFlat(feeFlat), "Error: Unable to set fee contract flat fee.");
+		require(lib.setFees(feeMax, feeMin, feeBps, feeFlat), "Error: Unable to set fee contract settings");
 		require(lib.setFeeMsg(feeMsg), "Error: Unable to set fee contract default message.");
 		return true;
 	}
@@ -81,14 +78,9 @@ contract TokenIOFeeContract is Ownable {
 	}
 	*/
 	function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, bytes feeMsg, address feeContract) {
-			return (
-					lib.getFeeBPS(address(this)),
-					lib.getFeeMin(address(this)),
-					lib.getFeeMax(address(this)),
-					lib.getFeeFlat(address(this)),
-					lib.getFeeMsg(address(this)),
-					address(this)
-			);
+			(max, min, bps, flat) = lib.getFees(address(this));
+            feeMsg = lib.getFeeMsg(address(this));
+            feeContract = address(this);
 	}
 
 	/**

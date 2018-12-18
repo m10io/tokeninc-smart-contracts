@@ -581,7 +581,7 @@ library TokenIOLib {
    * @param data Arbitrary bytes data to include with the transaction
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function transfer(Data storage self, string currency, address to, uint amount, bytes data) private returns (bool success) {
+  function transfer(Data storage self, string currency, address to, uint amount, bytes data) internal returns (bool success) {
     require(address(to) != 0x0, "Error: `to` address cannot be null." );
     require(amount > 0, "Error: `amount` must be greater than zero");
 
@@ -620,7 +620,7 @@ library TokenIOLib {
    * @param data Arbitrary bytes data to include with the transaction
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function transferFrom(Data storage self, string currency, address from, address to, uint amount, bytes data) private returns (bool success) {
+  function transferFrom(Data storage self, string currency, address from, address to, uint amount, bytes data) internal returns (bool success) {
     require(
       address(to) != 0x0,
       "Error: `to` address must not be null."
@@ -670,7 +670,7 @@ library TokenIOLib {
    * @param data Arbitrary bytes data to include with the transaction
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function forceTransfer(Data storage self, string currency, address from, address to, uint amount, bytes data) private returns (bool success) {
+  function forceTransfer(Data storage self, string currency, address from, address to, uint amount, bytes data) internal returns (bool success) {
     require(
       address(to) != 0x0,
       "Error: `to` address must not be null."
@@ -762,17 +762,16 @@ library TokenIOLib {
    * @return { "success" : "Return true if successfully called from another contract" }
    */
   function deposit(Data storage self, string currency, address account, uint amount, string issuerFirm) internal returns (bool success) {
-    bytes32 id_b = keccak256(abi.encodePacked('token.issued', currency, issuerFirm));
-    bytes32 id_c = keccak256(abi.encodePacked('token.supply', currency));
+    bytes32[2] memory ids = [keccak256(abi.encodePacked('token.issued', currency, issuerFirm)), keccak256(abi.encodePacked('token.supply', currency))];
 
     address forwardedAccount = getForwardedAccount(self, account);
 
 
     require(self.Storage.setBalance(forwardedAccount, currency, self.Storage.getBalance(forwardedAccount, currency).add(amount)),
       "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
-    require(self.Storage.setUint(id_b, self.Storage.getUint(id_b).add(amount)),
+    require(self.Storage.setUint(ids[0], self.Storage.getUint(ids[0]).add(amount)),
       "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
-    require(self.Storage.setUint(id_c, self.Storage.getUint(id_c).add(amount)),
+    require(self.Storage.setUint(ids[1], self.Storage.getUint(ids[1]).add(amount)),
       "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
 
     emit Deposit(currency, account, amount, issuerFirm);
@@ -793,8 +792,7 @@ library TokenIOLib {
    * @return { "success" : "Return true if successfully called from another contract" }
    */
   function withdraw(Data storage self, string currency, address account, uint amount, string issuerFirm) internal returns (bool success) {
-    bytes32 id_b = keccak256(abi.encodePacked('token.issued', currency, issuerFirm)); // possible for issuer to go negative
-    bytes32 id_c = keccak256(abi.encodePacked('token.supply', currency));
+    bytes32[2] memory ids = [keccak256(abi.encodePacked('token.issued', currency, issuerFirm)), keccak256(abi.encodePacked('token.supply', currency))];
 
     address forwardedAccount = getForwardedAccount(self, account);
 
@@ -802,10 +800,10 @@ library TokenIOLib {
       self.Storage.setBalance(forwardedAccount, currency, self.Storage.getBalance(forwardedAccount, currency).sub(amount)),
       "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
     require(
-      self.Storage.setUint(id_b, self.Storage.getUint(id_b).sub(amount)),
+      self.Storage.setUint(ids[0], self.Storage.getUint(ids[0]).sub(amount)),
       "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
     require(
-      self.Storage.setUint(id_c, self.Storage.getUint(id_c).sub(amount)),
+      self.Storage.setUint(ids[1], self.Storage.getUint(ids[1]).sub(amount)),
       "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
 
     emit Withdraw(currency, account, amount, issuerFirm);
@@ -969,7 +967,7 @@ library TokenIOLib {
     bytes32 sigR,
     bytes32 sigS,
     uint expiration
-  ) private returns (bool success) {
+  ) internal returns (bool success) {
 
     bytes32 fxTxHash = keccak256(abi.encodePacked(requester, symbolA, symbolB, valueA, valueB, expiration));
 
