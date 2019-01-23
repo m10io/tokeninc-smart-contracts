@@ -91,7 +91,12 @@ contract("TokenIOERC20FeesApply", function(accounts) {
         assert.equal(balance1, DEPOSIT_AMOUNT, "first account should contain all the deposit initially")
         assert.equal(balance2, 0, "Second account should have zero balance")
 
+        var gas = await erc20.transfer.estimateGas(TEST_ACCOUNT_2, TRANSFER_AMOUNT)
+        console.log("transfer gas estimation = " + gas + " units")
+
         const transferReceipt = await erc20.transfer(TEST_ACCOUNT_2, TRANSFER_AMOUNT)
+
+
         const balance1b = +(await erc20.balanceOf(TEST_ACCOUNT_1)).toString()
         const balance2b = +(await erc20.balanceOf(TEST_ACCOUNT_2)).toString()
 

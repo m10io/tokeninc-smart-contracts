@@ -62,12 +62,14 @@ contract TokenIOStorage is Ownable {
         uint flatFee;
     }
 
-    mapping(address => bool) internal isDeprecated;
-    mapping(address => address) internal feeContracts;
-    mapping(address => string) internal tokenSymbol;
-    mapping(address => FeeData) internal fees;
     mapping(address => mapping(string => uint256)) internal balances;
+    mapping(address => FeeData) internal fees;
     mapping(address => address) internal relatedAccounts;
+    mapping(address => address) internal feeContracts;
+    mapping(address => bool) internal isDeprecated;
+    mapping(address => string) internal tokenSymbol;
+    
+    
     
     mapping(bytes32 => uint256)    internal uIntStorage;
     mapping(bytes32 => string)     internal stringStorage;
@@ -102,7 +104,7 @@ contract TokenIOStorage is Ownable {
      * @param _value The Uint value to be set
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function setUint(bytes32 _key, uint _value) external onlyOwner returns (bool success) {
+    function setUint(bytes32 _key, uint _value) public onlyOwner returns (bool success) {
         uIntStorage[_key] = _value;
         return true;
     }
@@ -231,7 +233,7 @@ contract TokenIOStorage is Ownable {
      * @param _key Pointer identifier for value in storage
      * @return { "_value" : "Returns the Uint value associated with the id key" }
      */
-    function getUint(bytes32 _key) external view returns (uint _value) {
+    function getUint(bytes32 _key) public view returns (uint _value) {
         return uIntStorage[_key];
     }
 
@@ -320,10 +322,12 @@ contract TokenIOStorage is Ownable {
     }
     
     function getBalance(address _address, string _currency) external view returns (uint256 value) {
+        //return getUint(keccak256(abi.encodePacked('token.balance', _address, _currency)));
         return balances[_address][_currency];
     }
 
     function setBalance(address _address, string _currency, uint _value) external onlyOwner returns (bool success) {
+        //setUint(keccak256(abi.encodePacked('token.balance', _address, _currency)), _value);
         balances[_address][_currency] = _value;
         return true;
     }
