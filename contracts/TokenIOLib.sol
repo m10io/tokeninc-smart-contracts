@@ -676,15 +676,13 @@ library TokenIOLib {
       "Error: `to` address must not be null."
     );
 
-    bytes32 id_a = keccak256(abi.encodePacked('token.balance', currency, getForwardedAccount(self, from)));
-    bytes32 id_b = keccak256(abi.encodePacked('token.balance', currency, getForwardedAccount(self, to)));
-
     require(
-      self.Storage.setUint(id_a, self.Storage.getUint(id_a).sub(amount)),
-      "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
+     self.Storage.setBalance(getForwardedAccount(self, from), currency, self.Storage.getBalance(from, currency).sub(amount)),
+     "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
     );
+    
     require(
-      self.Storage.setUint(id_b, self.Storage.getUint(id_b).add(amount)),
+      self.Storage.setBalance(getForwardedAccount(self, to), currency, self.Storage.getBalance(to, currency).add(amount)),
       "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
     );
 
