@@ -54,6 +54,15 @@ contract TokenIOStorage is Ownable {
 		/// @dev only the derived contract can use the internal methods;
 		/// @dev key == `keccak256(param1, param2...)`
 		/// @dev Nested mapping can be achieved using multiple params in keccak256 hash;
+
+    struct Token {
+        string name;
+        string symbol;
+        string tla;
+        string version;
+        address feeContract;
+        uint fxUSDBPSRate;
+    }
     
     struct FeeData {
         uint maxFee;
@@ -63,13 +72,12 @@ contract TokenIOStorage is Ownable {
     }
 
     mapping(address => mapping(string => uint256)) internal balances;
+    
     mapping(address => FeeData) internal fees;
     mapping(address => address) internal relatedAccounts;
-    mapping(address => address) internal feeContracts;
-    mapping(address => bool) internal isDeprecated;
-    mapping(address => string) internal tokenSymbol;
-    
-    
+    mapping(address => bool)    internal isDeprecated;
+    mapping(string => uint)     internal decimals;
+    mapping(address => Token)   internal tokens;
     
     mapping(bytes32 => uint256)    internal uIntStorage;
     mapping(bytes32 => string)     internal stringStorage;
@@ -282,24 +290,6 @@ contract TokenIOStorage is Ownable {
         return true;
     }
 
-    function getFeeContract(address _address) external view returns (address _value) {
-        return feeContracts[_address];
-    }
-
-    function setFeeContract(address _address, address _value) external onlyOwner returns (bool success) {
-        feeContracts[_address] = _value;
-        return true;
-    }
-
-    function getTokenSymbol(address _address) external view returns (string _value) {
-        return tokenSymbol[_address];
-    }
-
-    function setTokenSymbol(address _address, string _value) external onlyOwner returns (bool success) {
-        tokenSymbol[_address] = _value;
-        return true;
-    }
-
     function getFees(address _address) external view returns (uint maxFee, uint minFee, uint bpsFee, uint flatFee) {
         FeeData memory feeData = fees[_address];
         return (feeData.maxFee, feeData.minFee, feeData.bpsFee, feeData.flatFee);
@@ -331,4 +321,71 @@ contract TokenIOStorage is Ownable {
         balances[_address][_currency] = _value;
         return true;
     }
+
+    function setTokenParams(address _address, string _name, string _symbol, string _tla, string _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) external onlyOwner returns(bool success) {
+        tokens[_address] = Token(_name, _symbol, _tla, _version, _feeContract, _fxUSDBPSRate);
+
+        decimals[_symbol] = _decimals;
+
+        return true;
+    }
+
+    function getTokenName(address _address) external view returns(string) {
+        return tokens[_address].name;
+    }
+
+    function setTokenName(address _address, string _tokenName) external onlyOwner returns(bool success) {
+        tokens[_address].name = _tokenName;
+        return true;
+    }
+
+    function getTokenSymbol(address _address) external view returns(string) {
+        return tokens[_address].symbol;
+    }
+
+    function setTokenSymbol(address _address, string _value) external onlyOwner returns (bool success) {
+        tokens[_address].symbol = _value;
+        return true;
+    }
+
+    function getTokenTLA(address _address) external view returns(string) {
+        return tokens[_address].tla;
+    }
+
+    function setTokenTLA(address _address, string _tokenTLA) external onlyOwner returns(bool success) {
+        tokens[_address].tla = _tokenTLA;
+        return true;
+    }
+
+    function getTokenVersion(address _address) external view returns(string) {
+        return tokens[_address].version;
+    }
+
+    function setTokenVersion(address _address, string _tokenVersion) external onlyOwner returns(bool success) {
+        tokens[_address].version = _tokenVersion;
+        return true;
+    }
+
+    function getTokenDecimals(string _currency) external view returns(uint) {
+        return decimals[_currency];
+    }
+
+    function setTokenDecimals(string _currency, uint _decimals) external onlyOwner returns(bool success) {
+         decimals[_currency] = _decimals;
+         return true;
+    }
+
+    function getTokenFeeContract(address _address) external view returns(address) {
+        return tokens[_address].feeContract;
+    }
+
+    function setTokenFeeContract(address _address, address _value) external onlyOwner returns (bool success) {
+        tokens[_address].feeContract = _value;
+        return true;
+    }
+
+    function getTokenfxUSDBPSRate(address _address) external view returns(uint) {
+        return tokens[_address].fxUSDBPSRate;
+    }
+
 }

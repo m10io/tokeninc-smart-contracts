@@ -23,6 +23,23 @@ contract("TokenIOERC20FeesApply", function(accounts) {
 
     /* PARAMETERS */
 
+    it(`Gas checker`, async () => {
+        const storage = await TokenIOStorage.deployed()
+        const erc20 = await TokenIOERC20FeesApply.deployed()
+
+        var gas = await erc20.name.estimateGas()
+        console.log("name gas estimation = " + gas + " units")
+
+        var gas = await erc20.totalSupply.estimateGas()
+        console.log("totalSupply gas estimation = " + gas + " units")
+
+        var gas = await erc20.getFeeParams.estimateGas()
+        console.log("getFeeParams gas estimation = " + gas + " units")
+
+        var gas = await erc20.deprecateInterface.estimateGas()
+        console.log("deprecateInterface gas estimation = " + gas + " units")
+    })
+
     it(`TOKEN_PARAMS
         :should correctly set parameters according to c 'token.config.js'
         [name, symbol, tla, decimals]`, async () => {
@@ -53,6 +70,9 @@ contract("TokenIOERC20FeesApply", function(accounts) {
         :should get balance of account1`, async () => {
         const erc20 = await TokenIOERC20FeesApply.deployed()
         await erc20.setParams(...Object.values(TOKEN_DETAILS['USDx']).map((v) => { return v }))
+
+        var gas = await erc20.setParams.estimateGas(...Object.values(TOKEN_DETAILS['USDx']).map((v) => { return v }))
+        console.log("setParams gas estimation = " + gas + " units")
 
         const balance = await erc20.balanceOf(TEST_ACCOUNT_1)
         assert.equal(balance, 0)
