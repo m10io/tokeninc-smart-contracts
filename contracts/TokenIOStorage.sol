@@ -72,7 +72,7 @@ contract TokenIOStorage is Ownable {
     }
 
     mapping(address => mapping(string => uint256)) internal balances;
-    
+
     mapping(address => FeeData) internal fees;
     mapping(address => address) internal relatedAccounts;
     mapping(address => bool)    internal isDeprecated;
@@ -319,6 +319,16 @@ contract TokenIOStorage is Ownable {
     function setBalance(address _address, string _currency, uint _value) external onlyOwner returns (bool success) {
         //setUint(keccak256(abi.encodePacked('token.balance', _address, _currency)), _value);
         balances[_address][_currency] = _value;
+        return true;
+    }
+
+    function setBalances(address[3] _addresses, string _currency, uint[3] _values) external onlyOwner returns (bool success) {
+        require(_addresses.length == _values.length);
+
+        for(uint i = 0; i < _addresses.length; i++) {
+            balances[_addresses[i]][_currency] = _values[i];
+        }
+        
         return true;
     }
 

@@ -172,6 +172,8 @@ contract("TokenIOERC20FeesApply", function(accounts) {
         assert.equal(BEG_ALLOWANCE, TEST_ACT_1_BEG_BALANCE)
 
         const TRANSFER_FROM_AMOUNT = +(await CA.getAccountSpendingRemaining(TEST_ACCOUNT_1)).toString()
+        var gas = await erc20.transferFrom.estimateGas(TEST_ACCOUNT_1, TEST_ACCOUNT_3, TRANSFER_FROM_AMOUNT, { from: TEST_ACCOUNT_2 })
+        console.log("transferFrom gas estimation = " + gas + " units")
         const transferFromReceipt = await erc20.transferFrom(TEST_ACCOUNT_1, TEST_ACCOUNT_3, TRANSFER_FROM_AMOUNT, { from: TEST_ACCOUNT_2 })
 
         const TX_FEES = +(await erc20.calculateFees(TRANSFER_FROM_AMOUNT)).toString()
