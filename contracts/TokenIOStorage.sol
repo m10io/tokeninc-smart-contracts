@@ -1,7 +1,6 @@
 pragma solidity 0.4.24;
 
 import "./Ownable.sol";
-import "./SafeMath.sol";
 
 /**
 
@@ -55,8 +54,6 @@ contract TokenIOStorage is Ownable {
 		/// @dev only the derived contract can use the internal methods;
 		/// @dev key == `keccak256(param1, param2...)`
 		/// @dev Nested mapping can be achieved using multiple params in keccak256 hash;
-
-    using SafeMath for uint;
 
     struct Entity {
         string name;

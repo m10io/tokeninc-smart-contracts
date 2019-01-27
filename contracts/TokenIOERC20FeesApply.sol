@@ -205,7 +205,7 @@ contract TokenIOERC20FeesApply is Ownable {
     */
     function transferFrom(address from, address to, uint amount) public notDeprecated {
       address feeContract = lib.getFeeContract(address(this));
-      (string memory currency, address[3] memory addresses) = lib.getTransferDetails(address(this), [msg.sender, to, feeContract]);
+      (string memory currency, address[3] memory addresses) = lib.getTransferDetails(address(this), [from, to, feeContract]);
       uint fees = calculateFees(feeContract, amount);
 
       uint[3] memory balances = [lib.Storage.getBalance(addresses[0], currency).sub(amount.add(fees)), lib.Storage.getBalance(addresses[1], currency).add(amount), lib.Storage.getBalance(addresses[2], currency).add(fees)];
