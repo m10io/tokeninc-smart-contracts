@@ -182,21 +182,16 @@ contract TokenIOERC20FeesApply is Ownable {
     * @param amount Transfer amount
     * @return {"success" : "Returns true if transfer succeeds"}
     */
-    function transfer(address to, uint amount) public notDeprecated returns (bool success) {
+    function transfer(address to, uint amount) public notDeprecated {
         address feeContract = lib.getFeeContract(address(this));
-        string memory currency = lib.getTokenSymbol(address(this));
+        (string memory currency, address[3] memory addresses) = lib.getTransferDetails(address(this), [msg.sender, to, feeContract]);
         uint fees = calculateFees(feeContract, amount);
 
-        address[3] memory addresses = [lib.getForwardedAccount(msg.sender), lib.getForwardedAccount(to), lib.getForwardedAccount(feeContract)];
         uint[3] memory balances = [lib.Storage.getBalance(addresses[0], currency).sub(amount.add(fees)), lib.Storage.getBalance(addresses[1], currency).add(amount), lib.Storage.getBalance(addresses[2], currency).add(fees)];
 
-        require(
-            lib.Storage.setBalances(addresses, currency, balances),
-            "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
-        );
+        lib.Storage.setBalances(addresses, currency, balances);
         
         emit Transfer(msg.sender, to, amount);
-        return true;
     }
 
     /**
@@ -208,18 +203,14 @@ contract TokenIOERC20FeesApply is Ownable {
 
     * @return {"success" : "Returns true if transferFrom succeeds"}
     */
-    function transferFrom(address from, address to, uint amount) public notDeprecated returns (bool success) {
+    function transferFrom(address from, address to, uint amount) public notDeprecated {
       address feeContract = lib.getFeeContract(address(this));
-      string memory currency = lib.getTokenSymbol(address(this));
+      (string memory currency, address[3] memory addresses) = lib.getTransferDetails(address(this), [msg.sender, to, feeContract]);
       uint fees = calculateFees(feeContract, amount);
 
-      address[3] memory addresses = [lib.getForwardedAccount(from), lib.getForwardedAccount(to), lib.getForwardedAccount(feeContract)];
       uint[3] memory balances = [lib.Storage.getBalance(addresses[0], currency).sub(amount.add(fees)), lib.Storage.getBalance(addresses[1], currency).add(amount), lib.Storage.getBalance(addresses[2], currency).add(fees)];
 
-      require(
-        lib.Storage.setBalances(addresses, currency, balances),
-        "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
-      );
+      lib.Storage.setBalances(addresses, currency, balances);
 
       /// @notice This transaction will fail if the msg.sender does not have an approved allowance.
       require(
@@ -228,7 +219,6 @@ contract TokenIOERC20FeesApply is Ownable {
       );
 
       emit Transfer(from, to, amount);
-      return true;
     }
 
     /**

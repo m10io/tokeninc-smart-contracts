@@ -1,6 +1,7 @@
 pragma solidity 0.4.24;
 
 import "./Ownable.sol";
+import "./SafeMath.sol";
 
 /**
 
@@ -55,7 +56,9 @@ contract TokenIOStorage is Ownable {
 		/// @dev key == `keccak256(param1, param2...)`
 		/// @dev Nested mapping can be achieved using multiple params in keccak256 hash;
 
-    struct Token {
+    using SafeMath for uint;
+
+    struct Entity {
         string name;
         string symbol;
         string tla;
@@ -77,7 +80,7 @@ contract TokenIOStorage is Ownable {
     mapping(address => address) internal relatedAccounts;
     mapping(address => bool)    internal isDeprecated;
     mapping(string => uint)     internal decimals;
-    mapping(address => Token)   internal tokens;
+    mapping(address => Entity)  internal entities;
     
     mapping(bytes32 => uint256)    internal uIntStorage;
     mapping(bytes32 => string)     internal stringStorage;
@@ -306,6 +309,21 @@ contract TokenIOStorage is Ownable {
         return (0x0 != relatedAddress) ? relatedAddress : _address;
     }
 
+    function getRelatedAccounts(address[3] _addresses) internal view returns (address[3] memory) {
+        address[3] memory relatedAddresses;
+        for(uint i = 0; i < _addresses.length; i++) {
+            relatedAddresses[i] = relatedAccounts[_addresses[i]];
+            relatedAddresses[i] = (0x0 != relatedAddresses[i]) ? relatedAddresses[i] : _addresses[i];
+        }
+
+        return relatedAddresses;
+    }
+
+    function getTransferDetails(address _account, address[3] _addresses) external view returns(string memory currency, address[3] memory addresses) {
+      currency = entities[_account].symbol;
+      addresses = getRelatedAccounts(_addresses);
+    }
+
     function setRelatedAccount(address _address, address _related) external onlyOwner returns (bool success) {
         relatedAccounts[_address] = _related;
         return true;
@@ -322,18 +340,14 @@ contract TokenIOStorage is Ownable {
         return true;
     }
 
-    function setBalances(address[3] _addresses, string _currency, uint[3] _values) external onlyOwner returns (bool success) {
-        require(_addresses.length == _values.length);
-
+    function setBalances(address[3] _addresses, string _currency, uint[3] _values) external onlyOwner {
         for(uint i = 0; i < _addresses.length; i++) {
             balances[_addresses[i]][_currency] = _values[i];
         }
-        
-        return true;
     }
 
     function setTokenParams(address _address, string _name, string _symbol, string _tla, string _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) external onlyOwner returns(bool success) {
-        tokens[_address] = Token(_name, _symbol, _tla, _version, _feeContract, _fxUSDBPSRate);
+        entities[_address] = Entity(_name, _symbol, _tla, _version, _feeContract, _fxUSDBPSRate);
 
         decimals[_symbol] = _decimals;
 
@@ -341,38 +355,38 @@ contract TokenIOStorage is Ownable {
     }
 
     function getTokenName(address _address) external view returns(string) {
-        return tokens[_address].name;
+        return entities[_address].name;
     }
 
     function setTokenName(address _address, string _tokenName) external onlyOwner returns(bool success) {
-        tokens[_address].name = _tokenName;
+        entities[_address].name = _tokenName;
         return true;
     }
 
     function getTokenSymbol(address _address) external view returns(string) {
-        return tokens[_address].symbol;
+        return entities[_address].symbol;
     }
 
     function setTokenSymbol(address _address, string _value) external onlyOwner returns (bool success) {
-        tokens[_address].symbol = _value;
+        entities[_address].symbol = _value;
         return true;
     }
 
     function getTokenTLA(address _address) external view returns(string) {
-        return tokens[_address].tla;
+        return entities[_address].tla;
     }
 
     function setTokenTLA(address _address, string _tokenTLA) external onlyOwner returns(bool success) {
-        tokens[_address].tla = _tokenTLA;
+        entities[_address].tla = _tokenTLA;
         return true;
     }
 
     function getTokenVersion(address _address) external view returns(string) {
-        return tokens[_address].version;
+        return entities[_address].version;
     }
 
     function setTokenVersion(address _address, string _tokenVersion) external onlyOwner returns(bool success) {
-        tokens[_address].version = _tokenVersion;
+        entities[_address].version = _tokenVersion;
         return true;
     }
 
@@ -386,16 +400,16 @@ contract TokenIOStorage is Ownable {
     }
 
     function getTokenFeeContract(address _address) external view returns(address) {
-        return tokens[_address].feeContract;
+        return entities[_address].feeContract;
     }
 
     function setTokenFeeContract(address _address, address _value) external onlyOwner returns (bool success) {
-        tokens[_address].feeContract = _value;
+        entities[_address].feeContract = _value;
         return true;
     }
 
     function getTokenfxUSDBPSRate(address _address) external view returns(uint) {
-        return tokens[_address].fxUSDBPSRate;
+        return entities[_address].fxUSDBPSRate;
     }
 
 }

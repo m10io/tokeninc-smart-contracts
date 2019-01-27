@@ -269,6 +269,10 @@ library TokenIOLib {
       return self.Storage.getRelatedAccount(account);
   }
 
+  function getTransferDetails(Data storage self, address account, address[3] memory addresses) internal view returns(string memory, address[3] memory) {
+      return self.Storage.getTransferDetails(account, addresses);
+  }
+
   /**
    * @notice Get KYC approval status for the account holder
    * @dev | This method has an `internal` view
