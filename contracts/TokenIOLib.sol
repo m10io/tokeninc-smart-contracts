@@ -137,6 +137,17 @@ library TokenIOLib {
     return true;
   }
 
+  /**
+   * @notice Set fees for contract interface
+   * @dev fee can be set by the TokenIOFeeContract
+   * @dev | This method has an `internal` view
+   * @param self Internal storage proxying TokenIOStorage contract
+   * @param maxFee max fee value 
+   * @param minFee min fee value 
+   * @param bpsFee bps fee value 
+   * @param flatFee flat fee value 
+   * @return {"success" : "Returns true when successfully called from another contract"}
+   */
   function setFees(Data storage self, uint maxFee, uint minFee, uint bpsFee, uint flatFee) internal returns (bool success) {
       return self.Storage.setFees(address(this), maxFee, minFee, bpsFee, flatFee);
   }
