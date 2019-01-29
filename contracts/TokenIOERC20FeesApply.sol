@@ -74,10 +74,8 @@ contract TokenIOERC20FeesApply is Ownable {
     uint _decimals,
     address _feeContract,
     uint _fxUSDBPSRate
-    ) onlyOwner public returns (bool success) {
-      require(lib.setTokenParams(_name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate),
-        "Error: Unable to set token params. Please check arguments.");
-      return true;
+    ) onlyOwner public {
+      lib.setTokenParams(_name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate);
     }
 
     /**
@@ -198,7 +196,7 @@ contract TokenIOERC20FeesApply is Ownable {
     * @notice spender transfers from approvers account to the reciving account
     * @param from Approver's address
     * @param to Receiving address
-    * @param amount Transfer amount      uint[3] memory balances = [lib.Storage.getBalance(addresses[0], currency).sub(amount.add(fees)), lib.Storage.getBalance(addresses[1], currency).add(amount), lib.Storage.getBalance(addresses[2], currency).add(fees)];
+    * @param amount Transfer amount      uint[3] memory balanc9iies = [lib.Storage.getBalance(addresses[0], currency).sub(amount.add(fees)), lib.Storage.getBalance(addresses[1], currency).add(amount), lib.Storage.getBalance(addresses[2], currency).add(fees)];
 
 
     * @return {"success" : "Returns true if transferFrom succeeds"}

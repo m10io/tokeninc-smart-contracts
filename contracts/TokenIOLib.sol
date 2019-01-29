@@ -47,11 +47,8 @@ library TokenIOLib {
   event AccountForward(address indexed originalAccount, address indexed forwardedAccount);
   event NewAuthority(address indexed authority, string issuerFirm);
 
-  function setTokenParams(Data storage self, string _name, string _symbol, string _tla, string _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) internal returns(bool res) {
-    require(
-       self.Storage.setTokenParams(address(this), _name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate), 
-       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract.");
-    return true;
+  function setTokenParams(Data storage self, string _name, string _symbol, string _tla, string _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) internal {
+       self.Storage.setTokenParams(address(this), _name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate);
   }
 
   /**
@@ -526,13 +523,14 @@ library TokenIOLib {
     uint bpsFee;
     uint flatFee;
 
-    (maxFee, minFee, bpsFee, flatFee) = self.Storage.getFees(contractAddress);
+    (maxFee, minFee, bpsFee, flatFee) = self.Storage.getFees(contractAddress); // get maxFee and max amount 
+    // if amount > max amount return maxfee
+
+    // 
 
     uint fees = ((amount.mul(bpsFee)).div(10000)).add(flatFee);
 
     //return (fees < maxFee) ? fees : maxFee;
-
-
 
     if (fees > maxFee) {
       return maxFee;

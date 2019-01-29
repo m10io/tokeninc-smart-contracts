@@ -302,6 +302,16 @@ contract TokenIOStorage is Ownable {
     }
 
     /**
+     * @notice Delete value from isDeprecated mapping associated with address key
+     * @param _address Pointer identifier for value in mapping
+     * @return { "success" : "Returns true when successfully called from another contract" }
+     */
+    function deleteDeprecated(address _address) external onlyOwner returns (bool success) {
+        delete isDeprecated[_address];
+        return true;
+    }
+
+    /**
      * @notice Get value from fees mapping associated with address key
      * @param _address Pointer identifier for value in mapping
      * @return { "maxFee" : "Returns the max fee value", "minFee" : "Returns the min fee value", 
@@ -351,11 +361,6 @@ contract TokenIOStorage is Ownable {
         return relatedAddresses;
     }
 
-    function getTransferDetails(address _account, address[3] _addresses) external view returns(string memory currency, address[3] memory addresses) {
-      currency = assets[_account].symbol;
-      addresses = getRelatedAccounts(_addresses);
-    }
-
     /**
      * @notice Set value for relatedAccount mapping associated with address key
      * @param _address Pointer identifier for value in mapping
@@ -365,6 +370,21 @@ contract TokenIOStorage is Ownable {
     function setRelatedAccount(address _address, address _related) external onlyOwner returns (bool success) {
         relatedAccounts[_address] = _related;
         return true;
+    }
+
+    /**
+     * @notice Delete value from relatedAccount mapping associated with address key
+     * @param _address Pointer identifier for value in mapping
+     * @return { "success" : "Returns true when successfully called from another contract" }
+     */
+    function deleteRelatedAccount(address _address) external onlyOwner returns (bool success) {
+        delete relatedAccounts[_address];
+        return true;
+    }
+
+    function getTransferDetails(address _account, address[3] _addresses) external view returns(string memory currency, address[3] memory addresses) {
+      currency = assets[_account].symbol;
+      addresses = getRelatedAccounts(_addresses);
     }
     
     /**
@@ -403,12 +423,22 @@ contract TokenIOStorage is Ownable {
         }
     }
 
-    function setTokenParams(address _address, string _name, string _symbol, string _tla, string _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) external onlyOwner returns(bool success) {
+    /**
+     * @notice Delete value from balances mapping associated with address and currency keys
+     * @param _address Pointer identifier for value in mapping
+     * @param _currency Pointer identifier for value in mapping
+     * @return { "success" : "Returns true when successfully called from another contract" }
+     */
+    function deleteBalance(address _address, string _currency) external onlyOwner returns (bool success) {
+        //setUint(keccak256(abi.encodePacked('token.balance', _address, _currency)), _value);
+        delete balances[_address][_currency];
+        return true;
+    }
+
+    function setTokenParams(address _address, string _name, string _symbol, string _tla, string _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) external onlyOwner {
         assets[_address] = AssetDetails(_name, _symbol, _tla, _version, _feeContract, _fxUSDBPSRate);
 
         decimals[_symbol] = _decimals;
-
-        return true;
     }
 
     /**
@@ -428,6 +458,16 @@ contract TokenIOStorage is Ownable {
      */
     function setTokenName(address _address, string _tokenName) external onlyOwner returns(bool success) {
         assets[_address].name = _tokenName;
+        return true;
+    }
+
+    /**
+     * @notice Delete value from assetsDetails struct in assets mapping associated with address key
+     * @param _address Pointer identifier for value in mapping
+     * @return { "success" : "Returns true when successfully called from another contract" }
+     */
+    function deleteTokenName(address _address) external onlyOwner returns(bool success) {
+        delete assets[_address].name;
         return true;
     }
 
@@ -452,6 +492,16 @@ contract TokenIOStorage is Ownable {
     }
 
     /**
+     * @notice Delete value from assetsDetails struct in assets mapping associated with address key
+     * @param _address Pointer identifier for value in mapping
+     * @return { "success" : "Returns true when successfully called from another contract" }
+     */
+    function deleteTokenSymbol(address _address) external onlyOwner returns (bool success) {
+        delete assets[_address].symbol;
+        return true;
+    }
+
+    /**
      * @notice Get value from assetsDetails struct in assets mapping associated with address key
      * @param _address Pointer identifier for value in mapping
      * @return { "string" : "Returns the string value associated with the key" }
@@ -468,6 +518,16 @@ contract TokenIOStorage is Ownable {
      */
     function setTokenTLA(address _address, string _tokenTLA) external onlyOwner returns(bool success) {
         assets[_address].tla = _tokenTLA;
+        return true;
+    }
+
+    /**
+     * @notice Delete value from assetsDetails struct in assets mapping associated with address key
+     * @param _address Pointer identifier for value in mapping
+     * @return { "success" : "Returns true when successfully called from another contract" }
+     */
+    function deleteTokenTLA(address _address) external onlyOwner returns(bool success) {
+        delete assets[_address].tla;
         return true;
     }
 
@@ -492,6 +552,16 @@ contract TokenIOStorage is Ownable {
     }
 
     /**
+     * @notice Delete value from assetsDetails struct in assets mapping associated with address key
+     * @param _address Pointer identifier for value in mapping
+     * @return { "success" : "Returns true when successfully called from another contract" }
+     */
+    function deleteTokenVersion(address _address) external onlyOwner returns(bool success) {
+        delete assets[_address].version;
+        return true;
+    }
+
+    /**
      * @notice Get value from decimals mapping associated with currency key
      * @param _currency Pointer identifier for value in mapping
      * @return { "uint" : "Returns the uint value associated with the key" }
@@ -507,6 +577,16 @@ contract TokenIOStorage is Ownable {
      */
     function setTokenDecimals(string _currency, uint _decimals) external onlyOwner returns(bool success) {
          decimals[_currency] = _decimals;
+         return true;
+    }
+
+    /**
+     * @notice Delete value from decimals mapping associated with currency key
+     * @param _currency decimals value
+     * @return { "success" : "Returns true when successfully called from another contract" }
+     */
+    function deleteTokenDecimals(string _currency) external onlyOwner returns(bool success) {
+         delete decimals[_currency];
          return true;
     }
 
@@ -531,12 +611,43 @@ contract TokenIOStorage is Ownable {
     }
 
     /**
+     * @notice Set value for assetsDetails struct in assets mapping associated with address key
+     * @param _address Pointer identifier for value in mapping
+     * @return { "success" : "Returns true when successfully called from another contract" }
+     */
+    function deleteTokenFeeContract(address _address) external onlyOwner returns (bool success) {
+        delete assets[_address].feeContract;
+        return true;
+    }
+
+    /**
      * @notice Get value from assetsDetails struct in assets mapping associated with address key
      * @param _address Pointer identifier for value in mapping
      * @return { "uint" : "Returns the uint value associated with the key" }
      */
-    function getTokenfxUSDBPSRate(address _address) external view returns(uint) {
+    function getTokenfxUSDBPSRate(address _address, uint _fxUSDBPSRate) external view returns(uint) {
         return assets[_address].fxUSDBPSRate;
+    }
+
+    /**
+     * @notice Set value for assetsDetails struct in assets mapping associated with address key
+     * @param _address Pointer identifier for value in mapping
+     * @param _fxUSDBPSRate  usdbps rate
+     * @return { "uint" : "Returns the uint value associated with the key" }
+     */
+    function setTokenfxUSDBPSRate(address _address, uint _fxUSDBPSRate) external view returns(bool success) {
+        assets[_address].fxUSDBPSRate = _fxUSDBPSRate;
+        return true;
+    }
+
+    /**
+     * @notice Delete value from assetsDetails struct in assets mapping associated with address key
+     * @param _address Pointer identifier for value in mapping
+     * @return { "uint" : "Returns the uint value associated with the key" }
+     */
+    function deleteTokenfxUSDBPSRate(address _address) external view returns(bool success) {
+        delete assets[_address].fxUSDBPSRate;
+        return true;
     }
 
 }
