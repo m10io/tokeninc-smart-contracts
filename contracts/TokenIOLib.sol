@@ -47,8 +47,11 @@ library TokenIOLib {
   event AccountForward(address indexed originalAccount, address indexed forwardedAccount);
   event NewAuthority(address indexed authority, string issuerFirm);
 
-  function setTokenParams(Data storage self, string _name, string _symbol, string _tla, string _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) internal {
-       self.Storage.setTokenParams(address(this), _name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate);
+  function setTokenParams(Data storage self, string _name, string _symbol, string _tla, string _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) internal returns(bool success) {
+       require(
+        self.Storage.setTokenParams(address(this), _name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate), 
+       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract.");
+       return true;
   }
 
   /**
@@ -139,10 +142,10 @@ library TokenIOLib {
    * @dev fee can be set by the TokenIOFeeContract
    * @dev | This method has an `internal` view
    * @param self Internal storage proxying TokenIOStorage contract
-   * @param maxFee max fee value 
-   * @param minFee min fee value 
-   * @param bpsFee bps fee value 
-   * @param flatFee flat fee value 
+   * @param maxFee Maximum fee for interface contract transactions
+   * @param minFee Minimum fee for interface contract transactions 
+   * @param bpsFee Basis points fee for interface contract transactions
+   * @param flatFee Flat fee for interface contract transactions
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
   function setFees(Data storage self, uint maxFee, uint minFee, uint bpsFee, uint flatFee) internal returns (bool success) {
@@ -523,14 +526,9 @@ library TokenIOLib {
     uint bpsFee;
     uint flatFee;
 
-    (maxFee, minFee, bpsFee, flatFee) = self.Storage.getFees(contractAddress); // get maxFee and max amount 
-    // if amount > max amount return maxfee
-
-    // 
+    (maxFee, minFee, bpsFee, flatFee) = self.Storage.getFees(contractAddress);
 
     uint fees = ((amount.mul(bpsFee)).div(10000)).add(flatFee);
-
-    //return (fees < maxFee) ? fees : maxFee;
 
     if (fees > maxFee) {
       return maxFee;

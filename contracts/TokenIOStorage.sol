@@ -325,10 +325,10 @@ contract TokenIOStorage is Ownable {
     /**
      * @notice Set value for FeeData struct associated with address key
      * @param _address Pointer identifier for FeeData
-     * @param maxFee max fee value 
-     * @param minFee min fee value 
-     * @param bpsFee bps fee value 
-     * @param flatFee flat fee value 
+     * @param maxFee Maximum fee for interface contract transactions
+     * @param minFee Minimum fee for interface contract transactions 
+     * @param bpsFee Basis points fee for interface contract transactions
+     * @param flatFee Flat fee for interface contract transactions
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
     function setFees(address _address, uint maxFee, uint minFee, uint bpsFee, uint flatFee) external onlyOwner returns (bool success) {
@@ -416,11 +416,13 @@ contract TokenIOStorage is Ownable {
      * @param _addresses Pointer identifiers for values in mapping
      * @param _currency Pointer identifier for value in mapping
      * @param _values balance values
+     * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function setBalances(address[3] _addresses, string _currency, uint[3] _values) external onlyOwner {
+    function setBalances(address[3] _addresses, string _currency, uint[3] _values) external onlyOwner returns(bool success) {
         for(uint i = 0; i < _addresses.length; i++) {
             balances[_addresses[i]][_currency] = _values[i];
         }
+        return true;
     }
 
     /**
@@ -435,10 +437,10 @@ contract TokenIOStorage is Ownable {
         return true;
     }
 
-    function setTokenParams(address _address, string _name, string _symbol, string _tla, string _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) external onlyOwner {
+    function setTokenParams(address _address, string _name, string _symbol, string _tla, string _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) external onlyOwner returns(bool success) {
         assets[_address] = AssetDetails(_name, _symbol, _tla, _version, _feeContract, _fxUSDBPSRate);
-
         decimals[_symbol] = _decimals;
+        return true;
     }
 
     /**

@@ -100,7 +100,6 @@ contract TokenIOFeeContract is Ownable {
 		return lib.calculateFees(address(this), amount);
 	}
 
-
 	/**
 	 * @notice Transfer collected fees to another account; onlyOwner
 	 * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
