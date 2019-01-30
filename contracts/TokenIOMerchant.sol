@@ -72,7 +72,7 @@ contract TokenIOMerchant is Ownable {
     }
     */
     function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, bytes feeMsg, address feeAccount) {
-        address feeContract = lib.getFeeContract(address(this));
+      address feeContract = lib.getFeeContract(address(this));
         (max, min, bps, flat) = lib.getFees(feeContract);
         feeMsg = lib.getFeeMsg(feeContract);
         feeAccount = feeContract;

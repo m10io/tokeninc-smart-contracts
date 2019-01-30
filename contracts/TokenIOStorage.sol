@@ -50,10 +50,10 @@ contract TokenIOStorage is Ownable {
 
 
     /// @dev mapping for Primitive Data Types;
-		/// @notice primitive data mappings have `internal` view;
-		/// @dev only the derived contract can use the internal methods;
-		/// @dev key == `keccak256(param1, param2...)`
-		/// @dev Nested mapping can be achieved using multiple params in keccak256 hash;
+        /// @notice primitive data mappings have `internal` view;
+        /// @dev only the derived contract can use the internal methods;
+        /// @dev key == `keccak256(param1, param2...)`
+        /// @dev Nested mapping can be achieved using multiple params in keccak256 hash;
 
     struct AssetDetails {
         string name;
@@ -87,9 +87,9 @@ contract TokenIOStorage is Ownable {
     mapping(bytes32 => int256)       internal intStorage;
 
     constructor() public {
-				/// @notice owner is set to msg.sender by default
-				/// @dev consider removing in favor of setting ownership in inherited
-				/// contract
+                /// @notice owner is set to msg.sender by default
+                /// @dev consider removing in favor of setting ownership in inherited
+                /// contract
         owner[msg.sender] = true;
     }
 
@@ -162,8 +162,8 @@ contract TokenIOStorage is Ownable {
     }
 
     /// @dev Delete Key Methods
-		/// @dev delete methods may be unnecessary; Use set methods to set values
-		/// to default?
+        /// @dev delete methods may be unnecessary; Use set methods to set values
+        /// to default?
 
     /**
      * @notice Delete value for Address associated with bytes32 id key
