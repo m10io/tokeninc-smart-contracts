@@ -54,9 +54,6 @@ contract("TokenIOERC20FeesApply", function(accounts) {
         const erc20 = await TokenIOERC20FeesApply.deployed()
         await erc20.setParams(...Object.values(TOKEN_DETAILS['USDx']).map((v) => { return v }))
 
-        var gas = await erc20.setParams.estimateGas(...Object.values(TOKEN_DETAILS['USDx']).map((v) => { return v }))
-        console.log("setParams gas estimation = " + gas + " units")
-
         const balance = await erc20.balanceOf(TEST_ACCOUNT_1)
         assert.equal(balance, 0)
     })
@@ -94,11 +91,7 @@ contract("TokenIOERC20FeesApply", function(accounts) {
         assert.equal(balance1, DEPOSIT_AMOUNT, "first account should contain all the deposit initially")
         assert.equal(balance2, 0, "Second account should have zero balance")
 
-        var gas = await erc20.transfer.estimateGas(TEST_ACCOUNT_2, TRANSFER_AMOUNT)
-        console.log("transfer gas estimation = " + gas + " units")
-
         const transferReceipt = await erc20.transfer(TEST_ACCOUNT_2, TRANSFER_AMOUNT)
-
 
         const balance1b = +(await erc20.balanceOf(TEST_ACCOUNT_1)).toString()
         const balance2b = +(await erc20.balanceOf(TEST_ACCOUNT_2)).toString()
@@ -155,8 +148,6 @@ contract("TokenIOERC20FeesApply", function(accounts) {
         assert.equal(BEG_ALLOWANCE, TEST_ACT_1_BEG_BALANCE)
 
         const TRANSFER_FROM_AMOUNT = +(await CA.getAccountSpendingRemaining(TEST_ACCOUNT_1)).toString()
-        var gas = await erc20.transferFrom.estimateGas(TEST_ACCOUNT_1, TEST_ACCOUNT_3, TRANSFER_FROM_AMOUNT, { from: TEST_ACCOUNT_2 })
-        console.log("transferFrom gas estimation = " + gas + " units")
         const transferFromReceipt = await erc20.transferFrom(TEST_ACCOUNT_1, TEST_ACCOUNT_3, TRANSFER_FROM_AMOUNT, { from: TEST_ACCOUNT_2 })
 
         const TX_FEES = +(await erc20.calculateFees(TRANSFER_FROM_AMOUNT)).toString()
