@@ -21,8 +21,8 @@ contract("TokenIOFeeContract", function(accounts) {
 	const TEST_ACCOUNT_3 = accounts[2]
 	const DEPOSIT_AMOUNT = 10000e2 // 1 million USD; 2 decimal representation
 	const TRANSFER_AMOUNT = DEPOSIT_AMOUNT/4
-    const SPENDING_LIMIT = DEPOSIT_AMOUNT/2
-    
+	const SPENDING_LIMIT = DEPOSIT_AMOUNT/2
+
 	it("Should transfer an amount of funds and send the fees to the fee contract", async () => {
 		const CA = await TokenIOCurrencyAuthority.deployed()
 		const token = await TokenIOERC20.deployed()
