@@ -74,22 +74,9 @@ contract TokenIOERC20FeesApply is Ownable {
     uint _decimals,
     address _feeContract,
     uint _fxUSDBPSRate
-    ) onlyOwner public returns (bool success) {
-      require(lib.setTokenName(_name),
-        "Error: Unable to set token name. Please check arguments.");
-      require(lib.setTokenSymbol(_symbol),
-        "Error: Unable to set token symbol. Please check arguments.");
-      require(lib.setTokenTLA(_tla),
-        "Error: Unable to set token TLA. Please check arguments.");
-      require(lib.setTokenVersion(_version),
-        "Error: Unable to set token version. Please check arguments.");
-      require(lib.setTokenDecimals(_symbol, _decimals),
-        "Error: Unable to set token decimals. Please check arguments.");
-      require(lib.setFeeContract(_feeContract),
-        "Error: Unable to set fee contract. Please check arguments.");
-      require(lib.setFxUSDBPSRate(_symbol, _fxUSDBPSRate),
-        "Error: Unable to set fx USD basis points rate. Please check arguments.");
-      return true;
+    ) onlyOwner public returns(bool success) {
+      require(lib.setTokenParams(_name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate),
+        "Error: Unable to set token params. Please check arguments.");
     }
 
     /**
@@ -170,15 +157,9 @@ contract TokenIOERC20FeesApply is Ownable {
       }
     */
     function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, bytes feeMsg, address feeAccount) {
-      address feeContract = lib.getFeeContract(address(this));
-      return (
-        lib.getFeeBPS(feeContract),
-        lib.getFeeMin(feeContract),
-        lib.getFeeMax(feeContract),
-        lib.getFeeFlat(feeContract),
-        lib.getFeeMsg(feeContract),
-        feeContract
-      );
+      feeAccount = lib.getFeeContract(address(this));
+      (max, min, bps, flat) = lib.getFees(feeAccount);
+      feeMsg = lib.getFeeMsg(feeAccount);
     }
 
     /**
@@ -186,8 +167,12 @@ contract TokenIOERC20FeesApply is Ownable {
     * @param amount Amount to calculcate fee value
     * @return {"fees": "Returns the calculated transaction fees based on the fee contract parameters"}
     */
-    function calculateFees(uint amount) public view returns (uint fees) {
-      return lib.calculateFees(lib.getFeeContract(address(this)), amount);
+    function calculateFees(uint amount) external view returns (uint fees) {
+      return calculateFees(lib.getFeeContract(address(this)), amount);
+    }
+
+    function calculateFees(address feeContract, uint amount) internal view returns (uint fees) {
+      return lib.calculateFees(feeContract, amount);
     }
 
     /**
@@ -196,33 +181,22 @@ contract TokenIOERC20FeesApply is Ownable {
     * @param amount Transfer amount
     * @return {"success" : "Returns true if transfer succeeds"}
     */
-    function transfer(address to, uint amount) public notDeprecated returns (bool success) {
-      address feeContract = lib.getFeeContract(address(this));
-      string memory currency = lib.getTokenSymbol(address(this));
-      uint fees = calculateFees(amount);
+    function transfer(address to, uint amount) public notDeprecated returns(bool success) {
+        address feeContract = lib.getFeeContract(address(this));
+        (string memory currency, address[3] memory addresses) = lib.getTransferDetails(address(this), [msg.sender, to, feeContract]);
+        uint fees = calculateFees(feeContract, amount);
 
-      bytes32 id_a = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(msg.sender)));
-      bytes32 id_b = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(to)));
-      bytes32 id_c = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(feeContract)));
+        uint[3] memory balances = [lib.Storage.getBalance(addresses[0], currency).sub(amount.add(fees)), lib.Storage.getBalance(addresses[1], currency).add(amount), lib.Storage.getBalance(addresses[2], currency).add(fees)];
 
-      require(
-        lib.Storage.setUint(id_a, lib.Storage.getUint(id_a).sub(amount.add(fees))),
-        "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
-      );
+        require(
+          lib.Storage.setBalances(addresses, currency, balances),
+          "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
+        );
 
-      require(
-        lib.Storage.setUint(id_b, lib.Storage.getUint(id_b).add(amount)),
-        "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
-      );
+        
+        emit Transfer(msg.sender, to, amount);
 
-      require(
-        lib.Storage.setUint(id_c, lib.Storage.getUint(id_c).add(fees)),
-        "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
-      );
-
-      emit Transfer(msg.sender, to, amount);
-
-      return true;
+        return true;
     }
 
     /**
@@ -232,28 +206,16 @@ contract TokenIOERC20FeesApply is Ownable {
     * @param amount Transfer amount
     * @return {"success" : "Returns true if transferFrom succeeds"}
     */
-    function transferFrom(address from, address to, uint amount) public notDeprecated returns (bool success) {
+    function transferFrom(address from, address to, uint amount) public notDeprecated returns(bool success) {
       address feeContract = lib.getFeeContract(address(this));
-      string memory currency = lib.getTokenSymbol(address(this));
-      uint fees = calculateFees(amount);
+      (string memory currency, address[3] memory addresses) = lib.getTransferDetails(address(this), [from, to, feeContract]);
+      uint fees = calculateFees(feeContract, amount);
 
-      bytes32 id_a = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(from)));
-      bytes32 id_b = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(to)));
-      bytes32 id_c = keccak256(abi.encodePacked('token.balance', currency, lib.getForwardedAccount(feeContract)));
+      uint[3] memory balances = [lib.Storage.getBalance(addresses[0], currency).sub(amount.add(fees)), lib.Storage.getBalance(addresses[1], currency).add(amount), lib.Storage.getBalance(addresses[2], currency).add(fees)];
 
       require(
-        lib.Storage.setUint(id_a, lib.Storage.getUint(id_a).sub(amount.add(fees))),
-        "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
-      );
-
-      require(
-        lib.Storage.setUint(id_b, lib.Storage.getUint(id_b).add(amount)),
-        "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
-      );
-
-      require(
-        lib.Storage.setUint(id_c, lib.Storage.getUint(id_c).add(fees)),
-        "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
+          lib.Storage.setBalances(addresses, currency, balances),
+          "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
       );
 
       /// @notice This transaction will fail if the msg.sender does not have an approved allowance.
@@ -263,6 +225,7 @@ contract TokenIOERC20FeesApply is Ownable {
       );
 
       emit Transfer(from, to, amount);
+
       return true;
     }
 
