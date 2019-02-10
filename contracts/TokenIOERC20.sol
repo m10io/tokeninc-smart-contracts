@@ -35,7 +35,10 @@ contract TokenIOERC20 is Ownable {
   using TokenIOLib for TokenIOLib.Data;
   TokenIOLib.Data lib;
 
-
+  /**
+  * @notice Constructor method for ERC20 contract
+  * @param _storageContract     address of TokenIOStorage contract
+  */
   constructor(address _storageContract) public {
     //// @dev Set the storage contract for the interface
     //// @dev This contract will be unable to use the storage constract until
