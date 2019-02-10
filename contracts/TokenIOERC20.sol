@@ -35,10 +35,7 @@ contract TokenIOERC20 is Ownable {
   using TokenIOLib for TokenIOLib.Data;
   TokenIOLib.Data lib;
 
-  /**
-  * @notice Constructor method for ERC20 contract
-  * @param _storageContract     address of TokenIOStorage contract
-  */
+
   constructor(address _storageContract) public {
     //// @dev Set the storage contract for the interface
     //// @dev This contract will be unable to use the storage constract until
@@ -70,20 +67,8 @@ contract TokenIOERC20 is Ownable {
     address _feeContract,
     uint _fxUSDBPSRate
     ) onlyOwner public returns (bool success) {
-      require(lib.setTokenName(_name),
-        "Error: Unable to set token name. Please check arguments.");
-      require(lib.setTokenSymbol(_symbol),
-        "Error: Unable to set token symbol. Please check arguments.");
-      require(lib.setTokenTLA(_tla),
-        "Error: Unable to set token TLA. Please check arguments.");
-      require(lib.setTokenVersion(_version),
-        "Error: Unable to set token version. Please check arguments.");
-      require(lib.setTokenDecimals(_symbol, _decimals),
-        "Error: Unable to set token decimals. Please check arguments.");
-      require(lib.setFeeContract(_feeContract),
-        "Error: Unable to set fee contract. Please check arguments.");
-      require(lib.setFxUSDBPSRate(_symbol, _fxUSDBPSRate),
-        "Error: Unable to set fx USD basis points rate. Please check arguments.");
+      require(lib.setTokenParams(_name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate),
+        "Error: Unable to set token params. Please check arguments.");
       return true;
     }
 

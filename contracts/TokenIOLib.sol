@@ -1188,9 +1188,8 @@ library TokenIOLib {
    * @return { "success": "Returns true if successfully called from another contract"}
    */
   function setFxUSDBPSRate(Data storage self, string currency, uint bpsRate) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('fx.usd.rate', currency));
     require(
-      self.Storage.setUint(id, bpsRate),
+      self.Storage.setTokenfxUSDBPSRate(currency, bpsRate),
       "Error: Unable to update account spending period.");
 
     return true;
@@ -1203,8 +1202,7 @@ library TokenIOLib {
    * @return {"usdAmount" : "Returns the foreign currency amount in USD"}
    */
   function getFxUSDBPSRate(Data storage self, string currency) internal view returns (uint bpsRate) {
-    bytes32 id = keccak256(abi.encodePacked('fx.usd.rate', currency));
-    return self.Storage.getUint(id);
+    return self.Storage.getTokenfxUSDBPSRate(currency);
   }
 
   /**

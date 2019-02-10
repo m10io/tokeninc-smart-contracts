@@ -61,7 +61,6 @@ contract TokenIOStorage is Ownable {
         string tla;
         string version;
         address feeContract;
-        uint fxUSDBPSRate;
     }
     
     struct FeeData {
@@ -77,6 +76,7 @@ contract TokenIOStorage is Ownable {
     mapping(address => address)      internal relatedAccounts;
     mapping(address => bool)         internal isDeprecated;
     mapping(string => uint)          internal decimals;
+    mapping(string => uint)          internal fxUSDBPSRates;
     mapping(address => AssetDetails) internal assets;
     
     mapping(bytes32 => uint256)      internal uIntStorage;
@@ -438,8 +438,9 @@ contract TokenIOStorage is Ownable {
     }
 
     function setTokenParams(address _address, string _name, string _symbol, string _tla, string _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) external onlyOwner returns(bool success) {
-        assets[_address] = AssetDetails(_name, _symbol, _tla, _version, _feeContract, _fxUSDBPSRate);
+        assets[_address] = AssetDetails(_name, _symbol, _tla, _version, _feeContract);
         decimals[_symbol] = _decimals;
+        fxUSDBPSRates[_symbol] = _fxUSDBPSRate;
         return true;
     }
 
@@ -624,31 +625,31 @@ contract TokenIOStorage is Ownable {
 
     /**
      * @notice Get value from assetsDetails struct in assets mapping associated with address key
-     * @param _address Pointer identifier for value in mapping
+     * @param _symbol Pointer identifier for value in mapping
      * @return { "uint" : "Returns the uint value associated with the key" }
      */
-    function getTokenfxUSDBPSRate(address _address, uint _fxUSDBPSRate) external view returns(uint) {
-        return assets[_address].fxUSDBPSRate;
+    function getTokenfxUSDBPSRate(string _symbol) external view returns(uint) {
+        return fxUSDBPSRates[_symbol];
     }
 
     /**
      * @notice Set value for assetsDetails struct in assets mapping associated with address key
-     * @param _address Pointer identifier for value in mapping
+     * @param _symbol Pointer identifier for value in mapping
      * @param _fxUSDBPSRate  usdbps rate
      * @return { "uint" : "Returns the uint value associated with the key" }
      */
-    function setTokenfxUSDBPSRate(address _address, uint _fxUSDBPSRate) external onlyOwner returns(bool success) {
-        assets[_address].fxUSDBPSRate = _fxUSDBPSRate;
+    function setTokenfxUSDBPSRate(string _symbol, uint _fxUSDBPSRate) external onlyOwner returns(bool success) {
+        fxUSDBPSRates[_symbol] = _fxUSDBPSRate;
         return true;
     }
 
     /**
      * @notice Delete value from assetsDetails struct in assets mapping associated with address key
-     * @param _address Pointer identifier for value in mapping
+     * @param _symbol Pointer identifier for value in mapping
      * @return { "uint" : "Returns the uint value associated with the key" }
      */
-    function deleteTokenfxUSDBPSRate(address _address) external onlyOwner returns(bool success) {
-        delete assets[_address].fxUSDBPSRate;
+    function deleteTokenfxUSDBPSRate(string _symbol) external onlyOwner returns(bool success) {
+        delete fxUSDBPSRates[_symbol];
         return true;
     }
 

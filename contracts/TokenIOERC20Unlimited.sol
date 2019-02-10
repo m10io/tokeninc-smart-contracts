@@ -74,6 +74,7 @@ contract TokenIOERC20Unlimited is Ownable {
     ) onlyOwner public returns (bool success) {
       require(lib.setTokenParams(_name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate),
         "Error: Unable to set token params. Please check arguments.");
+      return true;
     }
 
     /**
