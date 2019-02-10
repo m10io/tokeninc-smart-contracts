@@ -148,8 +148,8 @@ library TokenIOLib {
    * @param flatFee Flat fee for interface contract transactions
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
-  function setFees(Data storage self, uint maxFee, uint minFee, uint bpsFee, uint flatFee) internal returns (bool success) {
-      return self.Storage.setFees(address(this), maxFee, minFee, bpsFee, flatFee);
+  function setFees(Data storage self, address asset, uint maxFee, uint minFee, uint bpsFee, uint flatFee) internal returns (bool success) {
+      return self.Storage.setFees(asset, maxFee, minFee, bpsFee, flatFee);
   }
 
   /**

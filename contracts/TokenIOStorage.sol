@@ -637,7 +637,7 @@ contract TokenIOStorage is Ownable {
      * @param _fxUSDBPSRate  usdbps rate
      * @return { "uint" : "Returns the uint value associated with the key" }
      */
-    function setTokenfxUSDBPSRate(address _address, uint _fxUSDBPSRate) external view returns(bool success) {
+    function setTokenfxUSDBPSRate(address _address, uint _fxUSDBPSRate) external onlyOwner returns(bool success) {
         assets[_address].fxUSDBPSRate = _fxUSDBPSRate;
         return true;
     }
@@ -647,7 +647,7 @@ contract TokenIOStorage is Ownable {
      * @param _address Pointer identifier for value in mapping
      * @return { "uint" : "Returns the uint value associated with the key" }
      */
-    function deleteTokenfxUSDBPSRate(address _address) external view returns(bool success) {
+    function deleteTokenfxUSDBPSRate(address _address) external onlyOwner returns(bool success) {
         delete assets[_address].fxUSDBPSRate;
         return true;
     }

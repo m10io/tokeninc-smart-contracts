@@ -181,17 +181,7 @@ contract TokenIOStableSwap is Ownable {
   function setAssetFeeParams(address asset, uint feeBps, uint feeMin, uint feeMax, uint feeFlat) public onlyOwner notDeprecated returns (bool success) {
     /// @dev This method bypasses the setFee library methods and directly sets the fee params for a requested asset.
     /// @notice Fees can be different per asset. Some assets may have different liquidity requirements.
-    require(lib.Storage.setUint(keccak256(abi.encodePacked('fee.max', asset)), feeMax),
-      'Error: Failed to set fee parameters with storage contract. Please check permissions.');
-
-    require(lib.Storage.setUint(keccak256(abi.encodePacked('fee.min', asset)), feeMin),
-      'Error: Failed to set fee parameters with storage contract. Please check permissions.');
-
-    require(lib.Storage.setUint(keccak256(abi.encodePacked('fee.bps', asset)), feeBps),
-      'Error: Failed to set fee parameters with storage contract. Please check permissions.');
-
-    require(lib.Storage.setUint(keccak256(abi.encodePacked('fee.flat', asset)), feeFlat),
-      'Error: Failed to set fee parameters with storage contract. Please check permissions.');
+    require(lib.setFees(asset, feeMax, feeMin, feeBps, feeFlat), "Error: Unable to set fee contract settings");
 
     return true;
   }
