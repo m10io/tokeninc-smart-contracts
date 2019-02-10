@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.2;
 
 
 /**
@@ -57,7 +57,7 @@ contract TokenIONameSpace is Ownable {
      * @param  currency string Currency symbol of the token (e.g. USDx, JYPx, GBPx)
      * @return {"contractAddress": "Returns the token contract address associated with the currency"}
      */
-    function getTokenNameSpace(string currency) public view returns (address contractAddress) {
+    function getTokenNameSpace(string memory currency) public view returns (address contractAddress) {
         return lib.getTokenNameSpace(currency);
     }
 

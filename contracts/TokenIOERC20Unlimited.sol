@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.2;
 
 import "./Ownable.sol";
 import "./TokenIOStorage.sol";
@@ -64,10 +64,10 @@ contract TokenIOERC20Unlimited is Ownable {
   @return { "success" : "Returns true if successfully called from another contract"}
   */
   function setParams(
-    string _name,
-    string _symbol,
-    string _tla,
-    string _version,
+    string memory _name,
+    string memory _symbol,
+    string memory _tla,
+    string memory _version,
     uint _decimals,
     address _feeContract,
     uint _fxUSDBPSRate
@@ -81,7 +81,7 @@ contract TokenIOERC20Unlimited is Ownable {
     * @notice Gets name of token
     * @return {"_name" : "Returns name of token"}
     */
-    function name() public view returns (string _name) {
+    function name() public view returns (string memory _name) {
       return lib.getTokenName(address(this));
     }
 
@@ -89,7 +89,7 @@ contract TokenIOERC20Unlimited is Ownable {
     * @notice Gets symbol of token
     * @return {"_symbol" : "Returns symbol of token"}
     */
-    function symbol() public view returns (string _symbol) {
+    function symbol() public view returns (string memory _symbol) {
       return lib.getTokenSymbol(address(this));
     }
 
@@ -97,7 +97,7 @@ contract TokenIOERC20Unlimited is Ownable {
     * @notice Gets three-letter-abbreviation of token
     * @return {"_tla" : "Returns three-letter-abbreviation of token"}
     */
-    function tla() public view returns (string _tla) {
+    function tla() public view returns (string memory _tla) {
       return lib.getTokenTLA(address(this));
     }
 
@@ -105,7 +105,7 @@ contract TokenIOERC20Unlimited is Ownable {
     * @notice Gets version of token
     * @return {"_version" : "Returns version of token"}
     */
-    function version() public view returns (string _version) {
+    function version() public view returns (string memory _version) {
       return lib.getTokenVersion(address(this));
     }
 

@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.2;
 
 /*
 COPYRIGHT 2018 Token, Inc.
@@ -54,7 +54,7 @@ contract TokenIOAuthority is Ownable {
      * @param _authorized Authorization status
      * @return {"success" : "Returns true if lib.setRegisteredFirm succeeds"}
      */
-    function setRegisteredFirm(string firmName, bool _authorized) public onlyAuthority(firmName, msg.sender) returns (bool success) {
+    function setRegisteredFirm(string memory firmName, bool _authorized) public onlyAuthority(firmName, msg.sender) returns (bool success) {
         /// @notice set firm registration status
         require(
           lib.setRegisteredFirm(firmName, _authorized),
@@ -70,7 +70,7 @@ contract TokenIOAuthority is Ownable {
      * @param _authorized Authorization status
      * @return {"success" : "Returns true if lib.setRegisteredAuthority succeeds"}
      */
-    function setRegisteredAuthority(string firmName, address authority, bool _authorized) public onlyAuthority(firmName, msg.sender) returns (bool success) {
+    function setRegisteredAuthority(string memory firmName, address authority, bool _authorized) public onlyAuthority(firmName, msg.sender) returns (bool success) {
         /// @notice set authority of firm to given status
         require(
           lib.setRegisteredAuthority(firmName, authority, _authorized),
@@ -84,7 +84,7 @@ contract TokenIOAuthority is Ownable {
      * @param authority Address of authority account
      * @return {"firm" : "name of firm"}
      */
-    function getFirmFromAuthority(address authority) public view returns (string firm) {
+    function getFirmFromAuthority(address authority) public view returns (string memory firm) {
         return lib.getFirmFromAuthority(authority);
     }
 
@@ -93,7 +93,7 @@ contract TokenIOAuthority is Ownable {
      * @param firmName Name of firm
      * @return {"status" : "Returns status of firm registration"}
      */
-    function isRegisteredFirm(string firmName) public view returns (bool status) {
+    function isRegisteredFirm(string memory firmName) public view returns (bool status) {
         /// @notice check firm's registration status
         return lib.isRegisteredFirm(firmName);
     }
@@ -104,7 +104,7 @@ contract TokenIOAuthority is Ownable {
      * @param authority Address of authority account
      * @return {"registered" : "Returns status of account registration to firm"}
      */
-    function isRegisteredToFirm(string firmName, address authority) public view returns (bool registered) {
+    function isRegisteredToFirm(string memory firmName, address authority) public view returns (bool registered) {
         /// @notice check if registered to firm
         return lib.isRegisteredToFirm(firmName, authority);
     }
@@ -134,7 +134,7 @@ contract TokenIOAuthority is Ownable {
       }
 
 
-    modifier onlyAuthority(string firmName, address authority) {
+    modifier onlyAuthority(string memory firmName, address authority) {
         /// @notice throws if not an owner authority or not registered to the given firm
         require(owner[authority] || lib.isRegisteredToFirm(firmName, authority),
           "Error: Transaction sender does not have permission for this operation!"

@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.2;
 
 import "./Ownable.sol";
 import "./TokenIOLib.sol";
@@ -69,8 +69,8 @@ contract TokenIOFX is Ownable {
    */
   function swap(
     address requester,
-    string symbolA,
-    string symbolB,
+    string memory symbolA,
+    string memory symbolB,
     uint valueA,
     uint valueB,
     uint8 sigV,

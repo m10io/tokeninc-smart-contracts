@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.2;
 
 import "./Ownable.sol";
 import "./SafeMath.sol";
@@ -69,7 +69,7 @@ contract TokenIOStableSwap is Ownable {
 	 * @param feeFlat Flat Swap Fee
 	 * @return { "success" : "Returns true if successfully called from another contract"}
 	 */
-	function allowAsset(address asset, string currency, uint feeBps, uint feeMin, uint feeMax, uint feeFlat) public onlyOwner notDeprecated returns (bool success) {
+	function allowAsset(address asset, string memory currency, uint feeBps, uint feeMin, uint feeMax, uint feeFlat) public onlyOwner notDeprecated returns (bool success) {
 		bytes32 id = keccak256(abi.encodePacked('allowed.stable.asset', asset, currency));
     require(
       lib.Storage.setBool(id, true),
@@ -104,7 +104,7 @@ contract TokenIOStableSwap is Ownable {
 	 * @param  currency string Currency symbol of the token (e.g. `USD`, `EUR`, `GBP`, `JPY`, `AUD`, `CAD`, `CHF`, `NOK`, `NZD`, `SEK`)
 	 * @return {"allowed": "Returns true if the asset is allowed"}
 	 */
-	function isAllowedAsset(address asset, string currency) public view returns (bool allowed) {
+	function isAllowedAsset(address asset, string memory currency) public view returns (bool allowed) {
 		if (isTokenXContract(asset, currency)) {
 			return true;
 		} else {
@@ -119,7 +119,7 @@ contract TokenIOStableSwap is Ownable {
    * @param currency string Currency of the asset (NOTE: This is the currency for the asset)
    * @return { "success" : "Returns true if successfully called from another contract"}
    */
-  function setAssetCurrency(address asset, string currency) public onlyOwner returns (bool success) {
+  function setAssetCurrency(address asset, string memory currency) public onlyOwner returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('asset.currency', asset));
     require(
       lib.Storage.setString(id, currency),
@@ -133,7 +133,7 @@ contract TokenIOStableSwap is Ownable {
    * @param asset Ethereum address of the asset to get the currency for
    * @return {"currency": "Returns the Currency of the asset if the asset has been allowed."}
    */
-  function getAssetCurrency(address asset) public view returns (string currency) {
+  function getAssetCurrency(address asset) public view returns (string memory currency) {
     bytes32 id = keccak256(abi.encodePacked('asset.currency', asset));
     return lib.Storage.getString(id);
   }
@@ -145,7 +145,7 @@ contract TokenIOStableSwap is Ownable {
 	 * @param  currency string Currency symbol of the token (e.g. `USD`, `EUR`, `GBP`, `JPY`, `AUD`, `CAD`, `CHF`, `NOK`, `NZD`, `SEK`)
 	 * @return { "success" : "Returns true if successfully called from another contract"}
 	 */
-	function setTokenXCurrency(address asset, string currency) public onlyOwner notDeprecated returns (bool success) {
+	function setTokenXCurrency(address asset, string memory currency) public onlyOwner notDeprecated returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('tokenx', asset, currency));
     require(
       lib.Storage.setBool(id, true),
@@ -164,7 +164,7 @@ contract TokenIOStableSwap is Ownable {
     * @param  currency string Currency symbol of the token (e.g. `USD`, `EUR`, `GBP`, `JPY`, `AUD`, `CAD`, `CHF`, `NOK`, `NZD`, `SEK`)
     * @return {"allowed": "Returns true if the asset is allowed"}
    */
-	function isTokenXContract(address asset, string currency) public view returns (bool isX) {
+	function isTokenXContract(address asset, string memory currency) public view returns (bool isX) {
 		bytes32 id = keccak256(abi.encodePacked('tokenx', asset, currency));
 		return lib.Storage.getBool(id);
 	}

@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.2;
 
 import "./SafeMath.sol";
 import "./TokenIOStorage.sol";
@@ -47,7 +47,7 @@ library TokenIOLib {
   event AccountForward(address indexed originalAccount, address indexed forwardedAccount);
   event NewAuthority(address indexed authority, string issuerFirm);
 
-  function setTokenParams(Data storage self, string _name, string _symbol, string _tla, string _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) internal returns(bool success) {
+  function setTokenParams(Data storage self, string memory _name, string memory _symbol, string memory _tla, string memory _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) internal returns(bool success) {
        require(
         self.Storage.setTokenParams(address(this), _name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate), 
        "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract.");
@@ -62,7 +62,7 @@ library TokenIOLib {
    * @param tokenName Name of the token contract
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
-  function setTokenName(Data storage self, string tokenName) internal returns (bool success) {
+  function setTokenName(Data storage self, string memory tokenName) internal returns (bool success) {
     require(
       self.Storage.setTokenName(address(this), tokenName),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
@@ -78,7 +78,7 @@ library TokenIOLib {
    * @param tokenSymbol Symbol of the token contract
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
-  function setTokenSymbol(Data storage self, string tokenSymbol) internal returns (bool success) {
+  function setTokenSymbol(Data storage self, string memory tokenSymbol) internal returns (bool success) {
     require(
       self.Storage.setTokenSymbol(address(this), tokenSymbol),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
@@ -94,7 +94,7 @@ library TokenIOLib {
    * @param tokenTLA TLA of the token contract
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
-  function setTokenTLA(Data storage self, string tokenTLA) internal returns (bool success) {
+  function setTokenTLA(Data storage self, string memory tokenTLA) internal returns (bool success) {
     require(
       self.Storage.setTokenTLA(address(this), tokenTLA),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
@@ -110,7 +110,7 @@ library TokenIOLib {
    * @param tokenVersion Semantic (vMAJOR.MINOR.PATCH | e.g. v0.1.0) version of the token contract
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
-  function setTokenVersion(Data storage self, string tokenVersion) internal returns (bool success) {
+  function setTokenVersion(Data storage self, string memory tokenVersion) internal returns (bool success) {
     require(
       self.Storage.setTokenVersion(address(this), tokenVersion),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
@@ -129,7 +129,7 @@ library TokenIOLib {
    * @param tokenDecimals Decimal representation of the token contract unit amount
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
-  function setTokenDecimals(Data storage self, string currency, uint tokenDecimals) internal returns (bool success) {
+  function setTokenDecimals(Data storage self, string memory currency, uint tokenDecimals) internal returns (bool success) {
     require(
       self.Storage.setTokenDecimals(currency, tokenDecimals),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
@@ -161,7 +161,7 @@ library TokenIOLib {
    * @param feeMsg Fee message included in a transaction with fees
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
-  function setFeeMsg(Data storage self, bytes feeMsg) internal returns (bool success) {
+  function setFeeMsg(Data storage self, bytes memory feeMsg) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('fee.msg', address(this)));
     require(
       self.Storage.setBytes(id, feeMsg),
@@ -197,7 +197,7 @@ library TokenIOLib {
    * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
-  function setTokenNameSpace(Data storage self, string currency) internal returns (bool success) {
+  function setTokenNameSpace(Data storage self, string memory currency) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('token.namespace', currency));
     require(
       self.Storage.setAddress(id, address(this)),
@@ -217,7 +217,7 @@ library TokenIOLib {
    * @param issuerFirm Firm name for issuing KYC approval
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
-  function setKYCApproval(Data storage self, address account, bool isApproved, string issuerFirm) internal returns (bool success) {
+  function setKYCApproval(Data storage self, address account, bool isApproved, string memory issuerFirm) internal returns (bool success) {
       bytes32 id = keccak256(abi.encodePacked('account.kyc', getForwardedAccount(self, account)));
       require(
         self.Storage.setBool(id, isApproved),
@@ -240,7 +240,7 @@ library TokenIOLib {
    * @param issuerFirm Firm name for issuing approval
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
-  function setAccountStatus(Data storage self, address account, bool isAllowed, string issuerFirm) internal returns (bool success) {
+  function setAccountStatus(Data storage self, address account, bool isAllowed, string memory issuerFirm) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('account.allowed', getForwardedAccount(self, account)));
     require(
       self.Storage.setBool(id, isAllowed),
@@ -317,7 +317,7 @@ library TokenIOLib {
    * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @return { "contractAddress" : "Returns the contract interface address for a symbol" }
    */
-  function getTokenNameSpace(Data storage self, string currency) internal view returns (address contractAddress) {
+  function getTokenNameSpace(Data storage self, string memory currency) internal view returns (address contractAddress) {
     bytes32 id = keccak256(abi.encodePacked('token.namespace', currency));
     return self.Storage.getAddress(id);
   }
@@ -330,7 +330,7 @@ library TokenIOLib {
    * @param contractAddress Contract address of the queryable interface
    * @return {"tokenName" : "Name of the token contract"}
    */
-  function getTokenName(Data storage self, address contractAddress) internal view returns (string tokenName) {
+  function getTokenName(Data storage self, address contractAddress) internal view returns (string memory tokenName) {
     return self.Storage.getTokenName(contractAddress);
   }
 
@@ -342,7 +342,7 @@ library TokenIOLib {
    * @param contractAddress Contract address of the queryable interface
    * @return {"tokenSymbol" : "Symbol of the token contract"}
    */
-  function getTokenSymbol(Data storage self, address contractAddress) internal view returns (string tokenSymbol) {
+  function getTokenSymbol(Data storage self, address contractAddress) internal view returns (string memory tokenSymbol) {
     return self.Storage.getTokenSymbol(contractAddress);
   }
 
@@ -354,7 +354,7 @@ library TokenIOLib {
    * @param contractAddress Contract address of the queryable interface
    * @return {"tokenTLA" : "TLA of the token contract"}
    */
-  function getTokenTLA(Data storage self, address contractAddress) internal view returns (string tokenTLA) {
+  function getTokenTLA(Data storage self, address contractAddress) internal view returns (string memory tokenTLA) {
     return self.Storage.getTokenTLA(contractAddress);
   }
 
@@ -366,7 +366,7 @@ library TokenIOLib {
    * @param contractAddress Contract address of the queryable interface
    * @return {"tokenVersion" : "Semantic version of the token contract"}
    */
-  function getTokenVersion(Data storage self, address contractAddress) internal view returns (string) {   
+  function getTokenVersion(Data storage self, address contractAddress) internal view returns (string memory) {   
     return self.Storage.getTokenVersion(contractAddress);
   }
 
@@ -378,7 +378,7 @@ library TokenIOLib {
    * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @return {"tokenDecimals" : "Decimals of the token contract"}
    */
-  function getTokenDecimals(Data storage self, string currency) internal view returns (uint tokenDecimals) {
+  function getTokenDecimals(Data storage self, string memory currency) internal view returns (uint tokenDecimals) {
     return self.Storage.getTokenDecimals(currency);
   }
 
@@ -393,7 +393,7 @@ library TokenIOLib {
    * @param contractAddress Contract address of the queryable interface
    * @return { "feeMsg" : "Returns the fee message (bytes) associated with the contract address"}
    */
-  function getFeeMsg(Data storage self, address contractAddress) internal view returns (bytes feeMsg) {
+  function getFeeMsg(Data storage self, address contractAddress) internal view returns (bytes memory feeMsg) {
     bytes32 id = keccak256(abi.encodePacked('fee.msg', contractAddress));
     return self.Storage.getBytes(id);
   }
@@ -408,7 +408,7 @@ library TokenIOLib {
    */
   function setMasterFeeContract(Data storage self, address contractAddress) internal returns (bool success) {
     require(
-      self.Storage.setTokenFeeContract(0, contractAddress),
+      self.Storage.setTokenFeeContract(address(0), contractAddress),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
     );
     return true;
@@ -421,7 +421,7 @@ library TokenIOLib {
    * @return { "masterFeeContract" : "Returns the master fee contract set for TSM."}
    */
   function getMasterFeeContract(Data storage self) internal view returns (address masterFeeContract) {
-    return self.Storage.getTokenFeeContract(0);
+    return self.Storage.getTokenFeeContract(address(0));
   }
 
   /**
@@ -436,7 +436,7 @@ library TokenIOLib {
   function getFeeContract(Data storage self, address contractAddress) internal view returns (address feeContract) {
 
     address feeAccount = self.Storage.getTokenFeeContract(contractAddress);
-    if (feeAccount == 0x0) {
+    if (feeAccount == address(0)) {
       return getMasterFeeContract(self);
     } else {
       return feeAccount;
@@ -450,7 +450,7 @@ library TokenIOLib {
    * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @return { "supply" : "Returns the token supply of the given currency"}
    */
-  function getTokenSupply(Data storage self, string currency) internal view returns (uint supply) {
+  function getTokenSupply(Data storage self, string memory currency) internal view returns (uint supply) {
     bytes32 id = keccak256(abi.encodePacked('token.supply', currency));
     return self.Storage.getUint(id);
   }
@@ -463,7 +463,7 @@ library TokenIOLib {
    * @param spender Ethereum address of spender
    * @return { "allowance" : "Returns the allowance of a given spender for a given account"}
    */
-  function getTokenAllowance(Data storage self, string currency, address account, address spender) internal view returns (uint allowance) {
+  function getTokenAllowance(Data storage self, string memory currency, address account, address spender) internal view returns (uint allowance) {
     bytes32 id = keccak256(abi.encodePacked('token.allowance', currency, getForwardedAccount(self, account), getForwardedAccount(self, spender)));
     return self.Storage.getUint(id);
   }
@@ -476,7 +476,7 @@ library TokenIOLib {
    * @param account Ethereum address of account holder
    * @return { "balance" : "Return the balance of a given account for a specified currency"}
    */
-  function getTokenBalance(Data storage self, string currency, address account) internal view returns (uint balance) {
+  function getTokenBalance(Data storage self, string memory currency, address account) internal view returns (uint balance) {
       return self.Storage.getBalance(getForwardedAccount(self, account), currency);
   }
 
@@ -488,7 +488,7 @@ library TokenIOLib {
    * @param account Ethereum address of account holder
    * @return { "frozenBalance" : "Return the frozen balance of a given account for a specified currency"}
    */
-  function getTokenFrozenBalance(Data storage self, string currency, address account) internal view returns (uint frozenBalance) {
+  function getTokenFrozenBalance(Data storage self, string memory currency, address account) internal view returns (uint frozenBalance) {
     bytes32 id = keccak256(abi.encodePacked('token.frozen', currency, getForwardedAccount(self, account)));
     return self.Storage.getUint(id);
   }
@@ -502,7 +502,7 @@ library TokenIOLib {
    * @param amount Amount of tokens to freeze for account
    * @return { "success" : "Return true if successfully called from another contract"}
    */
-  function setTokenFrozenBalance(Data storage self, string currency, address account, uint amount) internal returns (bool success) {
+  function setTokenFrozenBalance(Data storage self, string memory currency, address account, uint amount) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('token.frozen', currency, getForwardedAccount(self, account)));
     require(
       self.Storage.setUint(id, amount),
@@ -591,8 +591,8 @@ library TokenIOLib {
    * @param data Arbitrary bytes data to include with the transaction
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function transfer(Data storage self, string currency, address to, uint amount, bytes data) internal returns (bool success) {
-    require(address(to) != 0x0, "Error: `to` address cannot be null." );
+  function transfer(Data storage self, string memory currency, address to, uint amount, bytes memory data) internal returns (bool success) {
+    require(address(to) != address(0), "Error: `to` address cannot be null." );
     require(amount > 0, "Error: `amount` must be greater than zero");
 
     address feeContract = getFeeContract(self, address(this));
@@ -630,9 +630,9 @@ library TokenIOLib {
    * @param data Arbitrary bytes data to include with the transaction
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function transferFrom(Data storage self, string currency, address from, address to, uint amount, bytes data) internal returns (bool success) {
+  function transferFrom(Data storage self, string memory currency, address from, address to, uint amount, bytes memory data) internal returns (bool success) {
     require(
-      address(to) != 0x0,
+      address(to) != address(0),
       "Error: `to` address must not be null."
     );
 
@@ -680,9 +680,9 @@ library TokenIOLib {
    * @param data Arbitrary bytes data to include with the transaction
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function forceTransfer(Data storage self, string currency, address from, address to, uint amount, bytes data) internal returns (bool success) {
+  function forceTransfer(Data storage self, string memory currency, address from, address to, uint amount, bytes memory data) internal returns (bool success) {
     require(
-      address(to) != 0x0,
+      address(to) != address(0),
       "Error: `to` address must not be null."
     );
 
@@ -711,7 +711,7 @@ library TokenIOLib {
    * @param amount Value to reduce allowance by (i.e. the amount spent)
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function updateAllowance(Data storage self, string currency, address account, uint amount) internal returns (bool success) {
+  function updateAllowance(Data storage self, string memory currency, address account, uint amount) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('token.allowance', currency, getForwardedAccount(self, account), getForwardedAccount(self, msg.sender)));
     require(
       self.Storage.setUint(id, self.Storage.getUint(id).sub(amount)),
@@ -730,7 +730,7 @@ library TokenIOLib {
    * @return { "success" : "Return true if successfully called from another contract" }
    */
   function approveAllowance(Data storage self, address spender, uint amount) internal returns (bool success) {
-    require(spender != 0x0,
+    require(spender != address(0),
         "Error: `spender` address cannot be null.");
 
     string memory currency = getTokenSymbol(self, address(this));
@@ -769,7 +769,7 @@ library TokenIOLib {
    * @param issuerFirm Name of the issuing firm authorizing the deposit
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function deposit(Data storage self, string currency, address account, uint amount, string issuerFirm) internal returns (bool success) {
+  function deposit(Data storage self, string memory currency, address account, uint amount, string memory issuerFirm) internal returns (bool success) {
     bytes32[2] memory ids = [keccak256(abi.encodePacked('token.issued', currency, issuerFirm)), keccak256(abi.encodePacked('token.supply', currency))];
 
     address forwardedAccount = getForwardedAccount(self, account);
@@ -799,7 +799,7 @@ library TokenIOLib {
    * @param issuerFirm Name of the issuing firm authorizing the withdraw
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function withdraw(Data storage self, string currency, address account, uint amount, string issuerFirm) internal returns (bool success) {
+  function withdraw(Data storage self, string memory currency, address account, uint amount, string memory issuerFirm) internal returns (bool success) {
     bytes32[2] memory ids = [keccak256(abi.encodePacked('token.issued', currency, issuerFirm)), keccak256(abi.encodePacked('token.supply', currency))];
 
     address forwardedAccount = getForwardedAccount(self, account);
@@ -830,7 +830,7 @@ library TokenIOLib {
    * @param approved Approval status to set for the firm (true/false)
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function setRegisteredFirm(Data storage self, string issuerFirm, bool approved) internal returns (bool success) {
+  function setRegisteredFirm(Data storage self, string memory issuerFirm, bool approved) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('registered.firm', issuerFirm));
     require(
       self.Storage.setBool(id, approved),
@@ -850,7 +850,7 @@ library TokenIOLib {
    * @param approved Approval status to set for the firm authority (true/false)
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function setRegisteredAuthority(Data storage self, string issuerFirm, address authorityAddress, bool approved) internal returns (bool success) {
+  function setRegisteredAuthority(Data storage self, string memory issuerFirm, address authorityAddress, bool approved) internal returns (bool success) {
     require(
       isRegisteredFirm(self, issuerFirm),
       "Error: `issuerFirm` must be registered.");
@@ -877,7 +877,7 @@ library TokenIOLib {
    * @param authorityAddress Ethereum address of the firm authority to query
    * @return { "issuerFirm" : "Name of the firm registered to authority" }
    */
-  function getFirmFromAuthority(Data storage self, address authorityAddress) internal view returns (string issuerFirm) {
+  function getFirmFromAuthority(Data storage self, address authorityAddress) internal view returns (string memory issuerFirm) {
     bytes32 id = keccak256(abi.encodePacked('registered.authority.firm', getForwardedAccount(self, authorityAddress)));
     return self.Storage.getString(id);
   }
@@ -888,7 +888,7 @@ library TokenIOLib {
    * @param issuerFirm Name of the issuer firm
    * @return { "registered" : "Return if the issuer firm has been registered" }
    */
-  function isRegisteredFirm(Data storage self, string issuerFirm) internal view returns (bool registered) {
+  function isRegisteredFirm(Data storage self, string memory issuerFirm) internal view returns (bool registered) {
     bytes32 id = keccak256(abi.encodePacked('registered.firm', issuerFirm));
     return self.Storage.getBool(id);
   }
@@ -900,7 +900,7 @@ library TokenIOLib {
    * @param authorityAddress Ethereum address of the firm authority to query
    * @return { "registered" : "Return if the authority is registered with the issuer firm" }
    */
-  function isRegisteredToFirm(Data storage self, string issuerFirm, address authorityAddress) internal view returns (bool registered) {
+  function isRegisteredToFirm(Data storage self, string memory issuerFirm, address authorityAddress) internal view returns (bool registered) {
     bytes32 id = keccak256(abi.encodePacked('registered.authority', issuerFirm, getForwardedAccount(self, authorityAddress)));
     return self.Storage.getBool(id);
   }
@@ -967,8 +967,8 @@ library TokenIOLib {
   function execSwap(
     Data storage self,
     address requester,
-    string symbolA,
-    string symbolB,
+    string memory symbolA,
+    string memory symbolB,
     uint valueA,
     uint valueB,
     uint8 sigV,
@@ -1022,7 +1022,7 @@ library TokenIOLib {
    * @return {"success" : "Returns true if successfully called from another contract"}
    */
   function setDeprecatedContract(Data storage self, address contractAddress) internal returns (bool success) {
-    require(contractAddress != 0x0,
+    require(contractAddress != address(0),
         "Error: cannot deprecate a null address.");
 
     bytes32 id = keccak256(abi.encodePacked('depcrecated', contractAddress));
@@ -1187,7 +1187,7 @@ library TokenIOLib {
    * @param bpsRate Basis point rate of foreign currency exchange rate to USD
    * @return { "success": "Returns true if successfully called from another contract"}
    */
-  function setFxUSDBPSRate(Data storage self, string currency, uint bpsRate) internal returns (bool success) {
+  function setFxUSDBPSRate(Data storage self, string memory currency, uint bpsRate) internal returns (bool success) {
     require(
       self.Storage.setTokenfxUSDBPSRate(currency, bpsRate),
       "Error: Unable to update account spending period.");
@@ -1201,7 +1201,7 @@ library TokenIOLib {
    * @param currency The TokenIO currency symbol (e.g. USDx, JPYx, GBPx)
    * @return {"usdAmount" : "Returns the foreign currency amount in USD"}
    */
-  function getFxUSDBPSRate(Data storage self, string currency) internal view returns (uint bpsRate) {
+  function getFxUSDBPSRate(Data storage self, string memory currency) internal view returns (uint bpsRate) {
     return self.Storage.getTokenfxUSDBPSRate(currency);
   }
 
@@ -1212,7 +1212,7 @@ library TokenIOLib {
    * @param fxAmount Amount of foreign currency to exchange into USD
    * @return {"amount" : "Returns the foreign currency amount in USD"}
    */
-  function getFxUSDAmount(Data storage self, string currency, uint fxAmount) internal view returns (uint amount) {
+  function getFxUSDAmount(Data storage self, string memory currency, uint fxAmount) internal view returns (uint amount) {
     uint usdDecimals = getTokenDecimals(self, 'USDx');
     uint fxDecimals = getTokenDecimals(self, currency);
     /// @dev ensure decimal precision is normalized to USD decimals

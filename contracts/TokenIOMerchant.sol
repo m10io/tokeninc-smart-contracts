@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.2;
 
 import "./Ownable.sol";
 import "./TokenIOStorage.sol";
@@ -71,7 +71,7 @@ contract TokenIOMerchant is Ownable {
     "contract":"Address of fee contract"
     }
     */
-    function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, bytes feeMsg, address feeAccount) {
+    function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, bytes memory feeMsg, address feeAccount) {
       address feeContract = lib.getFeeContract(address(this));
         (max, min, bps, flat) = lib.getFees(feeContract);
         feeMsg = lib.getFeeMsg(feeContract);
@@ -96,7 +96,7 @@ contract TokenIOMerchant is Ownable {
      * @param  data Optional data to be included when paying the merchant (e.g. item receipt)
      * @return { "success" : "Returns true if successfully called from another contract"}
      */
-    function pay(string currency, address merchant, uint amount, bool merchantPaysFees, bytes data) public returns (bool success) {
+    function pay(string memory currency, address merchant, uint amount, bool merchantPaysFees, bytes memory data) public returns (bool success) {
       uint fees = calculateFees(amount);
       /// @dev note the spending amount limit is gross of fees
       require(lib.setAccountSpendingAmount(msg.sender, lib.getFxUSDAmount(currency, amount)),

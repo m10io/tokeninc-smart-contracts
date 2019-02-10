@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.2;
 
 import "./Ownable.sol";
 
@@ -123,7 +123,7 @@ contract TokenIOStorage is Ownable {
      * @param _value The String value to be set
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function setString(bytes32 _key, string _value) external onlyOwner returns (bool success) {
+    function setString(bytes32 _key, string calldata _value) external onlyOwner returns (bool success) {
         stringStorage[_key] = _value;
         return true;
     }
@@ -134,7 +134,7 @@ contract TokenIOStorage is Ownable {
      * @param _value The Bytes value to be set
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function setBytes(bytes32 _key, bytes _value) external onlyOwner returns (bool success) {
+    function setBytes(bytes32 _key, bytes calldata _value) external onlyOwner returns (bool success) {
         bytesStorage[_key] = _value;
         return true;
     }
@@ -250,7 +250,7 @@ contract TokenIOStorage is Ownable {
      * @param _key Pointer identifier for value in storage
      * @return { "_value" : "Returns the String value associated with the id key" }
      */
-    function getString(bytes32 _key) external view returns (string _value) {
+    function getString(bytes32 _key) external view returns (string memory _value) {
         return stringStorage[_key];
     }
 
@@ -259,7 +259,7 @@ contract TokenIOStorage is Ownable {
      * @param _key Pointer identifier for value in storage
      * @return { "_value" : "Returns the Bytes value associated with the id key" }
      */
-    function getBytes(bytes32 _key) external view returns (bytes _value) {
+    function getBytes(bytes32 _key) external view returns (bytes memory _value) {
         return bytesStorage[_key];
     }
 
@@ -344,7 +344,7 @@ contract TokenIOStorage is Ownable {
      */
     function getRelatedAccount(address _address) external view returns (address value) {
         address relatedAddress = relatedAccounts[_address];
-        return (0x0 != relatedAddress) ? relatedAddress : _address;
+        return (address(0) != relatedAddress) ? relatedAddress : _address;
     }
 
     /**
@@ -352,10 +352,10 @@ contract TokenIOStorage is Ownable {
      * @param _addresses Pointer identifier for value in mapping
      * @return { "_value" : "Returns the bool value associated with the key" }
      */
-    function getRelatedAccounts(address[3] _addresses) internal view returns (address[3] memory relatedAddresses) {
+    function getRelatedAccounts(address[3] memory _addresses) internal view returns (address[3] memory relatedAddresses) {
         for(uint i = 0; i < _addresses.length; i++) {
             relatedAddresses[i] = relatedAccounts[_addresses[i]];
-            relatedAddresses[i] = (0x0 != relatedAddresses[i]) ? relatedAddresses[i] : _addresses[i];
+            relatedAddresses[i] = (address(0) != relatedAddresses[i]) ? relatedAddresses[i] : _addresses[i];
         }
 
         return relatedAddresses;
@@ -382,7 +382,7 @@ contract TokenIOStorage is Ownable {
         return true;
     }
 
-    function getTransferDetails(address _account, address[3] _addresses) external view returns(string memory currency, address[3] memory addresses) {
+    function getTransferDetails(address _account, address[3] calldata _addresses) external view returns(string memory currency, address[3] memory addresses) {
       currency = assets[_account].symbol;
       addresses = getRelatedAccounts(_addresses);
     }
@@ -393,7 +393,7 @@ contract TokenIOStorage is Ownable {
      * @param _currency Pointer identifier for value in mapping
      * @return { "_value" : "Returns the uint value associated with the keys" }
      */
-    function getBalance(address _address, string _currency) external view returns (uint256 value) {
+    function getBalance(address _address, string calldata _currency) external view returns (uint256 value) {
         //return getUint(keccak256(abi.encodePacked('token.balance', _address, _currency)));
         return balances[_address][_currency];
     }
@@ -405,7 +405,7 @@ contract TokenIOStorage is Ownable {
      * @param _value balance value
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function setBalance(address _address, string _currency, uint _value) external onlyOwner returns (bool success) {
+    function setBalance(address _address, string calldata _currency, uint _value) external onlyOwner returns (bool success) {
         //setUint(keccak256(abi.encodePacked('token.balance', _address, _currency)), _value);
         balances[_address][_currency] = _value;
         return true;
@@ -418,7 +418,7 @@ contract TokenIOStorage is Ownable {
      * @param _values balance values
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function setBalances(address[3] _addresses, string _currency, uint[3] _values) external onlyOwner returns(bool success) {
+    function setBalances(address[3] calldata _addresses, string calldata _currency, uint[3] calldata _values) external onlyOwner returns(bool success) {
         for(uint i = 0; i < _addresses.length; i++) {
             balances[_addresses[i]][_currency] = _values[i];
         }
@@ -431,13 +431,13 @@ contract TokenIOStorage is Ownable {
      * @param _currency Pointer identifier for value in mapping
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function deleteBalance(address _address, string _currency) external onlyOwner returns (bool success) {
+    function deleteBalance(address _address, string calldata _currency) external onlyOwner returns (bool success) {
         //setUint(keccak256(abi.encodePacked('token.balance', _address, _currency)), _value);
         delete balances[_address][_currency];
         return true;
     }
 
-    function setTokenParams(address _address, string _name, string _symbol, string _tla, string _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) external onlyOwner returns(bool success) {
+    function setTokenParams(address _address, string calldata _name, string calldata _symbol, string calldata _tla, string calldata _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) external onlyOwner returns(bool success) {
         assets[_address] = AssetDetails(_name, _symbol, _tla, _version, _feeContract);
         decimals[_symbol] = _decimals;
         fxUSDBPSRates[_symbol] = _fxUSDBPSRate;
@@ -449,7 +449,7 @@ contract TokenIOStorage is Ownable {
      * @param _address Pointer identifier for value in mapping
      * @return { "string" : "Returns the string value associated with the key" }
      */
-    function getTokenName(address _address) external view returns(string) {
+    function getTokenName(address _address) external view returns(string memory) {
         return assets[_address].name;
     }
 
@@ -459,7 +459,7 @@ contract TokenIOStorage is Ownable {
      * @param _tokenName token name value
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function setTokenName(address _address, string _tokenName) external onlyOwner returns(bool success) {
+    function setTokenName(address _address, string calldata _tokenName) external onlyOwner returns(bool success) {
         assets[_address].name = _tokenName;
         return true;
     }
@@ -479,7 +479,7 @@ contract TokenIOStorage is Ownable {
      * @param _address Pointer identifier for value in mapping
      * @return { "string" : "Returns the string value associated with the key" }
      */
-    function getTokenSymbol(address _address) external view returns(string) {
+    function getTokenSymbol(address _address) external view returns(string memory) {
         return assets[_address].symbol;
     }
 
@@ -489,7 +489,7 @@ contract TokenIOStorage is Ownable {
      * @param _value token symbol value
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function setTokenSymbol(address _address, string _value) external onlyOwner returns (bool success) {
+    function setTokenSymbol(address _address, string calldata _value) external onlyOwner returns (bool success) {
         assets[_address].symbol = _value;
         return true;
     }
@@ -509,7 +509,7 @@ contract TokenIOStorage is Ownable {
      * @param _address Pointer identifier for value in mapping
      * @return { "string" : "Returns the string value associated with the key" }
      */
-    function getTokenTLA(address _address) external view returns(string) {
+    function getTokenTLA(address _address) external view returns(string memory) {
         return assets[_address].tla;
     }
 
@@ -519,7 +519,7 @@ contract TokenIOStorage is Ownable {
      * @param _tokenTLA token TLA value
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function setTokenTLA(address _address, string _tokenTLA) external onlyOwner returns(bool success) {
+    function setTokenTLA(address _address, string calldata _tokenTLA) external onlyOwner returns(bool success) {
         assets[_address].tla = _tokenTLA;
         return true;
     }
@@ -539,7 +539,7 @@ contract TokenIOStorage is Ownable {
      * @param _address Pointer identifier for value in mapping
      * @return { "string" : "Returns the string value associated with the key" }
      */
-    function getTokenVersion(address _address) external view returns(string) {
+    function getTokenVersion(address _address) external view returns(string memory) {
         return assets[_address].version;
     }
 
@@ -549,7 +549,7 @@ contract TokenIOStorage is Ownable {
      * @param _tokenVersion token version value
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function setTokenVersion(address _address, string _tokenVersion) external onlyOwner returns(bool success) {
+    function setTokenVersion(address _address, string calldata _tokenVersion) external onlyOwner returns(bool success) {
         assets[_address].version = _tokenVersion;
         return true;
     }
@@ -569,7 +569,7 @@ contract TokenIOStorage is Ownable {
      * @param _currency Pointer identifier for value in mapping
      * @return { "uint" : "Returns the uint value associated with the key" }
      */
-    function getTokenDecimals(string _currency) external view returns(uint) {
+    function getTokenDecimals(string calldata _currency) external view returns(uint) {
         return decimals[_currency];
     }
 
@@ -578,7 +578,7 @@ contract TokenIOStorage is Ownable {
      * @param _decimals decimals value
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function setTokenDecimals(string _currency, uint _decimals) external onlyOwner returns(bool success) {
+    function setTokenDecimals(string calldata _currency, uint _decimals) external onlyOwner returns(bool success) {
          decimals[_currency] = _decimals;
          return true;
     }
@@ -588,7 +588,7 @@ contract TokenIOStorage is Ownable {
      * @param _currency decimals value
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function deleteTokenDecimals(string _currency) external onlyOwner returns(bool success) {
+    function deleteTokenDecimals(string calldata _currency) external onlyOwner returns(bool success) {
          delete decimals[_currency];
          return true;
     }
@@ -628,7 +628,7 @@ contract TokenIOStorage is Ownable {
      * @param _symbol Pointer identifier for value in mapping
      * @return { "uint" : "Returns the uint value associated with the key" }
      */
-    function getTokenfxUSDBPSRate(string _symbol) external view returns(uint) {
+    function getTokenfxUSDBPSRate(string calldata _symbol) external view returns(uint) {
         return fxUSDBPSRates[_symbol];
     }
 
@@ -638,7 +638,7 @@ contract TokenIOStorage is Ownable {
      * @param _fxUSDBPSRate  usdbps rate
      * @return { "uint" : "Returns the uint value associated with the key" }
      */
-    function setTokenfxUSDBPSRate(string _symbol, uint _fxUSDBPSRate) external onlyOwner returns(bool success) {
+    function setTokenfxUSDBPSRate(string calldata _symbol, uint _fxUSDBPSRate) external onlyOwner returns(bool success) {
         fxUSDBPSRates[_symbol] = _fxUSDBPSRate;
         return true;
     }
@@ -648,7 +648,7 @@ contract TokenIOStorage is Ownable {
      * @param _symbol Pointer identifier for value in mapping
      * @return { "uint" : "Returns the uint value associated with the key" }
      */
-    function deleteTokenfxUSDBPSRate(string _symbol) external onlyOwner returns(bool success) {
+    function deleteTokenfxUSDBPSRate(string calldata _symbol) external onlyOwner returns(bool success) {
         delete fxUSDBPSRates[_symbol];
         return true;
     }
