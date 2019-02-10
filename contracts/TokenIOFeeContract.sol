@@ -62,7 +62,7 @@ contract TokenIOFeeContract is Ownable {
 	 * returns {"success" : "Returns true if successfully called from another contract"}
 	 */
 	function setFeeParams(uint feeBps, uint feeMin, uint feeMax, uint feeFlat, bytes feeMsg) public onlyOwner returns (bool success) {
-		require(lib.setFees(feeMax, feeMin, feeBps, feeFlat), "Error: Unable to set fee contract settings");
+		require(lib.setFees(address(this), feeMax, feeMin, feeBps, feeFlat), "Error: Unable to set fee contract settings");
 		require(lib.setFeeMsg(feeMsg), "Error: Unable to set fee contract default message.");
 		return true;
 	}
