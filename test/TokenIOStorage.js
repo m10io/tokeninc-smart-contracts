@@ -127,7 +127,7 @@ contract("TokenIOStorage", function(accounts) {
 		assert.equal(DELETE_TX['receipt']['status'], "0x1", "Transaction should succeed.")
 
 		const GET_VALUE_END = await storage.getBytes(id)
-		assert.equal("0x", GET_VALUE_END, "Bytes value should be deleted from storage.")
+		assert.equal(null, GET_VALUE_END, "Bytes value should be deleted from storage.")
 	})
 
 	it("Should set, get, and delete a bool value", async () => {
@@ -240,7 +240,7 @@ contract("TokenIOStorage", function(accounts) {
 		assert.equal(SET_TX['receipt']['status'], "0x1", "Transaction should succeed.")
 
 		const GET_VALUE_BEG = await storage.getTokenFeeContract(id)
-		assert.equal(value, GET_VALUE_BEG, "Int value should be the same value retrieved from storage.")
+		assert.equal(value, GET_VALUE_BEG.toLowerCase(), "Int value should be the same value retrieved from storage.")
 
 		const DELETE_TX = await storage.deleteTokenFeeContract(id)
 		assert.equal(DELETE_TX['receipt']['status'], "0x1", "Transaction should succeed.")
