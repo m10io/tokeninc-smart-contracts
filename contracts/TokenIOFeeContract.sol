@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.2;
 
 import "./Ownable.sol";
 import "./TokenIOStorage.sol";
@@ -61,7 +61,7 @@ contract TokenIOFeeContract is Ownable {
 	 * @param feeFlat Flat transaction fee
 	 * returns {"success" : "Returns true if successfully called from another contract"}
 	 */
-	function setFeeParams(uint feeBps, uint feeMin, uint feeMax, uint feeFlat, bytes feeMsg) public onlyOwner returns (bool success) {
+	function setFeeParams(uint feeBps, uint feeMin, uint feeMax, uint feeFlat, bytes memory feeMsg) public onlyOwner returns (bool success) {
 		require(lib.setFees(address(this), feeMax, feeMin, feeBps, feeFlat), "Error: Unable to set fee contract settings");
 		require(lib.setFeeMsg(feeMsg), "Error: Unable to set fee contract default message.");
 		return true;
@@ -77,7 +77,7 @@ contract TokenIOFeeContract is Ownable {
 		"feeContract": "Address of this contract"
 	}
 	*/
-	function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, bytes feeMsg, address feeContract) {
+	function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, bytes memory feeMsg, address feeContract) {
             (max, min, bps, flat) = lib.getFees(address(this));
             feeMsg = lib.getFeeMsg(address(this));
             feeContract = address(this);
@@ -88,7 +88,7 @@ contract TokenIOFeeContract is Ownable {
 	 * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
 	 * @return {"balance": "Balance of TokenIO TSM currency account"}
 	 */
-	function getTokenBalance(string currency) public view returns(uint balance) {
+	function getTokenBalance(string memory currency) public view returns(uint balance) {
 		return lib.getTokenBalance(currency, address(this));
 	}
 
@@ -109,7 +109,7 @@ contract TokenIOFeeContract is Ownable {
 	 * @param  data		  Arbitrary bytes data message to include in transfer
 	 * @return {"success": "Returns ture if successfully called from another contract"}
 	 */
-	function transferCollectedFees(string currency, address to, uint amount, bytes data) public onlyOwner returns (bool success) {
+	function transferCollectedFees(string memory currency, address to, uint amount, bytes memory data) public onlyOwner returns (bool success) {
 		require(
 			lib.forceTransfer(currency, address(this), to, amount, data),
 			"Error: unable to transfer fees to account."
