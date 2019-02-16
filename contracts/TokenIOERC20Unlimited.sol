@@ -180,7 +180,7 @@ contract TokenIOERC20Unlimited is Ownable {
 
       /// @notice This transaction will fail if the msg.sender does not have an approved allowance.
       require(
-        lib.updateAllowance(lib.getTokenSymbol(address(this)), from, amount),
+        lib.updateAllowance(lib.getTokenSymbol(address(this)), from, amount, tx.origin),
         "Error: Unable to update allowance for spender."
       );
 

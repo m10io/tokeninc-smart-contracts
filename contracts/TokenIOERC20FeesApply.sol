@@ -32,52 +32,59 @@ maintain data consistency between contract.
 
 contract TokenIOERC20FeesApply is Ownable {
 
-  using SafeMath for uint;
+    using SafeMath for uint;
 
-  //// @dev Set reference to TokenIOLib interface which proxies to TokenIOStorage
-  using TokenIOLib for TokenIOLib.Data;
-  TokenIOLib.Data lib;
+    //// @dev Set reference to TokenIOLib interface which proxies to TokenIOStorage
+    using TokenIOLib for TokenIOLib.Data;
+    TokenIOLib.Data lib;
 
-  event Transfer(address indexed from, address indexed to, uint256 amount);
+    event Transfer(address indexed from, address indexed to, uint256 amount);
 
-  /**
-  * @notice Constructor method for ERC20 contract
-  * @param _storageContract     address of TokenIOStorage contract
-  */
-  constructor(address _storageContract) public {
-    //// @dev Set the storage contract for the interface
-    //// @dev This contract will be unable to use the storage constract until
-    //// @dev contract address is authorized with the storage contract
-    //// @dev Once authorized, Use the `setParams` method to set storage values
-    lib.Storage = TokenIOStorage(_storageContract);
+    address proxyImplementation;
+    
 
-    //// @dev set owner to contract initiator
-    owner[msg.sender] = true;
-  }
+    /**
+    * @notice Constructor method for ERC20 contract
+    * @param _storageContract     address of TokenIOStorage contract
+    */
+    constructor(address _storageContract) public {
+      //// @dev Set the storage contract for the interface
+      //// @dev This contract will be unable to use the storage constract until
+      //// @dev contract address is authorized with the storage contract
+      //// @dev Once authorized, Use the `setParams` method to set storage values
+      lib.Storage = TokenIOStorage(_storageContract);
+
+      //// @dev set owner to contract initiator
+      owner[msg.sender] = true;
+    }
+
+    function initProxy(address _proxy) external onlyOwner {
+      proxyImplementation = _proxy;
+    }
+    
 
 
-  /**
-  @notice Sets erc20 globals and fee paramters
-  @param _name Full token name  'USD by token.io'
-  @param _symbol Symbol name 'USDx'
-  @param _tla Three letter abbreviation 'USD'
-  @param _version Release version 'v0.0.1'
-  @param _decimals Decimal precision
-  @param _feeContract Address of fee contract
-  @return { "success" : "Returns true if successfully called from another contract"}
-  */
-  function setParams(
-    string memory _name,
-    string memory _symbol,
-    string memory _tla,
-    string memory _version,
-    uint _decimals,
-    address _feeContract,
-    uint _fxUSDBPSRate
-    ) onlyOwner public returns(bool success) {
-      require(lib.setTokenParams(_name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate),
-        "Error: Unable to set token params. Please check arguments.");
-      return true;
+    /**
+    @notice Sets erc20 globals and fee paramters
+    @param _name Full token name  'USD by token.io'
+    @param _symbol Symbol name 'USDx'
+    @param _tla Three letter abbreviation 'USD'
+    @param _version Release version 'v0.0.1'
+    @param _decimals Decimal precision
+    @param _feeContract Address of fee contract
+    @return { "success" : "Returns true if successfully called from another contract"}
+    */
+    function setParams(
+      bytes32 _name,
+      bytes32 _symbol,
+      bytes32 _tla,
+      bytes32 _version,
+      uint _decimals,
+      address _feeContract,
+      uint _fxUSDBPSRate
+      ) onlyOwner public returns(bool success) {
+        require(lib.setTokenParams(lib.bytes32ToString(_name), lib.bytes32ToString(_symbol), lib.bytes32ToString(_tla), lib.bytes32ToString(_version), _decimals, _feeContract, _fxUSDBPSRate),
+          "Error: Unable to set token params. Please check arguments.");
     }
 
     /**
@@ -85,7 +92,7 @@ contract TokenIOERC20FeesApply is Ownable {
     * @return {"_name" : "Returns name of token"}
     */
     function name() public view returns (string memory _name) {
-      return lib.getTokenName(address(this));
+      return lib.getTokenName(proxyImplementation);
     }
 
     /**
@@ -93,7 +100,7 @@ contract TokenIOERC20FeesApply is Ownable {
     * @return {"_symbol" : "Returns symbol of token"}
     */
     function symbol() public view returns (string memory _symbol) {
-      return lib.getTokenSymbol(address(this));
+      return lib.getTokenSymbol(proxyImplementation);
     }
 
     /**
@@ -101,7 +108,7 @@ contract TokenIOERC20FeesApply is Ownable {
     * @return {"_tla" : "Returns three-letter-abbreviation of token"}
     */
     function tla() public view returns (string memory _tla) {
-      return lib.getTokenTLA(address(this));
+      return lib.getTokenTLA(proxyImplementation);
     }
 
     /**
@@ -109,7 +116,7 @@ contract TokenIOERC20FeesApply is Ownable {
     * @return {"_version" : "Returns version of token"}
     */
     function version() public view returns (string memory _version) {
-      return lib.getTokenVersion(address(this));
+      return lib.getTokenVersion(proxyImplementation);
     }
 
     /**
@@ -117,7 +124,7 @@ contract TokenIOERC20FeesApply is Ownable {
     * @return {"_decimals" : "Returns number of decimals"}
     */
     function decimals() public view returns (uint _decimals) {
-      return lib.getTokenDecimals(lib.getTokenSymbol(address(this)));
+      return lib.getTokenDecimals(lib.getTokenSymbol(proxyImplementation));
     }
 
     /**
@@ -125,7 +132,7 @@ contract TokenIOERC20FeesApply is Ownable {
     * @return {"supply" : "Returns current total supply of token"}
     */
     function totalSupply() public view returns (uint supply) {
-      return lib.getTokenSupply(lib.getTokenSymbol(address(this)));
+      return lib.getTokenSupply(lib.getTokenSymbol(proxyImplementation));
     }
 
     /**
@@ -135,7 +142,7 @@ contract TokenIOERC20FeesApply is Ownable {
     * @return {"amount" : "Returns allowance of given account and spender"}
     */
     function allowance(address account, address spender) public view returns (uint amount) {
-      return lib.getTokenAllowance(lib.getTokenSymbol(address(this)), account, spender);
+      return lib.getTokenAllowance(lib.getTokenSymbol(proxyImplementation), account, spender);
     }
 
     /**
@@ -144,7 +151,7 @@ contract TokenIOERC20FeesApply is Ownable {
     * @return {"balance" : "Returns balance amount"}
     */
     function balanceOf(address account) public view returns (uint balance) {
-      return lib.getTokenBalance(lib.getTokenSymbol(address(this)), account);
+      return lib.getTokenBalance(lib.getTokenSymbol(proxyImplementation), account);
     }
 
     /**
@@ -158,20 +165,25 @@ contract TokenIOERC20FeesApply is Ownable {
       }
     */
     function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, bytes memory feeMsg, address feeAccount) {
-      feeAccount = lib.getFeeContract(address(this));
+      feeAccount = lib.getFeeContract(proxyImplementation);
       (max, min, bps, flat) = lib.getFees(feeAccount);
       feeMsg = lib.getFeeMsg(feeAccount);
     }
 
     /**
-    * @notice Calculates fee of a given transfer amount
+    * @notice Calculates fee of a given transfer amount (external)
     * @param amount Amount to calculcate fee value
     * @return {"fees": "Returns the calculated transaction fees based on the fee contract parameters"}
     */
     function calculateFees(uint amount) external view returns (uint fees) {
-      return calculateFees(lib.getFeeContract(address(this)), amount);
+      return calculateFees(lib.getFeeContract(proxyImplementation), amount);
     }
 
+    /**
+    * @notice Calculates fee of a given transfer amount (internal)
+    * @param amount Amount to calculcate fee value
+    * @return {"fees": "Returns the calculated transaction fees based on the fee contract parameters"}
+    */
     function calculateFees(address feeContract, uint amount) internal view returns (uint fees) {
       return lib.calculateFees(feeContract, amount);
     }
@@ -183,8 +195,8 @@ contract TokenIOERC20FeesApply is Ownable {
     * @return {"success" : "Returns true if transfer succeeds"}
     */
     function transfer(address to, uint amount) public notDeprecated returns(bool success) {
-        address feeContract = lib.getFeeContract(address(this));
-        (string memory currency, address[3] memory addresses) = lib.getTransferDetails(address(this), [msg.sender, to, feeContract]);
+        address feeContract = lib.getFeeContract(proxyImplementation);
+        (string memory currency, address[3] memory addresses) = lib.getTransferDetails(proxyImplementation, [tx.origin, to, feeContract]);
         uint fees = calculateFees(feeContract, amount);
 
         uint[3] memory balances = [lib.Storage.getBalance(addresses[0], currency).sub(amount.add(fees)), lib.Storage.getBalance(addresses[1], currency).add(amount), lib.Storage.getBalance(addresses[2], currency).add(fees)];
@@ -208,8 +220,8 @@ contract TokenIOERC20FeesApply is Ownable {
     * @return {"success" : "Returns true if transferFrom succeeds"}
     */
     function transferFrom(address from, address to, uint amount) public notDeprecated returns(bool success) {
-      address feeContract = lib.getFeeContract(address(this));
-      (string memory currency, address[3] memory addresses) = lib.getTransferDetails(address(this), [from, to, feeContract]);
+      address feeContract = lib.getFeeContract(proxyImplementation);
+      (string memory currency, address[3] memory addresses) = lib.getTransferDetails(proxyImplementation, [from, to, feeContract]);
       uint fees = calculateFees(feeContract, amount);
 
       uint[3] memory balances = [lib.Storage.getBalance(addresses[0], currency).sub(amount.add(fees)), lib.Storage.getBalance(addresses[1], currency).add(amount), lib.Storage.getBalance(addresses[2], currency).add(fees)];
@@ -221,7 +233,7 @@ contract TokenIOERC20FeesApply is Ownable {
 
       /// @notice This transaction will fail if the msg.sender does not have an approved allowance.
       require(
-        lib.updateAllowance(lib.getTokenSymbol(address(this)), from, amount.add(fees)),
+        lib.updateAllowance(lib.getTokenSymbol(proxyImplementation), from, amount.add(fees), tx.origin),
         "Error: Unable to update allowance for spender."
       );
 
@@ -251,14 +263,14 @@ contract TokenIOERC20FeesApply is Ownable {
     * @return {"deprecated" : "Returns true if deprecated, false otherwise"}
     */
     function deprecateInterface() public onlyOwner returns (bool deprecated) {
-      require(lib.setDeprecatedContract(address(this)),
+      require(lib.setDeprecatedContract(proxyImplementation),
         "Error: Unable to deprecate contract!");
       return true;
     }
 
     modifier notDeprecated() {
       /// @notice throws if contract is deprecated
-      require(!lib.isContractDeprecated(address(this)),
+      require(!lib.isContractDeprecated(proxyImplementation),
         "Error: Contract has been deprecated, cannot perform operation!");
       _;
     }
