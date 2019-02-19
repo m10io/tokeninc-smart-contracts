@@ -25,11 +25,11 @@ interface TokenIOERC20UnlimitedI {
 
   function calculateFees(uint amount) external view returns (uint fees);
 
-  function transfer(address to, uint amount) external returns(bool success);
+  function transfer(address to, uint amount, address sender) external returns(bool success);
 
   function transferFrom(address from, address to, uint amount) external returns(bool success);
 
-  function approve(address spender, uint amount) external returns (bool success);
+  function approve(address spender, uint amount, address sender) external returns (bool success);
 
   function deprecateInterface() external returns (bool deprecated);
 }

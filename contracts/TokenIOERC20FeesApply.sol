@@ -61,6 +61,7 @@ contract TokenIOERC20FeesApply is Ownable {
     require(_proxy != address(0));
     
     proxyInstance = _proxy;
+    lib.proxyInstance = _proxy;
   }
   
 

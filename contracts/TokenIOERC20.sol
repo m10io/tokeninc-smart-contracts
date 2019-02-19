@@ -213,11 +213,11 @@ contract TokenIOERC20 is Ownable {
     * @param amount Allowance amount
     * @return {"success" : "Returns true if approve succeeds"}
     */
-    function approve(address spender, uint amount) public notDeprecated returns (bool success) {
+    function approve(address spender, uint amount, address sender) public notDeprecated returns (bool success) {
       /// @notice sends approve through library
       /// @dev !!! mtuates storage states
       require(
-        lib.approveAllowance(spender, amount),
+        lib.approveAllowance(spender, amount, sender),
         "Error: Unable to approve allowance for spender. Please ensure spender is not null and does not have a frozen balance."
       );
       return true;

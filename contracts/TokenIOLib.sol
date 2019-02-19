@@ -34,6 +34,7 @@ library TokenIOLib {
   /// @dev the Data struct uses the Storage contract for stateful setters
   struct Data {
     TokenIOStorage Storage;
+    address proxyInstance;
   }
 
   /// @notice Not using `Log` prefix for events to be consistent with ERC20 named events;

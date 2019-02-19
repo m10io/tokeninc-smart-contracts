@@ -3,27 +3,29 @@ pragma solidity 0.5.2;
 import "./Ownable.sol";
 
 interface TokenIOStableSwapI {
-  function allowAsset(address asset, string memory currency, uint feeBps, uint feeMin, uint feeMax, uint feeFlat) public returns (bool success);
+  function allowAsset(address asset, string calldata currency, uint feeBps, uint feeMin, uint feeMax, uint feeFlat) external returns (bool success);
 
-  function removeAsset(address asset) public returns (bool success);
+  function removeAsset(address asset) external returns (bool success);
 
-  function isAllowedAsset(address asset, string memory currency) public view returns (bool allowed);
+  function isAllowedAsset(address asset, string calldata currency) external view returns (bool allowed);
 
-  function getAssetCurrency(address asset) public view returns (string memory currency);
+  function setAssetCurrency(address asset, string calldata currency) external returns (bool success);
 
-  function setTokenXCurrency(address asset, string memory currency) public returns (bool success);
+  function getAssetCurrency(address asset) external view returns (string memory currency);
 
-  function isTokenXContract(address asset, string memory currency) public view returns (bool isX);
+  function setTokenXCurrency(address asset, string calldata currency) external returns (bool success);
 
-  function setAssetFeeParams(address asset, uint feeBps, uint feeMin, uint feeMax, uint feeFlat) public returns (bool success);
+  function isTokenXContract(address asset, string calldata currency) external view returns (bool isX);
 
-  function calcAssetFees(address asset, uint amount) public view returns (uint fees);
+  function setAssetFeeParams(address asset, uint feeBps, uint feeMin, uint feeMax, uint feeFlat) external returns (bool success);
 
-  function convert(address fromAsset, address toAsset, uint amount) public returns (bool success);
+  function calcAssetFees(address asset, uint amount) external view returns (uint fees);
 
-  function transferCollectedFees(address asset, address to, uint amount) public returns (bool success);
+  function convert(address fromAsset, address toAsset, uint amount) external returns (bool success);
 
-  function deprecateInterface() public returns (bool deprecated);
+  function transferCollectedFees(address asset, address to, uint amount) external returns (bool success);
+
+  function deprecateInterface() external returns (bool deprecated);
 }
 
 contract TokenIOStableSwapProxy is Ownable {
@@ -31,12 +33,12 @@ contract TokenIOStableSwapProxy is Ownable {
   TokenIOStableSwapI tokenIOStableSwapImpl;
 
   constructor(address _tokenIOStableSwapImpl) public {
-    tokenIOStableSwapImpl = TokenIOFeeContractI(_tokenIOStableSwapImpl);
+    tokenIOStableSwapImpl = TokenIOStableSwapI(_tokenIOStableSwapImpl);
   }
 
   function upgradeTokenImplamintation(address _newTokenIOStableSwapImpl) onlyOwner external {
     require(_newTokenIOStableSwapImpl != address(0));
-    tokenIOStableSwapImpl = TokenIOFeeContractI(_newTokenIOStableSwapImpl);
+    tokenIOStableSwapImpl = TokenIOStableSwapI(_newTokenIOStableSwapImpl);
   }
 
   function allowAsset(address asset, string memory currency, uint feeBps, uint feeMin, uint feeMax, uint feeFlat) public onlyOwner returns (bool success) {

@@ -3,31 +3,31 @@ pragma solidity 0.5.2;
 import "./Ownable.sol";
 
 interface TokenIOCurrencyAuthorityI {
-  function getTokenBalance(string memory currency, address account) public view returns (uint balance);
+  function getTokenBalance(string calldata currency, address account) external view returns (uint balance);
 
-  function getTokenSupply(string memory currency) public view returns (uint supply);
+  function getTokenSupply(string calldata currency) external view returns (uint supply);
 
-  function freezeAccount(address account, bool isAllowed, string memory issuerFirm) public returns (bool success);
+  function freezeAccount(address account, bool isAllowed, string calldata issuerFirm, address sender) external returns (bool success);
 
-  function approveKYC(address account, bool isApproved, uint limit, string memory issuerFirm) public returns (bool success);
+  function approveKYC(address account, bool isApproved, uint limit, string calldata issuerFirm, address sender) external returns (bool success);
 
-  function approveKYCAndDeposit(string memory currency, address account, uint amount, uint limit, string memory issuerFirm) public returns (bool success);
+  function approveKYCAndDeposit(string calldata currency, address account, uint amount, uint limit, string calldata issuerFirm, address sender) external returns (bool success);
 
-  function setAccountSpendingLimit(address account, uint limit, string memory issuerFirm) public returns (bool success);
+  function setAccountSpendingLimit(address account, uint limit, string calldata issuerFirm, address sender) external returns (bool success);
 
-  function getAccountSpendingRemaining(address account) public view returns (uint spendingRemaining);
+  function getAccountSpendingRemaining(address account) external view returns (uint spendingRemaining);
 
-  function getAccountSpendingLimit(address account) public view returns (uint spendingLimit);
+  function getAccountSpendingLimit(address account) external view returns (uint spendingLimit);
 
-  function setFxBpsRate(string memory currency, uint bpsRate, string memory issuerFirm) public returns (bool success);
+  function setFxBpsRate(string calldata currency, uint bpsRate, string calldata issuerFirm, address sender) external returns (bool success);
 
-  function getFxUSDAmount(string memory currency, uint fxAmount) public view returns (uint usdAmount);
+  function getFxUSDAmount(string calldata currency, uint fxAmount) external view returns (uint usdAmount);
 
-  function approveForwardedAccount(address originalAccount, address updatedAccount, string memory issuerFirm) public returns (bool success);
+  function approveForwardedAccount(address originalAccount, address updatedAccount, string calldata issuerFirm, address sender) external returns (bool success);
 
-  function deposit(string memory currency, address account, uint amount, string memory issuerFirm) public returns (bool success);
+  function deposit(string calldata currency, address account, uint amount, string calldata issuerFirm, address sender) external returns (bool success);
 
-  function withdraw(string memory currency, address account, uint amount, string memory issuerFirm) public returns (bool success);
+  function withdraw(string calldata currency, address account, uint amount, string calldata issuerFirm, address sender) external returns (bool success);
 }
 
 contract TokenIOCurrencyAuthorityProxy is Ownable {
@@ -38,8 +38,8 @@ contract TokenIOCurrencyAuthorityProxy is Ownable {
       tokenIOCurrencyAuthorityImpl = TokenIOCurrencyAuthorityI(_tokenIOCurrencyAuthorityImpl);
     }
 
-    function upgradeTokenImplamintation(address _newTokenIOFeeContractImpl) onlyOwner external {
-      require(_newTokenIOFeeContractImpl != address(0));
+    function upgradeTokenImplamintation(address _newTokenIOCurrencyAuthorityImpl) onlyOwner external {
+      require(_newTokenIOCurrencyAuthorityImpl != address(0));
       tokenIOCurrencyAuthorityImpl = TokenIOCurrencyAuthorityI(_newTokenIOCurrencyAuthorityImpl);
     }
   

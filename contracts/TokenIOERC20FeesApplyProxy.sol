@@ -1,6 +1,8 @@
 pragma solidity 0.5.2;
 
 import "./Ownable.sol";
+import "./UpgradableProxy.sol";
+
 
 interface TokenIOERC20FeesApplyI {
   function setParams(string calldata _name, string calldata _symbol, string calldata _tla, string calldata _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) external returns(bool success);
@@ -25,26 +27,18 @@ interface TokenIOERC20FeesApplyI {
 
   function calculateFees(uint amount) external view returns (uint fees);
 
-  function transfer(address to, uint amount) external returns(bool success);
+  function transfer(address to, uint amount, address sender) external returns(bool success);
 
   function transferFrom(address from, address to, uint amount) external returns(bool success);
 
-  function approve(address spender, uint amount) external returns (bool success);
+  function approve(address spender, uint amount, address sender) external returns (bool success);
 
   function deprecateInterface() external returns (bool deprecated);
 }
 
-contract TokenIOERC20FeesApplyProxy is Ownable {
+contract TokenIOERC20FeesApplyProxy is Ownable, UpgradableProxy {
 
-  TokenIOERC20FeesApplyI tokenIOERC20FeesApplyImpl;
-
-  constructor(address _tokenIOERC20FeesApplyImpl) public {
-    tokenIOERC20FeesApplyImpl = TokenIOERC20FeesApplyI(_tokenIOERC20FeesApplyImpl);
-  }
-
-  function upgradeTokenImplamintation(address _newTokenIOERC20FeesApplyImpl) onlyOwner external {
-    require(_newTokenIOERC20FeesApplyImpl != address(0));
-    tokenIOERC20FeesApplyImpl = TokenIOERC20FeesApplyI(_newTokenIOERC20FeesApplyImpl);
+  constructor(address _tokenIOERC20FeesApplyImpl, bytes memory _data) UpgradableProxy(_tokenIOERC20FeesApplyImpl, _data) public {
   }
   
   function setParams(
@@ -56,70 +50,70 @@ contract TokenIOERC20FeesApplyProxy is Ownable {
     address _feeContract,
     uint256 _fxUSDBPSRate
     ) onlyOwner public returns(bool) {
-      require(tokenIOERC20FeesApplyImpl.setParams(_name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate), 
+      require(TokenIOERC20FeesApplyI(_implementation()).setParams(_name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate), 
         "Unable to execute setParams");
     return true;
   }
 
   function transfer(address to, uint256 amount) external returns(bool) {
-    require(tokenIOERC20FeesApplyImpl.transfer(to, amount, msg.sender), 
+    require(TokenIOERC20FeesApplyI(_implementation()).transfer(to, amount, msg.sender), 
       "Unable to execute transfer");
     
     return true;
   }
 
   function transferFrom(address from, address to, uint256 amount) external returns(bool) {
-    require(tokenIOERC20FeesApplyImpl.transferFrom(from, to, amount), 
+    require(TokenIOERC20FeesApplyI(_implementation()).transferFrom(from, to, amount), 
       "Unable to execute transferFrom");
 
     return true;
   }
 
   function approve(address spender, uint256 amount) external returns (bool) {
-    require(tokenIOERC20FeesApplyImpl.approve(spender, amount, msg.sender), 
+    require(TokenIOERC20FeesApplyI(_implementation()).approve(spender, amount, msg.sender), 
       "Unable to execute approve");
 
     return true;
   }
 
   function name() external view returns (string memory) {
-    return tokenIOERC20FeesApplyImpl.name();
+    return TokenIOERC20FeesApplyI(_implementation()).name();
   }
 
   function symbol() external view returns (string memory) {
-    return tokenIOERC20FeesApplyImpl.symbol();
+    return TokenIOERC20FeesApplyI(_implementation()).symbol();
   }
 
   function tla() external view returns (string memory) {
-    return tokenIOERC20FeesApplyImpl.symbol();
+    return TokenIOERC20FeesApplyI(_implementation()).symbol();
   }
 
   function version() external view returns (string memory) {
-    return tokenIOERC20FeesApplyImpl.version();
+    return TokenIOERC20FeesApplyI(_implementation()).version();
   }
 
   function decimals() external view returns (uint) {
-    return tokenIOERC20FeesApplyImpl.decimals();
+    return TokenIOERC20FeesApplyI(_implementation()).decimals();
   }
 
   function totalSupply() external view returns (uint256) {
-    return tokenIOERC20FeesApplyImpl.totalSupply();
+    return TokenIOERC20FeesApplyI(_implementation()).totalSupply();
   }
 
   function allowance(address account, address spender) external view returns (uint256) {
-    return tokenIOERC20FeesApplyImpl.allowance(account, spender);
+    return TokenIOERC20FeesApplyI(_implementation()).allowance(account, spender);
   }
 
   function balanceOf(address account) external view returns (uint256) {
-    return tokenIOERC20FeesApplyImpl.balanceOf(account);
+    return TokenIOERC20FeesApplyI(_implementation()).balanceOf(account);
   }
 
   function calculateFees(uint amount) external view returns (uint256) {
-    return tokenIOERC20FeesApplyImpl.calculateFees(amount);
+    return TokenIOERC20FeesApplyI(_implementation()).calculateFees(amount);
   }
 
   function deprecateInterface() external onlyOwner returns (bool) {
-    require(tokenIOERC20FeesApplyImpl.deprecateInterface(), 
+    require(TokenIOERC20FeesApplyI(_implementation()).deprecateInterface(), 
       "Unable to execute deprecateInterface");
 
     return true;

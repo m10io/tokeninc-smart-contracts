@@ -1,7 +1,7 @@
 pragma solidity 0.5.2;
 
 import './Proxy.sol';
-import 'openzeppelin-solidity/contracts/AddressUtils.sol';
+import 'zeppelin-solidity/contracts/AddressUtils.sol';
 
 /**
  * @title UpgradeabilityProxy
@@ -9,7 +9,7 @@ import 'openzeppelin-solidity/contracts/AddressUtils.sol';
  * implementation address to which it will delegate.
  * Such a change is called an implementation upgrade.
  */
-contract UpgradeabilityProxy is Proxy {
+contract UpgradableProxy is Proxy {
   /**
    * @dev Emitted when the implementation is upgraded.
    * @param implementation Address of the new implementation.
@@ -31,11 +31,12 @@ contract UpgradeabilityProxy is Proxy {
    * https://solidity.readthedocs.io/en/v0.4.24/abi-spec.html#function-selector-and-argument-encoding.
    * This parameter is optional, if no data is given the initialization call to proxied contract will be skipped.
    */
-  constructor(address _implementation, bytes _data) public payable {
+  constructor(address _implementation, bytes memory _data) public {
     assert(IMPLEMENTATION_SLOT == keccak256("org.token.io"));
     _setImplementation(_implementation);
     if(_data.length > 0) {
-      require(_implementation.delegatecall(_data));
+      (bool success, ) = _implementation.delegatecall(_data);
+      require(success);
     }
   }
 
