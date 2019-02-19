@@ -37,7 +37,7 @@ Changes:
  must take ownership of the TokenIO contract, it will require using the public methods
  to update changes to the underlying data. The updated contract must use a
  standard call to original TokenIO contract such that the  request is made from
- the upgraded contract and not the transaction origin (tx.origin) of the signing
+ the upgraded contract and not the transaction origin (msg.sender) of the signing
  account.
 
 

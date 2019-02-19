@@ -65,6 +65,7 @@ contract("TokenIOStableSwap", function(accounts) {
 
 	it("Should allow the swap between the requester and the contract", async () => {
 		await SWAP.convert(USDC.address, USDX.address, SWAP_AMOUNT, { from: TEST_ACCOUNT_1 })
+
 		// const FEES = +(await USDC.calculateFees(SWAP_AMOUNT)) // NOTE: These fees only apply in testing due to Token X ERC20 dummy asset
 		const SWAP_FEES = +(await SWAP.calcAssetFees(USDC.address, SWAP_AMOUNT));
 		const NET_AMOUNT = (SWAP_AMOUNT-SWAP_FEES);
@@ -77,8 +78,6 @@ contract("TokenIOStableSwap", function(accounts) {
 
 		const TEST_ACCOUNT_1_USDX_BALANCE = +(await USDX.balanceOf(TEST_ACCOUNT_1)).toString()
 		assert.equal(TEST_ACCOUNT_1_USDX_BALANCE, CONVERTED_AMOUNT, "Requester balance should equal requester deposit amount for USDX contract")
-
-
 	})
 
 	it("Should allow the swap between the requester and the contract in reverse", async () => {
@@ -100,8 +99,6 @@ contract("TokenIOStableSwap", function(accounts) {
 			+(await SWAP.calcAssetFees(USDC.address, SWAP_AMOUNT)) +
 			+(await SWAP.calcAssetFees(USDC.address, CONVERTED_AMOUNT))
 		), "Swap Balance of USDC should be equal to the swamp amount.")
-
-
 	})
 
 });

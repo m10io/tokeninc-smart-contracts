@@ -49,7 +49,7 @@ library TokenIOLib {
 
   function setTokenParams(Data storage self, string memory _name, string memory _symbol, string memory _tla, string memory _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) internal returns(bool success) {
        require(
-        self.Storage.setTokenParams(msg.sender, _name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate), 
+        self.Storage.setTokenParams(self.proxyInstance, _name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate), 
        "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract.");
        return true;
   }
@@ -64,7 +64,7 @@ library TokenIOLib {
    */
   function setTokenName(Data storage self, string memory tokenName) internal returns (bool success) {
     require(
-      self.Storage.setTokenName(msg.sender, tokenName),
+      self.Storage.setTokenName(self.proxyInstance, tokenName),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
     );
     return true;
@@ -80,7 +80,7 @@ library TokenIOLib {
    */
   function setTokenSymbol(Data storage self, string memory tokenSymbol) internal returns (bool success) {
     require(
-      self.Storage.setTokenSymbol(msg.sender, tokenSymbol),
+      self.Storage.setTokenSymbol(self.proxyInstance, tokenSymbol),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
     );
     return true;
@@ -96,7 +96,7 @@ library TokenIOLib {
    */
   function setTokenTLA(Data storage self, string memory tokenTLA) internal returns (bool success) {
     require(
-      self.Storage.setTokenTLA(msg.sender, tokenTLA),
+      self.Storage.setTokenTLA(self.proxyInstance, tokenTLA),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
     );
     return true;
@@ -112,7 +112,7 @@ library TokenIOLib {
    */
   function setTokenVersion(Data storage self, string memory tokenVersion) internal returns (bool success) {
     require(
-      self.Storage.setTokenVersion(msg.sender, tokenVersion),
+      self.Storage.setTokenVersion(self.proxyInstance, tokenVersion),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
     );
     return true;
@@ -162,7 +162,7 @@ library TokenIOLib {
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
   function setFeeMsg(Data storage self, bytes memory feeMsg) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('fee.msg', msg.sender));
+    bytes32 id = keccak256(abi.encodePacked('fee.msg', self.proxyInstance));
     require(
       self.Storage.setBytes(id, feeMsg),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
@@ -182,7 +182,7 @@ library TokenIOLib {
    */
   function setFeeContract(Data storage self, address feeContract) internal returns (bool success) {
     require(
-      self.Storage.setTokenFeeContract(msg.sender, feeContract),
+      self.Storage.setTokenFeeContract(self.proxyInstance, feeContract),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
     );
     return true;
@@ -200,7 +200,7 @@ library TokenIOLib {
   function setTokenNameSpace(Data storage self, string memory currency) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('token.namespace', currency));
     require(
-      self.Storage.setAddress(id, msg.sender),
+      self.Storage.setAddress(id, self.proxyInstance),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
     );
     return true;
@@ -595,7 +595,7 @@ library TokenIOLib {
     require(address(to) != address(0), "Error: `to` address cannot be null." );
     require(amount > 0, "Error: `amount` must be greater than zero");
 
-    address feeContract = getFeeContract(self, msg.sender);
+    address feeContract = getFeeContract(self, self.proxyInstance);
     uint fees = calculateFees(self, feeContract, amount);
 
     require(
@@ -636,7 +636,7 @@ library TokenIOLib {
       "Error: `to` address must not be null."
     );
 
-    address feeContract = getFeeContract(self, msg.sender);
+    address feeContract = getFeeContract(self, self.proxyInstance);
     uint fees = calculateFees(self, feeContract, amount);
 
     /// @dev NOTE: This transaction will fail if the spending amount exceeds the daily limit
@@ -660,7 +660,7 @@ library TokenIOLib {
     /// @dev Attempt to update the spender allowance
     /// @notice this will throw if the allowance has not been set.
     require(
-      updateAllowance(self, currency, from, amount, tx.origin),
+      updateAllowance(self, currency, from, amount),
       "Error: Unable to update allowance for spender."
     );
 
@@ -711,8 +711,8 @@ library TokenIOLib {
    * @param amount Value to reduce allowance by (i.e. the amount spent)
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function updateAllowance(Data storage self, string memory currency, address account, uint amount, address sender) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('token.allowance', currency, getForwardedAccount(self, account), getForwardedAccount(self, sender)));
+  function updateAllowance(Data storage self, string memory currency, address account, uint amount) internal returns (bool success) {
+    bytes32 id = keccak256(abi.encodePacked('token.allowance', currency, getForwardedAccount(self, account), getForwardedAccount(self, msg.sender)));
     require(
       self.Storage.setUint(id, self.Storage.getUint(id).sub(amount)),
       "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
@@ -729,31 +729,31 @@ library TokenIOLib {
    * @param amount Value to set for spender allowance
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function approveAllowance(Data storage self, address spender, uint amount) internal returns (bool success) {
+  function approveAllowance(Data storage self, address spender, uint amount, address sender) internal returns (bool success) {
     require(spender != address(0),
         "Error: `spender` address cannot be null.");
 
-    string memory currency = getTokenSymbol(self, msg.sender);
+    string memory currency = getTokenSymbol(self, self.proxyInstance);
 
     require(
       getTokenFrozenBalance(self, currency, getForwardedAccount(self, spender)) == 0,
       "Error: Spender must not have a frozen balance directly");
 
-    bytes32 id_a = keccak256(abi.encodePacked('token.allowance', currency, getForwardedAccount(self, tx.origin), getForwardedAccount(self, spender)));
+    bytes32 id_a = keccak256(abi.encodePacked('token.allowance', currency, getForwardedAccount(self, sender), getForwardedAccount(self, spender)));
 
     require(
       self.Storage.getUint(id_a) == 0 || amount == 0,
       "Error: Allowance must be zero (0) before setting an updated allowance for spender.");
 
     require(
-      self.Storage.getBalance(getForwardedAccount(self, tx.origin), currency) >= amount,
+      self.Storage.getBalance(getForwardedAccount(self, sender), currency) >= amount,
       "Error: Allowance cannot exceed msg.sender token balance.");
 
     require(
       self.Storage.setUint(id_a, amount),
       "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
 
-    emit Approval(tx.origin, spender, amount);
+    emit Approval(sender, spender, amount);
 
     return true;
   }
@@ -1220,22 +1220,5 @@ library TokenIOLib {
     return usdAmount;
   }
 
-
-  function bytes32ToString(Data storage self, bytes32 x) internal pure returns (string memory) {
-      bytes memory bytesString = new bytes(32);
-      uint charCount = 0;
-      for (uint j = 0; j < 32; j++) {
-        byte char = byte(bytes32(uint(x) * 2 ** (8 * j)));
-        if (char != 0) {
-          bytesString[charCount] = char;
-          charCount++;
-        }
-      }
-      bytes memory bytesStringTrimmed = new bytes(charCount);
-      for (uint j = 0; j < charCount; j++) {
-        bytesStringTrimmed[j] = bytesString[j];
-      }
-      return string(bytesStringTrimmed);
-    }
 
 }

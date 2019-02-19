@@ -91,7 +91,7 @@ contract("TokenIOERC20FeesApply", function(accounts) {
         assert.equal(balance1, DEPOSIT_AMOUNT, "first account should contain all the deposit initially")
         assert.equal(balance2, 0, "Second account should have zero balance")
 
-        const transferReceipt = await erc20.transfer(TEST_ACCOUNT_2, TRANSFER_AMOUNT)
+        const transferReceipt = await erc20.transfer(TEST_ACCOUNT_2, TRANSFER_AMOUNT, TEST_ACCOUNT_1)
 
         const balance1b = +(await erc20.balanceOf(TEST_ACCOUNT_1)).toString()
         const balance2b = +(await erc20.balanceOf(TEST_ACCOUNT_2)).toString()
@@ -123,7 +123,7 @@ contract("TokenIOERC20FeesApply", function(accounts) {
         const balance1a = +(await erc20.balanceOf(TEST_ACCOUNT_1))
         const balance1b = +(await erc20.balanceOf(TEST_ACCOUNT_2))
 
-        const approveReceipt = await erc20.approve(TEST_ACCOUNT_2, balance1a)
+        const approveReceipt = await erc20.approve(TEST_ACCOUNT_2, balance1a, TEST_ACCOUNT_1)
         const allowance = +(await erc20.allowance(TEST_ACCOUNT_1, TEST_ACCOUNT_2)).toString()
 
         assert.notEqual(allowance, 0, "Allowance should not equal zero.")

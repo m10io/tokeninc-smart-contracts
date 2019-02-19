@@ -37,6 +37,8 @@ contract TokenIOERC20Unlimited is Ownable {
 
   event Transfer(address indexed from, address indexed to, uint256 amount);
 
+  address public proxyInstance;
+
   /**
   * @notice Constructor method for ERC20 contract
   * @param _storageContract     address of TokenIOStorage contract
@@ -52,6 +54,11 @@ contract TokenIOERC20Unlimited is Ownable {
     owner[msg.sender] = true;
   }
 
+  function initProxy(address _proxy) public onlyOwner {
+    require(_proxy != address(0));
+    
+    proxyInstance = _proxy;
+  }
 
   /**
   @notice Sets erc20 globals and fee paramters
@@ -82,7 +89,7 @@ contract TokenIOERC20Unlimited is Ownable {
     * @return {"_name" : "Returns name of token"}
     */
     function name() public view returns (string memory _name) {
-      return lib.getTokenName(address(this));
+      return lib.getTokenName(proxyInstance);
     }
 
     /**
@@ -90,7 +97,7 @@ contract TokenIOERC20Unlimited is Ownable {
     * @return {"_symbol" : "Returns symbol of token"}
     */
     function symbol() public view returns (string memory _symbol) {
-      return lib.getTokenSymbol(address(this));
+      return lib.getTokenSymbol(proxyInstance);
     }
 
     /**
@@ -98,7 +105,7 @@ contract TokenIOERC20Unlimited is Ownable {
     * @return {"_tla" : "Returns three-letter-abbreviation of token"}
     */
     function tla() public view returns (string memory _tla) {
-      return lib.getTokenTLA(address(this));
+      return lib.getTokenTLA(proxyInstance);
     }
 
     /**
@@ -106,7 +113,7 @@ contract TokenIOERC20Unlimited is Ownable {
     * @return {"_version" : "Returns version of token"}
     */
     function version() public view returns (string memory _version) {
-      return lib.getTokenVersion(address(this));
+      return lib.getTokenVersion(proxyInstance);
     }
 
     /**
@@ -114,7 +121,7 @@ contract TokenIOERC20Unlimited is Ownable {
     * @return {"_decimals" : "Returns number of decimals"}
     */
     function decimals() public view returns (uint _decimals) {
-      return lib.getTokenDecimals(lib.getTokenSymbol(address(this)));
+      return lib.getTokenDecimals(lib.getTokenSymbol(proxyInstance));
     }
 
     /**
@@ -122,7 +129,7 @@ contract TokenIOERC20Unlimited is Ownable {
     * @return {"supply" : "Returns current total supply of token"}
     */
     function totalSupply() public view returns (uint supply) {
-      return lib.getTokenSupply(lib.getTokenSymbol(address(this)));
+      return lib.getTokenSupply(lib.getTokenSymbol(proxyInstance));
     }
 
     /**
@@ -132,7 +139,7 @@ contract TokenIOERC20Unlimited is Ownable {
     * @return {"amount" : "Returns allowance of given account and spender"}
     */
     function allowance(address account, address spender) public view returns (uint amount) {
-      return lib.getTokenAllowance(lib.getTokenSymbol(address(this)), account, spender);
+      return lib.getTokenAllowance(lib.getTokenSymbol(proxyInstance), account, spender);
     }
 
     /**
@@ -141,7 +148,7 @@ contract TokenIOERC20Unlimited is Ownable {
     * @return {"balance" : "Returns balance amount"}
     */
     function balanceOf(address account) public view returns (uint balance) {
-      return lib.getTokenBalance(lib.getTokenSymbol(address(this)), account);
+      return lib.getTokenBalance(lib.getTokenSymbol(proxyInstance), account);
     }
 
     /**
@@ -150,16 +157,16 @@ contract TokenIOERC20Unlimited is Ownable {
     * @param amount Transfer amount
     * @return {"success" : "Returns true if transfer succeeds"}
     */
-    function transfer(address to, uint amount) public notDeprecated returns (bool success) {
+    function transfer(address to, uint amount, address sender) public notDeprecated returns (bool success) {
       /// @notice send transfer through library
       /// @dev !!! mutates storage state
       require(
-        lib.forceTransfer(lib.getTokenSymbol(address(this)), msg.sender, to, amount, "0x0"),
+        lib.forceTransfer(lib.getTokenSymbol(proxyInstance), sender, to, amount, "0x0"),
         "Error: Unable to transfer funds. Please check your parameters."
       );
 
       /// @dev Emit Log event
-      emit Transfer(msg.sender, to, amount);
+      emit Transfer(sender, to, amount);
       return true;
     }
 
@@ -174,13 +181,13 @@ contract TokenIOERC20Unlimited is Ownable {
       /// @notice sends transferFrom through library
       /// @dev !!! mutates storage state
       require(
-        lib.forceTransfer(lib.getTokenSymbol(address(this)), from, to, amount, "0x0"),
+        lib.forceTransfer(lib.getTokenSymbol(proxyInstance), from, to, amount, "0x0"),
         "Error: Unable to transfer funds. Please check your parameters and ensure the spender has the approved amount of funds to transfer."
       );
 
       /// @notice This transaction will fail if the msg.sender does not have an approved allowance.
       require(
-        lib.updateAllowance(lib.getTokenSymbol(address(this)), from, amount, tx.origin),
+        lib.updateAllowance(lib.getTokenSymbol(proxyInstance), from, amount),
         "Error: Unable to update allowance for spender."
       );
 
@@ -194,11 +201,11 @@ contract TokenIOERC20Unlimited is Ownable {
     * @param amount Allowance amount
     * @return {"success" : "Returns true if approve succeeds"}
     */
-    function approve(address spender, uint amount) public notDeprecated returns (bool success) {
+    function approve(address spender, uint amount, address sender) public notDeprecated returns (bool success) {
       /// @notice sends approve through library
       /// @dev !!! mtuates storage states
       require(
-        lib.approveAllowance(spender, amount),
+        lib.approveAllowance(spender, amount, sender),
         "Error: Unable to approve allowance for spender. Please ensure spender is not null and does not have a frozen balance."
       );
       return true;
@@ -209,14 +216,14 @@ contract TokenIOERC20Unlimited is Ownable {
     * @return {"deprecated" : "Returns true if deprecated, false otherwise"}
     */
     function deprecateInterface() public onlyOwner returns (bool deprecated) {
-      require(lib.setDeprecatedContract(address(this)),
+      require(lib.setDeprecatedContract(proxyInstance),
         "Error: Unable to deprecate contract!");
       return true;
     }
 
     modifier notDeprecated() {
       /// @notice throws if contract is deprecated
-      require(!lib.isContractDeprecated(address(this)),
+      require(!lib.isContractDeprecated(proxyInstance),
         "Error: Contract has been deprecated, cannot perform operation!");
       _;
     }
