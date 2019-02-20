@@ -40,6 +40,10 @@ contract TokenIOERC20FeesApplyProxy is Ownable, UpgradableProxy {
 
   constructor(address _tokenIOERC20FeesApplyImpl, bytes memory _data) UpgradableProxy(_tokenIOERC20FeesApplyImpl, _data) public {
   }
+
+  function upgradeTo(address _newTokenIOERC20FeesApplyImpl) external {
+    _upgradeTo(_newTokenIOERC20FeesApplyImpl);
+  }
   
   function setParams(
     string memory _name,

@@ -35,6 +35,10 @@ contract TokenIOCurrencyAuthorityProxy is Ownable, UpgradableProxy {
 
     constructor(address _tokenIOCurrencyAuthorityImpl, bytes memory _data) UpgradableProxy(_tokenIOCurrencyAuthorityImpl, _data) public {
     }
+
+    function upgradeTo(address _newTokenIOCurrencyAuthorityImpl) external {
+      _upgradeTo(_newTokenIOCurrencyAuthorityImpl);
+    }
   
     function getTokenBalance(string memory currency, address account) public view returns (uint balance) {
       return TokenIOCurrencyAuthorityI(_implementation()).getTokenBalance(currency, account);
