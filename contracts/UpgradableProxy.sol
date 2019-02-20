@@ -36,7 +36,7 @@ contract UpgradableProxy is Proxy {
     _setImplementation(_implementation);
     if(_data.length > 0) {
       (bool success, ) = _implementation.delegatecall(_data);
-      require(success);
+      //require(success);
     }
   }
 
