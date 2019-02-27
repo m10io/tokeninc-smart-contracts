@@ -64,6 +64,7 @@ contract TokenIOStableSwap is Ownable {
       require(_proxy != address(0));
         
       proxyInstance = _proxy;
+      lib.proxyInstance = _proxy;
   }
 
 	/**
@@ -212,7 +213,7 @@ contract TokenIOStableSwap is Ownable {
     * @param  amount Amount of fromAsset to be transferred.
     * @return { "success" : "Returns true if successfully called from another contract"}
    */
-	function convert(address fromAsset, address toAsset, uint amount) public notDeprecated returns (bool success) {
+	function convert(address fromAsset, address toAsset, uint amount, address sender) public notDeprecated returns (bool success) {
     /// @notice lookup currency from one of the assets, check if allowed by both assets.
     string memory currency = getAssetCurrency(fromAsset);
     uint fromDecimals = ERC20Interface(fromAsset).decimals();
@@ -229,7 +230,7 @@ contract TokenIOStableSwap is Ownable {
       /// @dev the amount being transferred must be in the same decimal representation of the asset
       /// e.g. If decimals = 6 and want to transfer $100.00 the amount passed to this contract should be 100e6 (100 * 10 ** 6)
       require(
-        ERC20Interface(fromAsset).transferFrom(msg.sender, proxyInstance, amount),
+        ERC20Interface(fromAsset).transferFrom(sender, proxyInstance, amount),
         'Error: Unable to transferFrom your asset holdings. Please ensure this contract has an approved allowance equal to or greater than the amount called in transferFrom method.'
       );
 
@@ -239,7 +240,7 @@ contract TokenIOStableSwap is Ownable {
       /// @dev Ensure amount is converted for the correct decimal representation;
       uint convertedAmountFrom = (netAmountFrom.mul(10**toDecimals)).div(10**fromDecimals);
       require(
-        lib.deposit(lib.getTokenSymbol(toAsset), msg.sender, convertedAmountFrom, 'Token, Inc.'),
+        lib.deposit(lib.getTokenSymbol(toAsset), sender, convertedAmountFrom, 'Token, Inc.'),
         "Error: Unable to deposit funds. Please check issuerFirm and firm authority are registered"
       );
 		} else if(isTokenXContract(fromAsset, currency)) {
@@ -250,13 +251,13 @@ contract TokenIOStableSwap is Ownable {
       uint netAmountTo = convertedAmount.sub(fees);
       /// @dev Ensure amount is converted for the correct decimal representation;
       require(
-      	ERC20Interface(toAsset).transfer(msg.sender, netAmountTo),
+      	ERC20Interface(toAsset).transfer(sender, netAmountTo),
       	'Unable to call the requested erc20 contract.'
       );
 
       /// @dev Withdraw TokenX asset from the user
       require(
-      	lib.withdraw(lib.getTokenSymbol(fromAsset), msg.sender, amount, 'Token, Inc.'),
+      	lib.withdraw(lib.getTokenSymbol(fromAsset), sender, amount, 'Token, Inc.'),
       	"Error: Unable to withdraw funds. Please check issuerFirm and firm authority are registered and have issued funds that can be withdrawn"
       );
 		} else {
@@ -264,7 +265,7 @@ contract TokenIOStableSwap is Ownable {
 		}
 
     /// @dev Log the swap event for event listeners
-    emit StableSwap(fromAsset, toAsset, msg.sender, amount, currency);
+    emit StableSwap(fromAsset, toAsset, sender, amount, currency);
     return true;
 	}
 

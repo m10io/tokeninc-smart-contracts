@@ -1,9 +1,8 @@
-const TokenIOCurrencyAuthority = artifacts.require("./TokenIOCurrencyAuthority.sol");
+const TokenIOCurrencyAuthorityProxy = artifacts.require("./TokenIOCurrencyAuthorityProxy.sol");
 const TokenIOStorage = artifacts.require("./TokenIOStorage.sol")
-const TokenIOERC20FeesApply = artifacts.require("./TokenIOERC20FeesApply.sol")
 const TokenIOERC20FeesApplyProxy = artifacts.require("./TokenIOERC20FeesApplyProxy.sol")
-const TokenIOFeeContract = artifacts.require("./TokenIOFeeContract.sol")
 const { mode, development, production } = require('../token.config.js')
+const encodeCall = require('./helpers/encodeCall.js')
 const { utils } = require('ethers')
 
 const { AUTHORITY_DETAILS: { firmName, authorityAddress }, TOKEN_DETAILS, FEE_PARAMS } = mode
@@ -29,26 +28,29 @@ contract("TokenIOERC20FeesApplyProxy", function(accounts) {
     const FEE_CONTRACT = USDx.feeContract
     const TOKEN_DECIMALS = USDx.tokenDecimals
 
-    beforeEach(async function () {
+    before(async function () {
       this.tokenIOStorage = await TokenIOStorage.deployed()
-      this.tokenIOERC20FeesApply = await TokenIOERC20FeesApply.deployed()
-      this.tokenIOCurrencyAuthority = await TokenIOCurrencyAuthority.deployed();
-      this.tokenIOERC20FeesApplyProxy = await TokenIOERC20FeesApplyProxy.new(this.tokenIOERC20FeesApply.address);
-      await this.tokenIOERC20FeesApply.allowOwnership(this.tokenIOERC20FeesApplyProxy.address);
-      await this.tokenIOERC20FeesApply.initProxy(this.tokenIOERC20FeesApplyProxy.address);
+      this.tokenIOCurrencyAuthorityProxy = await TokenIOCurrencyAuthorityProxy.deployed();
+      this.tokenIOERC20FeesApplyProxy = await TokenIOERC20FeesApplyProxy.deployed();
     });
+
     /* PARAMETERS */
+    describe('TOKEN_PARAMS:should correctly set parameters according to token.config.js [name, symbol, tla, decimals]', function () {
+      it(`should pass`, async function () {
+        assert.equal(await this.tokenIOERC20FeesApplyProxy.name(), TOKEN_NAME, "Token name should be set in the storage contract.")
+        assert.equal(await this.tokenIOERC20FeesApplyProxy.symbol(), TOKEN_SYMBOL, "Token symbol should be set in the storage contract.")
+        assert.equal(await this.tokenIOERC20FeesApplyProxy.tla(), TOKEN_TLA, "Token tla should be set in the storage contract.")
+        assert.equal(await this.tokenIOERC20FeesApplyProxy.version(), TOKEN_VERSION, "Token version should be set in the storage contract.")
+        assert.equal(await this.tokenIOERC20FeesApplyProxy.decimals(), TOKEN_DECIMALS, "Token decimals should be set in the storage contract.")
+      })
+    });
 
-    describe('transfer', function () {
+    describe('TRANSFER:should supply uints, debiting the sender and crediting the receiver', function () {
       it('Should pass', async function () {
-        const kycReceipt1 = await this.tokenIOCurrencyAuthority.approveKYC(TEST_ACCOUNT_1, true, LIMIT_AMOUNT, "Token, Inc.")
-        const kycReceipt2 = await this.tokenIOCurrencyAuthority.approveKYC(TEST_ACCOUNT_2, true, LIMIT_AMOUNT, "Token, Inc.")
-        const kycReceipt3 = await this.tokenIOCurrencyAuthority.approveKYC(TEST_ACCOUNT_3, true, LIMIT_AMOUNT, "Token, Inc.")
-
-        await this.tokenIOERC20FeesApplyProxy.setParams(TOKEN_NAME, TOKEN_SYMBOL, TOKEN_TLA, TOKEN_VERSION, TOKEN_DECIMALS, FEE_CONTRACT, 0);
-        const tokenSymbol = await this.tokenIOERC20FeesApplyProxy.symbol()
-        assert.equal(tokenSymbol, 'USDx', "Incorrect token symbol")
-        const depositReceipt = await this.tokenIOCurrencyAuthority.deposit(tokenSymbol, TEST_ACCOUNT_1, DEPOSIT_AMOUNT, "Token, Inc.")
+        await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_1, true, LIMIT_AMOUNT, "Token, Inc.")
+        await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_2, true, LIMIT_AMOUNT, "Token, Inc.")
+        await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_3, true, LIMIT_AMOUNT, "Token, Inc.")
+        await this.tokenIOCurrencyAuthorityProxy.deposit(await this.tokenIOERC20FeesApplyProxy.symbol(), TEST_ACCOUNT_1, DEPOSIT_AMOUNT, "Token, Inc.");
 
         const balance1 = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_1)).toString()
         const balance2 = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_2)).toString()
@@ -66,41 +68,33 @@ contract("TokenIOERC20FeesApplyProxy", function(accounts) {
 
         // check spending limit remaining
         // Spending limit should remain unchanged!
-        const SPENDING_LIMIT = +(await this.tokenIOCurrencyAuthority.getAccountSpendingLimit(TEST_ACCOUNT_1)).toString()
-        const SPENDING_REMAINING = +(await this.tokenIOCurrencyAuthority.getAccountSpendingRemaining(TEST_ACCOUNT_1)).toString()
+        const SPENDING_LIMIT = +(await this.tokenIOCurrencyAuthorityProxy.getAccountSpendingLimit(TEST_ACCOUNT_1)).toString()
+        const SPENDING_REMAINING = +(await this.tokenIOCurrencyAuthorityProxy.getAccountSpendingRemaining(TEST_ACCOUNT_1)).toString()
 
         assert.equal(SPENDING_REMAINING, (SPENDING_LIMIT),
             "Remaining spending amount should remain equal to set limit amount")
 
         // calculate correct current balance
-        console.log("BALANCE: " + balance1b)
         assert.equal(balance1b, (DEPOSIT_AMOUNT-TRANSFER_AMOUNT-TX_FEES))
         assert.equal(balance2b, TRANSFER_AMOUNT)
       });
     });
 
-    describe('approve', function () {
+    describe('APPROVE: should give allowance of remaining balance of account 1 to account 2', function () {
       it('Should pass', async function () {
-        const kycReceipt1 = await this.tokenIOCurrencyAuthority.approveKYC(TEST_ACCOUNT_1, true, LIMIT_AMOUNT, "Token, Inc.")
-        await this.tokenIOERC20FeesApplyProxy.setParams(TOKEN_NAME, TOKEN_SYMBOL, TOKEN_TLA, TOKEN_VERSION, TOKEN_DECIMALS, FEE_CONTRACT, 0);
-        const tokenSymbol = await this.tokenIOERC20FeesApplyProxy.symbol()
-        assert.equal(tokenSymbol, 'USDx', "Incorrect token symbol")
-        const depositReceipt = await this.tokenIOCurrencyAuthority.deposit(tokenSymbol, TEST_ACCOUNT_1, DEPOSIT_AMOUNT, "Token, Inc.")
-
         const balance1a = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_1))
-        const balance1b = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_2))
-        console.log(balance1a)
 
         const approveReceipt = await this.tokenIOERC20FeesApplyProxy.approve(TEST_ACCOUNT_2, balance1a)
-        const allowance = +(await this.tokenIOERC20FeesApply.allowance(TEST_ACCOUNT_1, TEST_ACCOUNT_2)).toString()
+        const allowance = +(await this.tokenIOERC20FeesApplyProxy.allowance(TEST_ACCOUNT_1, TEST_ACCOUNT_2)).toString()
 
         assert.notEqual(allowance, 0, "Allowance should not equal zero.")
         assert.equal(allowance, balance1a, "Allowance should be the same value as the balance of account 1")
       });
     });
 
-    describe('transferFrom', function () {
+    describe('TRANSFER_FROM: account 2 should spend funds transfering from account1 to account 3  on behalf of account1', function () {
       it('Should pass', async function () {
+
         const TEST_ACT_1_BEG_BALANCE = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_1)).toString()
         const TEST_ACT_2_BEG_BALANCE = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_2)).toString()
         const TEST_ACT_3_BEG_BALANCE = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_3)).toString()
@@ -109,11 +103,11 @@ contract("TokenIOERC20FeesApplyProxy", function(accounts) {
         assert.notEqual(TEST_ACT_2_BEG_BALANCE, 0, "Balance of account 2 should not equal zero.")
 
         const BEG_ALLOWANCE = await this.tokenIOERC20FeesApplyProxy.allowance(TEST_ACCOUNT_1, TEST_ACCOUNT_2)
+
         assert.equal(BEG_ALLOWANCE, TEST_ACT_1_BEG_BALANCE)
 
-        const TRANSFER_FROM_AMOUNT = +(await this.tokenIOCurrencyAuthority.getAccountSpendingRemaining(TEST_ACCOUNT_1)).toString()
+        const TRANSFER_FROM_AMOUNT = +(await this.tokenIOCurrencyAuthorityProxy.getAccountSpendingRemaining(TEST_ACCOUNT_1)).toString()
         const transferFromReceipt = await this.tokenIOERC20FeesApplyProxy.transferFrom(TEST_ACCOUNT_1, TEST_ACCOUNT_3, TRANSFER_FROM_AMOUNT, { from: TEST_ACCOUNT_2 })
-
         const TX_FEES = +(await this.tokenIOERC20FeesApplyProxy.calculateFees(TRANSFER_FROM_AMOUNT)).toString()
         
         const TEST_ACT_1_END_BALANCE = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_1))
@@ -134,69 +128,21 @@ contract("TokenIOERC20FeesApplyProxy", function(accounts) {
       });
     });
 
-    describe('balanceOf', function () {
+    describe('BALANCE_OF: should get balance of account1', function () {
       it('Should pass', async function () {
+        const TEST_ACT_1_BEG_BALANCE = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_1)).toString()
+        const TEST_ACT_2_BEG_BALANCE = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_2)).toString()
+        const TEST_ACT_3_BEG_BALANCE = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_3)).toString()
+
         const balance = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_2)).toString()
         assert.equal(balance, TRANSFER_AMOUNT, "first account should contain all the deposit initially")
       });
     });
 
-    describe('allowance', function () {
+    describe('ALLOWANCE: should return allowance of account2 on behalf of account 1', function () {
       it('Should pass', async function () {
         const allowance = await this.tokenIOERC20FeesApplyProxy.allowance(TEST_ACCOUNT_1, TEST_ACCOUNT_2)
         assert.equal(allowance.toNumber(), 249848)
-      });
-    });
-
-    describe('setParams', function () {
-      it('Should pass', async function () {
-        await this.tokenIOERC20FeesApplyProxy.setParams(TOKEN_NAME, TOKEN_SYMBOL, TOKEN_TLA, TOKEN_VERSION, TOKEN_DECIMALS, FEE_CONTRACT, 0);
-
-        let decimals = await this.tokenIOERC20FeesApplyProxy.decimals();
-        assert.equal(decimals, TOKEN_DECIMALS, "Token decimals should be set in the storage contract.")
-      });
-    });
-
-    describe('name', function () {
-      it('Should pass', async function () {
-        await this.tokenIOERC20FeesApplyProxy.setParams(TOKEN_NAME, TOKEN_SYMBOL, TOKEN_TLA, TOKEN_VERSION, TOKEN_DECIMALS, FEE_CONTRACT, 0);
-
-        let name = await this.tokenIOERC20FeesApplyProxy.name();
-        assert.equal(name, TOKEN_NAME, "Token name should be set in the storage contract.")
-      });
-    });
-
-    describe('symbol', function () {
-      it('Should pass', async function () {
-        await this.tokenIOERC20FeesApplyProxy.setParams(TOKEN_NAME, TOKEN_SYMBOL, TOKEN_TLA, TOKEN_VERSION, TOKEN_DECIMALS, FEE_CONTRACT, 0);
-
-        let symbol = await this.tokenIOERC20FeesApplyProxy.symbol();
-        assert.equal(symbol, TOKEN_SYMBOL, "Token symbol should be set in the storage contract.")
-      });
-    });
-
-    describe('version', function () {
-      it('Should pass', async function () {
-        await this.tokenIOERC20FeesApplyProxy.setParams(TOKEN_NAME, TOKEN_SYMBOL, TOKEN_TLA, TOKEN_VERSION, TOKEN_DECIMALS, FEE_CONTRACT, 0);
-
-        let version = await this.tokenIOERC20FeesApplyProxy.version();
-        assert.equal(version, TOKEN_VERSION, "Token version should be set in the storage contract.")
-      });
-    });
-
-    describe('tla', function () {
-      it('Should pass', async function () {
-        await this.tokenIOERC20FeesApplyProxy.setParams(TOKEN_NAME, TOKEN_SYMBOL, TOKEN_TLA, TOKEN_VERSION, TOKEN_DECIMALS, FEE_CONTRACT, 0);
-
-        let tla = await this.tokenIOERC20FeesApplyProxy.tla();
-        assert.equal(tla, TOKEN_TLA, "Token tla should be set in the storage contract.")
-      });
-    });
-
-    describe('Total Supply', function () {
-      it('Should pass', async function () {
-        let totalSupply = await this.tokenIOERC20FeesApplyProxy.totalSupply();
-        assert.equal(totalSupply.toNumber(), DEPOSIT_AMOUNT, "Token name should be set in the storage contract.")
       });
     });
 

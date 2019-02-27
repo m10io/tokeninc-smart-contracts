@@ -27,7 +27,7 @@ interface TokenIOERC20UnlimitedI {
 
   function transfer(address to, uint amount, address sender) external returns(bool success);
 
-  function transferFrom(address from, address to, uint amount) external returns(bool success);
+  function transferFrom(address from, address to, uint amount, address sender) external returns(bool success);
 
   function approve(address spender, uint amount, address sender) external returns (bool success);
 
@@ -69,7 +69,7 @@ contract TokenIOERC20UnlimitedProxy is Ownable {
   }
 
   function transferFrom(address from, address to, uint256 amount) external returns(bool) {
-    require(tokenIOERC20UnlimitedImpl.transferFrom(from, to, amount), 
+    require(tokenIOERC20UnlimitedImpl.transferFrom(from, to, amount, msg.sender), 
       "Unable to execute transferFrom");
 
     return true;
@@ -91,7 +91,7 @@ contract TokenIOERC20UnlimitedProxy is Ownable {
   }
 
   function tla() external view returns (string memory) {
-    return tokenIOERC20UnlimitedImpl.symbol();
+    return tokenIOERC20UnlimitedImpl.tla();
   }
 
   function version() external view returns (string memory) {

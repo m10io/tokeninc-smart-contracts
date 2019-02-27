@@ -27,7 +27,7 @@ interface TokenIOERC20I {
 
   function transfer(address to, uint amount, address sender) external returns(bool success);
 
-  function transferFrom(address from, address to, uint amount) external returns(bool success);
+  function transferFrom(address from, address to, uint amount, address sender) external returns(bool success);
 
   function approve(address spender, uint amount, address sender) external returns (bool success);
 
@@ -69,7 +69,7 @@ contract TokenIOERC20Proxy is Ownable {
   }
 
   function transferFrom(address from, address to, uint256 amount) external returns(bool) {
-    require(tokenIOERC20Impl.transferFrom(from, to, amount), 
+    require(tokenIOERC20Impl.transferFrom(from, to, amount, msg.sender), 
       "Unable to execute transferFrom");
 
     return true;
@@ -91,7 +91,7 @@ contract TokenIOERC20Proxy is Ownable {
   }
 
   function tla() external view returns (string memory) {
-    return tokenIOERC20Impl.symbol();
+    return tokenIOERC20Impl.tla();
   }
 
   function version() external view returns (string memory) {
@@ -112,6 +112,10 @@ contract TokenIOERC20Proxy is Ownable {
 
   function balanceOf(address account) external view returns (uint256) {
     return tokenIOERC20Impl.balanceOf(account);
+  }
+
+  function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, bytes memory feeMsg, address feeAccount) {
+    return tokenIOERC20Impl.getFeeParams();
   }
 
   function calculateFees(uint amount) external view returns (uint256) {

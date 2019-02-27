@@ -2,6 +2,7 @@ const { delay } = require('bluebird')
 
 const TokenIOStorage = artifacts.require("./TokenIOStorage.sol")
 const TokenIOFeeContract = artifacts.require("./TokenIOFeeContract.sol")
+const TokenIOFeeContractProxy = artifacts.require("./TokenIOFeeContractProxy.sol")
 
 const { mode, development, production } = require('../token.config.js');
 const {
@@ -16,8 +17,11 @@ const deployContracts = async (deployer, accounts) => {
 
       /* master fee contract */
       const masterFeeContract = await deployer.deploy(TokenIOFeeContract, storage.address)
+      const masterFeeContractProxy = await deployer.deploy(TokenIOFeeContractProxy, masterFeeContract.address)
       await storage.allowOwnership(masterFeeContract.address)
-      await masterFeeContract.setFeeParams(...Object.keys(FEE_PARAMS).map((p) => { return FEE_PARAMS[p] }))
+      await masterFeeContract.allowOwnership(masterFeeContractProxy.address)
+      await masterFeeContract.initProxy(masterFeeContractProxy.address)
+      await masterFeeContractProxy.setFeeParams(...Object.keys(FEE_PARAMS).map((p) => { return FEE_PARAMS[p] }))
 
       return true
   } catch (err) {

@@ -58,6 +58,7 @@ contract TokenIOERC20Unlimited is Ownable {
     require(_proxy != address(0));
     
     proxyInstance = _proxy;
+    lib.proxyInstance = _proxy;
   }
 
   /**
@@ -177,7 +178,7 @@ contract TokenIOERC20Unlimited is Ownable {
     * @param amount Transfer amount
     * @return {"success" : "Returns true if transferFrom succeeds"}
     */
-    function transferFrom(address from, address to, uint amount) public notDeprecated returns (bool success) {
+    function transferFrom(address from, address to, uint amount, address sender) public notDeprecated returns (bool success) {
       /// @notice sends transferFrom through library
       /// @dev !!! mutates storage state
       require(
@@ -187,7 +188,7 @@ contract TokenIOERC20Unlimited is Ownable {
 
       /// @notice This transaction will fail if the msg.sender does not have an approved allowance.
       require(
-        lib.updateAllowance(lib.getTokenSymbol(proxyInstance), from, amount),
+        lib.updateAllowance(lib.getTokenSymbol(proxyInstance), from, amount, sender),
         "Error: Unable to update allowance for spender."
       );
 

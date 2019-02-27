@@ -21,7 +21,7 @@ interface TokenIOStableSwapI {
 
   function calcAssetFees(address asset, uint amount) external view returns (uint fees);
 
-  function convert(address fromAsset, address toAsset, uint amount) external returns (bool success);
+  function convert(address fromAsset, address toAsset, uint amount, address sender) external returns (bool success);
 
   function transferCollectedFees(address asset, address to, uint amount) external returns (bool success);
 
@@ -153,7 +153,7 @@ contract TokenIOStableSwapProxy is Ownable {
     * @return { "success" : "Returns true if successfully called from another contract"}
    */
   function convert(address fromAsset, address toAsset, uint amount) public returns (bool success) {
-    require(tokenIOStableSwapImpl.convert(fromAsset, toAsset, amount), 'Unable to execute convert');
+    require(tokenIOStableSwapImpl.convert(fromAsset, toAsset, amount, msg.sender), 'Unable to execute convert');
     
     return true;
   }

@@ -217,7 +217,7 @@ contract TokenIOERC20FeesApply is Ownable {
     * @param amount Transfer amount
     * @return {"success" : "Returns true if transferFrom succeeds"}
     */
-    function transferFrom(address from, address to, uint amount) public notDeprecated returns(bool success) {
+    function transferFrom(address from, address to, uint amount, address sender) public notDeprecated returns(bool success) {
       address feeContract = lib.getFeeContract(proxyInstance);
       (string memory currency, address[3] memory addresses) = lib.getTransferDetails(proxyInstance, [from, to, feeContract]);
       uint fees = calculateFees(feeContract, amount);
@@ -231,7 +231,7 @@ contract TokenIOERC20FeesApply is Ownable {
 
       /// @notice This transaction will fail if the msg.sender does not have an approved allowance.
       require(
-        lib.updateAllowance(lib.getTokenSymbol(proxyInstance), from, amount.add(fees)),
+        lib.updateAllowance(lib.getTokenSymbol(proxyInstance), from, amount.add(fees), sender),
         "Error: Unable to update allowance for spender."
       );
 

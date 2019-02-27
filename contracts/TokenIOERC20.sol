@@ -56,6 +56,7 @@ contract TokenIOERC20 is Ownable {
     require(_proxy != address(0));
     
     proxyInstance = _proxy;
+    lib.proxyInstance = _proxy;
   }
 
   /**
@@ -180,11 +181,11 @@ contract TokenIOERC20 is Ownable {
     * @param amount Transfer amount
     * @return {"success" : "Returns true if transfer succeeds"}
     */
-    function transfer(address to, uint amount) public notDeprecated returns (bool success) {
+    function transfer(address to, uint amount, address sender) public notDeprecated returns (bool success) {
       /// @notice send transfer through library
       /// @dev !!! mutates storage state
       require(
-        lib.transfer(lib.getTokenSymbol(proxyInstance), to, amount, "0x0"),
+        lib.transfer(lib.getTokenSymbol(proxyInstance), to, amount, sender, "0x0"),
         "Error: Unable to transfer funds. Please check your parameters."
       );
       return true;
@@ -197,11 +198,11 @@ contract TokenIOERC20 is Ownable {
     * @param amount Transfer amount
     * @return {"success" : "Returns true if transferFrom succeeds"}
     */
-    function transferFrom(address from, address to, uint amount) public notDeprecated returns (bool success) {
+    function transferFrom(address from, address to, uint amount, address sender) public notDeprecated returns (bool success) {
       /// @notice sends transferFrom through library
       /// @dev !!! mutates storage state
       require(
-        lib.transferFrom(lib.getTokenSymbol(proxyInstance), from, to, amount, "0x0"),
+        lib.transferFrom(from, to, amount, "0x0", sender),
         "Error: Unable to transfer funds. Please check your parameters and ensure the spender has the approved amount of funds to transfer."
       );
       return true;

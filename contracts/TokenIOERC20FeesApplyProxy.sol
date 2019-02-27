@@ -29,7 +29,7 @@ interface TokenIOERC20FeesApplyI {
 
   function transfer(address to, uint amount, address sender) external returns(bool success);
 
-  function transferFrom(address from, address to, uint amount) external returns(bool success);
+  function transferFrom(address from, address to, uint amount, address sender) external returns(bool success);
 
   function approve(address spender, uint amount, address sender) external returns (bool success);
 
@@ -41,7 +41,7 @@ contract TokenIOERC20FeesApplyProxy is Ownable, UpgradableProxy {
   constructor(address _tokenIOERC20FeesApplyImpl, bytes memory _data) UpgradableProxy(_tokenIOERC20FeesApplyImpl, _data) public {
   }
 
-  function upgradeTo(address _newTokenIOERC20FeesApplyImpl) external {
+  function upgradeTo(address _newTokenIOERC20FeesApplyImpl) onlyOwner external {
     _upgradeTo(_newTokenIOERC20FeesApplyImpl);
   }
   
@@ -59,6 +59,10 @@ contract TokenIOERC20FeesApplyProxy is Ownable, UpgradableProxy {
     return true;
   }
 
+  function delegateCall() external {
+    _delegate(_implementation());
+  }
+  
   function transfer(address to, uint256 amount) external returns(bool) {
     require(TokenIOERC20FeesApplyI(_implementation()).transfer(to, amount, msg.sender), 
       "Unable to execute transfer");
@@ -67,7 +71,7 @@ contract TokenIOERC20FeesApplyProxy is Ownable, UpgradableProxy {
   }
 
   function transferFrom(address from, address to, uint256 amount) external returns(bool) {
-    require(TokenIOERC20FeesApplyI(_implementation()).transferFrom(from, to, amount), 
+    require(TokenIOERC20FeesApplyI(_implementation()).transferFrom(from, to, amount, msg.sender), 
       "Unable to execute transferFrom");
 
     return true;
@@ -89,7 +93,7 @@ contract TokenIOERC20FeesApplyProxy is Ownable, UpgradableProxy {
   }
 
   function tla() external view returns (string memory) {
-    return TokenIOERC20FeesApplyI(_implementation()).symbol();
+    return TokenIOERC20FeesApplyI(_implementation()).tla();
   }
 
   function version() external view returns (string memory) {

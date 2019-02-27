@@ -47,6 +47,10 @@ library TokenIOLib {
   event FxSwap(string tokenASymbol,string tokenBSymbol,uint tokenAValue,uint tokenBValue, uint expiration, bytes32 transactionHash);
   event AccountForward(address indexed originalAccount, address indexed forwardedAccount);
   event NewAuthority(address indexed authority, string issuerFirm);
+  event UpdateAllowance(uint victim);
+  event USDAmount(uint victim);
+  
+  
 
   function setTokenParams(Data storage self, string memory _name, string memory _symbol, string memory _tla, string memory _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) internal returns(bool success) {
        require(
@@ -592,7 +596,7 @@ library TokenIOLib {
    * @param data Arbitrary bytes data to include with the transaction
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function transfer(Data storage self, string memory currency, address to, uint amount, bytes memory data) internal returns (bool success) {
+  function transfer(Data storage self, string memory currency, address to, uint amount, address sender, bytes memory data) internal returns (bool success) {
     require(address(to) != address(0), "Error: `to` address cannot be null." );
     require(amount > 0, "Error: `amount` must be greater than zero");
 
@@ -600,16 +604,18 @@ library TokenIOLib {
     uint fees = calculateFees(self, feeContract, amount);
 
     require(
-      setAccountSpendingAmount(self, msg.sender, getFxUSDAmount(self, currency, amount)),
+      setAccountSpendingAmount(self, sender, getFxUSDAmount(self, currency, amount)),
       "Error: Unable to set spending amount for account.");
 
+    emit USDAmount(getFxUSDAmount(self, currency, amount));
+
     require(
-      forceTransfer(self, currency, msg.sender, to, amount, data),
+      forceTransfer(self, currency, sender, to, amount, data),
       "Error: Unable to transfer funds to account.");
 
     // @dev transfer fees to fee contract
     require(
-      forceTransfer(self, currency, msg.sender, feeContract, fees, getFeeMsg(self, feeContract)),
+      forceTransfer(self, currency, sender, feeContract, fees, getFeeMsg(self, feeContract)),
       "Error: Unable to transfer fees to fee contract.");
 
     return true;
@@ -624,14 +630,13 @@ library TokenIOLib {
    * @dev | This method implements ERC20 transferFrom() method with approved spender behavior
    * @dev | msg.sender == spender; `updateAllowance()` reduces approved limit for account spender
    * @param self Internal storage proxying TokenIOStorage contract
-   * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @param from Ethereum address of account to send currency amount from
    * @param to Ethereum address of account to send currency amount to
    * @param amount Value of currency to transfer
    * @param data Arbitrary bytes data to include with the transaction
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function transferFrom(Data storage self, string memory currency, address from, address to, uint amount, bytes memory data) internal returns (bool success) {
+  function transferFrom(Data storage self, address from, address to, uint amount, bytes memory data, address sender) internal returns (bool success) {
     require(
       address(to) != address(0),
       "Error: `to` address must not be null."
@@ -642,26 +647,26 @@ library TokenIOLib {
 
     /// @dev NOTE: This transaction will fail if the spending amount exceeds the daily limit
     require(
-      setAccountSpendingAmount(self, from, getFxUSDAmount(self, currency, amount)),
+      setAccountSpendingAmount(self, from, getFxUSDAmount(self, getTokenSymbol(self, self.proxyInstance), amount)),
       "Error: Unable to set account spending amount."
     );
 
     /// @dev Attempt to transfer the amount
     require(
-      forceTransfer(self, currency, from, to, amount, data),
+      forceTransfer(self, getTokenSymbol(self, self.proxyInstance), from, to, amount, data),
       "Error: Unable to transfer funds to account."
     );
 
     // @dev transfer fees to fee contract
     require(
-      forceTransfer(self, currency, from, feeContract, fees, getFeeMsg(self, feeContract)),
+      forceTransfer(self, getTokenSymbol(self, self.proxyInstance), from, feeContract, fees, getFeeMsg(self, feeContract)),
       "Error: Unable to transfer fees to fee contract."
     );
 
     /// @dev Attempt to update the spender allowance
     /// @notice this will throw if the allowance has not been set.
     require(
-      updateAllowance(self, currency, from, amount),
+      updateAllowance(self, getTokenSymbol(self, self.proxyInstance), from, amount, sender),
       "Error: Unable to update allowance for spender."
     );
 
@@ -712,8 +717,8 @@ library TokenIOLib {
    * @param amount Value to reduce allowance by (i.e. the amount spent)
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function updateAllowance(Data storage self, string memory currency, address account, uint amount) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('token.allowance', currency, getForwardedAccount(self, account), getForwardedAccount(self, msg.sender)));
+  function updateAllowance(Data storage self, string memory currency, address account, uint amount, address sender) internal returns (bool success) {
+    bytes32 id = keccak256(abi.encodePacked('token.allowance', currency, getForwardedAccount(self, account), getForwardedAccount(self, sender)));
     require(
       self.Storage.setUint(id, self.Storage.getUint(id).sub(amount)),
       "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."

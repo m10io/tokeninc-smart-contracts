@@ -36,6 +36,8 @@
   "repository": "https://github.com/tokenio/tokeninc-smart-contracts.git",
   "dependencies": {
     "bluebird": "^3.5.1",
+    "bignumber.js": "^7.2.0",
+    "ethereumjs-abi": "^0.6.5",
     "ethereumjs-util": "^5.1.5",
     "ethers": "^3.0.15",
     "truffle-contract": "^3.0.6",
