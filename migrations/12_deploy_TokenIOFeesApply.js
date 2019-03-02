@@ -19,7 +19,7 @@ const deployContracts = async (deployer, accounts) => {
       const token = await deployer.deploy(TokenIOERC20FeesApply, storage.address)
       await storage.allowOwnership(token.address)
 
-      const tokenProxy = await deployer.deploy(TokenIOERC20FeesApplyProxy, token.address, "0x00")
+      const tokenProxy = await deployer.deploy(TokenIOERC20FeesApplyProxy, token.address)
       await token.allowOwnership(tokenProxy.address)
       await token.initProxy(tokenProxy.address)
 

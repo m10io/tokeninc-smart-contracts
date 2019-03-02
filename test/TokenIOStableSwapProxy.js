@@ -5,6 +5,7 @@ var TokenIOERC20Unlimited = artifacts.require("./TokenIOERC20Unlimited.sol");
 var TokenIOStorage = artifacts.require("./TokenIOStorage.sol");
 var TokenIOERC20UnlimitedProxy = artifacts.require("./TokenIOERC20UnlimitedProxy.sol");
 var TokenIOCurrencyAuthorityProxy = artifacts.require("./TokenIOCurrencyAuthorityProxy.sol");
+var TokenIOStableSwap = artifacts.require("./TokenIOStableSwap.sol");
 var TokenIOStableSwapProxy = artifacts.require("./TokenIOStableSwapProxy.sol");
 
 const { mode, development, production } = require('../token.config.js');
@@ -34,7 +35,12 @@ contract("TokenIOStableSwapProxy", function(accounts) {
 		const storage = await TokenIOStorage.deployed()
 
 		CA = await TokenIOCurrencyAuthorityProxy.deployed();
-		SWAP = await TokenIOStableSwapProxy.deployed();
+		SWAP = await TokenIOStableSwap.new(storage.address);
+		await storage.allowOwnership(SWAP.address)
+
+		SWAPproxy = await TokenIOStableSwapProxy.new(SWAP.address);
+		SWAP.allowOwnership(SWAPproxy.address)
+		SWAP.initProxy(SWAPproxy.address)
 
 		USDX = await TokenIOERC20UnlimitedProxy.deployed()
 
@@ -70,11 +76,10 @@ contract("TokenIOStableSwapProxy", function(accounts) {
 	})
 
 	it("Should allow the swap between the requester and the contract", async () => {
-		console.log("Debug1")
-		await SWAP.convert(USDCproxy.address, USDX.address, SWAP_AMOUNT, { from: TEST_ACCOUNT_1 })
-		console.log("Debug2")
+		await SWAPproxy.convert(USDCproxy.address, USDX.address, SWAP_AMOUNT, { from: TEST_ACCOUNT_1 })
+
 		// const FEES = +(await USDC.calculateFees(SWAP_AMOUNT)) // NOTE: These fees only apply in testing due to Token X ERC20 dummy asset
-		const SWAP_FEES = +(await SWAP.calcAssetFees(USDCproxy.address, SWAP_AMOUNT));
+		const SWAP_FEES = +(await SWAPproxy.calcAssetFees(USDCproxy.address, SWAP_AMOUNT));
 		const NET_AMOUNT = (SWAP_AMOUNT-SWAP_FEES);
 		const CONVERTED_AMOUNT = (NET_AMOUNT * (10 ** 2)) / (10 ** 6)
 		const TEST_ACCOUNT_1_USDC_BALANCE = +(await USDCproxy.balanceOf(TEST_ACCOUNT_1)).toString()
@@ -90,24 +95,21 @@ contract("TokenIOStableSwapProxy", function(accounts) {
 	it("Should allow the swap between the requester and the contract in reverse", async () => {
 		const SWAP_AMOUNT_2 = +(await USDX.balanceOf(TEST_ACCOUNT_1));
 
-		await SWAP.convert(USDX.address, USDCproxy.address, SWAP_AMOUNT_2, { from: TEST_ACCOUNT_1 })
+		await SWAPproxy.convert(USDX.address, USDCproxy.address, SWAP_AMOUNT_2, { from: TEST_ACCOUNT_1 })
 		const CONVERTED_AMOUNT = (SWAP_AMOUNT_2 / (10 ** 2)) * (10 ** 6)
-		const SWAP_FEES = +(await SWAP.calcAssetFees(USDCproxy.address, CONVERTED_AMOUNT));
+		const SWAP_FEES = +(await SWAPproxy.calcAssetFees(USDCproxy.address, CONVERTED_AMOUNT));
 
 		const TEST_ACCOUNT_1_USDX_BALANCE = +(await USDX.balanceOf(TEST_ACCOUNT_1)).toString()
 		assert.equal(TEST_ACCOUNT_1_USDX_BALANCE, 0, "Requester balance should be reduced by swap amount")
 
 		const TEST_ACCOUNT_1_USDC_BALANCE = +(await USDCproxy.balanceOf(TEST_ACCOUNT_1)).toString()
-		console.log("TEST_ACCOUNT_1_USDC_BALANCE: " + TEST_ACCOUNT_1_USDC_BALANCE)
-		console.log("CONVERTED_AMOUNT: " + CONVERTED_AMOUNT)
-		console.log("SWAP_FEES: " + SWAP_FEES)
 		assert.equal(TEST_ACCOUNT_1_USDC_BALANCE, CONVERTED_AMOUNT-SWAP_FEES, "Requester balance should equal requester deposit amount for USDC contract")
 
 		const SWAP_CONTRACT_USDC_BALANCE = +(await USDCproxy.balanceOf(SWAP.address)).toString()
 
 		assert.equal(SWAP_CONTRACT_USDC_BALANCE, (
-			+(await SWAP.calcAssetFees(USDCproxy.address, SWAP_AMOUNT)) +
-			+(await SWAP.calcAssetFees(USDCproxy.address, CONVERTED_AMOUNT))
+			+(await SWAPproxy.calcAssetFees(USDCproxy.address, SWAP_AMOUNT)) +
+			+(await SWAPproxy.calcAssetFees(USDCproxy.address, CONVERTED_AMOUNT))
 		), "Swap Balance of USDC should be equal to the swamp amount.")
 	})
 

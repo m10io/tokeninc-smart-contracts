@@ -2,8 +2,6 @@ const TokenIOCurrencyAuthorityProxy = artifacts.require("./TokenIOCurrencyAuthor
 const TokenIOStorage = artifacts.require("./TokenIOStorage.sol")
 const TokenIOERC20FeesApplyProxy = artifacts.require("./TokenIOERC20FeesApplyProxy.sol")
 const { mode, development, production } = require('../token.config.js')
-const encodeCall = require('./helpers/encodeCall.js')
-const { utils } = require('ethers')
 
 const { AUTHORITY_DETAILS: { firmName, authorityAddress }, TOKEN_DETAILS, FEE_PARAMS } = mode
     == 'production' ? production : development //set stage
@@ -143,6 +141,43 @@ contract("TokenIOERC20FeesApplyProxy", function(accounts) {
       it('Should pass', async function () {
         const allowance = await this.tokenIOERC20FeesApplyProxy.allowance(TEST_ACCOUNT_1, TEST_ACCOUNT_2)
         assert.equal(allowance.toNumber(), 249848)
+      });
+    });
+
+    describe('staticCall', function () {
+      it('Should pass', async function () {
+        const payload = web3.eth.abi.encodeFunctionSignature('name()')
+        const encodedResult = await this.tokenIOERC20FeesApplyProxy.staticCall(payload);
+        const result = web3.eth.abi.decodeParameters(['string'], encodedResult);
+        assert.equal(result[0], TOKEN_NAME)
+      });
+    });
+
+    describe('call', function () {
+      it('Should pass', async function () {
+        const TEST_ACT_1_BEG_BALANCE = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_1)).toString()
+        const TEST_ACT_2_BEG_BALANCE = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_2)).toString()
+
+        const payload = web3.eth.abi.encodeFunctionCall({
+            name: 'transfer',
+            type: 'function',
+            inputs: [{
+                type: 'address',
+                name: 'to'
+            },{
+                type: 'uint256',
+                name: 'amount'
+            },{
+                type: 'address',
+                name: 'sender'
+            }]
+        }, [TEST_ACCOUNT_2, 1, TEST_ACCOUNT_1]);
+
+        await this.tokenIOERC20FeesApplyProxy.call(payload);
+        const TX_FEES = +(await this.tokenIOERC20FeesApplyProxy.calculateFees(1)).toString()
+        assert.equal(+(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_1)).toString(), TEST_ACT_1_BEG_BALANCE - 1 - TX_FEES)
+        assert.equal(+(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_2)).toString(), TEST_ACT_2_BEG_BALANCE + 1)
+
       });
     });
 

@@ -230,7 +230,7 @@ contract TokenIOStableSwap is Ownable {
       /// @dev the amount being transferred must be in the same decimal representation of the asset
       /// e.g. If decimals = 6 and want to transfer $100.00 the amount passed to this contract should be 100e6 (100 * 10 ** 6)
       require(
-        ERC20Interface(fromAsset).transferFrom(sender, proxyInstance, amount),
+        ERC20Interface(fromAsset).transferFrom(sender, address(this), amount),
         'Error: Unable to transferFrom your asset holdings. Please ensure this contract has an approved allowance equal to or greater than the amount called in transferFrom method.'
       );
 
