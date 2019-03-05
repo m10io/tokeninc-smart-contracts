@@ -19,6 +19,7 @@ contract("TokenIOAuthorityProxy", function(accounts) {
     const FIRM_NAME = firmName;
     const NEW_FIRM_NAME = "Test Firm, L.L.C."
     const AUTHORITY_ACCOUNT_2 = accounts[2];
+    const AUTHORITY_ACCOUNT_3 = accounts[3];
 
     before(async function () {
       this.tokenIOAuthorityProxy = await TokenIOAuthorityProxy.deployed();
@@ -71,6 +72,37 @@ contract("TokenIOAuthorityProxy", function(accounts) {
         assert.equal(isAuthorized, true, "Authority firm and address should be authorized");
       })
     })
+
+    describe('staticCall', function () {
+      it('Should pass', async function () {
+        const payload = web3.eth.abi.encodeFunctionCall({
+            name: 'isRegisteredAuthority',
+            type: 'function',
+            inputs: [{
+                type: 'address',
+                name: 'authority'
+            }]
+        }, [AUTHORITY_ACCOUNT_3]);
+        const encodedResult = await this.tokenIOAuthorityProxy.staticCall(payload);
+        const result = web3.eth.abi.decodeParameters(['bool'], encodedResult);
+        assert.equal(result[0], false)
+      });
+    });
+
+    describe('call', function () {
+      it('Should pass', async function () {
+        const payload = web3.eth.abi.encodeFunctionCall({
+            name: 'setMasterFeeContract',
+            type: 'function',
+            inputs: [{
+                type: 'address',
+                name: 'feeContract'
+            }]
+        }, [accounts[4]]);
+
+        await this.tokenIOAuthorityProxy.call(payload);
+      });
+    });
 
 
 

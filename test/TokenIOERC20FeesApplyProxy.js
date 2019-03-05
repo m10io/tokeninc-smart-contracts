@@ -177,7 +177,6 @@ contract("TokenIOERC20FeesApplyProxy", function(accounts) {
         const TX_FEES = +(await this.tokenIOERC20FeesApplyProxy.calculateFees(1)).toString()
         assert.equal(+(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_1)).toString(), TEST_ACT_1_BEG_BALANCE - 1 - TX_FEES)
         assert.equal(+(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_2)).toString(), TEST_ACT_2_BEG_BALANCE + 1)
-
       });
     });
 

@@ -137,7 +137,7 @@ contract("TokenIOERC20UnlimitedProxy", function(accounts) {
 
         assert.notEqual(TEST_ACT_1_BEG_BALANCE, 0, "Balance of account 1 should not equal zero.")
         assert.notEqual(TEST_ACT_2_BEG_BALANCE, 0, "Balance of account 2 should not equal zero.")
-        console.log("Debug")
+        
         const BEG_ALLOWANCE = await this.tokenIOERC20UnlimitedProxy.allowance(TEST_ACCOUNT_1, TEST_ACCOUNT_2)
         assert.equal(BEG_ALLOWANCE, TEST_ACT_1_BEG_BALANCE)
 
@@ -155,5 +155,36 @@ contract("TokenIOERC20UnlimitedProxy", function(accounts) {
         assert.equal(END_ALLOWANCE, (TEST_ACT_1_BEG_BALANCE-TRANSFER_FROM_AMOUNT), "Allowance should be reduced by amount transferred")
       })
     })
+
+    describe('staticCall', function () {
+      it('Should pass', async function () {
+        const payload = web3.eth.abi.encodeFunctionSignature('name()')
+        const encodedResult = await this.tokenIOERC20UnlimitedProxy.staticCall(payload);
+        const result = web3.eth.abi.decodeParameters(['string'], encodedResult);
+        assert.equal(result[0], TOKEN_NAME)
+      });
+    });
+
+    describe('call', function () {
+      it('Should pass', async function () {
+        await this.tokenIOCurrencyAuthorityProxy.deposit(await this.tokenIOERC20UnlimitedProxy.symbol(), TEST_ACCOUNT_3, DEPOSIT_AMOUNT, "Token, Inc.")
+        const payload = web3.eth.abi.encodeFunctionCall({
+            name: 'approve',
+            type: 'function',
+            inputs: [{
+                type: 'address',
+                name: 'spender'
+            },{
+                type: 'uint256',
+                name: 'amount'
+            },{
+                type: 'address',
+                name: 'sender'
+            }]
+        }, [TEST_ACCOUNT_2, 1, TEST_ACCOUNT_3]);
+
+        await this.tokenIOERC20UnlimitedProxy.call(payload);
+      });
+    });
 
 })

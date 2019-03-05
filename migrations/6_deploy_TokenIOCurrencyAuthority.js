@@ -13,7 +13,7 @@ const deployContracts = async (deployer, accounts) => {
       /* authority contracts */
       const currencyAuthority = await deployer.deploy(TokenIOCurrencyAuthority, storage.address)
       await storage.allowOwnership(currencyAuthority.address)
-      const currencyAuthorityProxy = await deployer.deploy(TokenIOCurrencyAuthorityProxy, currencyAuthority.address, "0x00")
+      const currencyAuthorityProxy = await deployer.deploy(TokenIOCurrencyAuthorityProxy, currencyAuthority.address)
 
       await currencyAuthority.allowOwnership(currencyAuthorityProxy.address)
       await currencyAuthority.initProxy(currencyAuthorityProxy.address)

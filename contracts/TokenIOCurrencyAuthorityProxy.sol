@@ -1,7 +1,6 @@
 pragma solidity 0.5.2;
 
 import "./Ownable.sol";
-import "./UpgradableProxy.sol";
 
 interface TokenIOCurrencyAuthorityI {
   function getTokenBalance(string calldata currency, address account) external view returns (uint balance);
@@ -31,26 +30,39 @@ interface TokenIOCurrencyAuthorityI {
   function withdraw(string calldata currency, address account, uint amount, string calldata issuerFirm, address sender) external returns (bool success);
 }
 
-contract TokenIOCurrencyAuthorityProxy is Ownable, UpgradableProxy {
+contract TokenIOCurrencyAuthorityProxy is Ownable {
 
-    constructor(address _tokenIOCurrencyAuthorityImpl, bytes memory _data) UpgradableProxy(_tokenIOCurrencyAuthorityImpl, _data) public {
+    address implementationInstance;
+
+    constructor(address _tokenIOCurrencyAuthorityImpl) public {
+      implementationInstance = _tokenIOCurrencyAuthorityImpl;
     }
 
-    function upgradeTo(address _newTokenIOCurrencyAuthorityImpl) external {
-      _upgradeTo(_newTokenIOCurrencyAuthorityImpl);
+    function upgradeTo(address _newImplementationInstance) external {
+      implementationInstance = _newImplementationInstance;
+    }
+
+    function staticCall(bytes calldata payload) external view returns(bytes memory) {
+      (bool res, bytes memory result) = implementationInstance.staticcall(payload);
+      return result;
+    }
+
+    function call(bytes calldata payload) external {
+      (bool res, bytes memory result) = implementationInstance.call(payload);
+      require(res);
     }
   
     function getTokenBalance(string memory currency, address account) public view returns (uint balance) {
-      return TokenIOCurrencyAuthorityI(_implementation()).getTokenBalance(currency, account);
+      return TokenIOCurrencyAuthorityI(implementationInstance).getTokenBalance(currency, account);
     }
 
     function getTokenSupply(string memory currency) public view returns (uint supply) {
-      return TokenIOCurrencyAuthorityI(_implementation()).getTokenSupply(currency);
+      return TokenIOCurrencyAuthorityI(implementationInstance).getTokenSupply(currency);
     }
 
     function freezeAccount(address account, bool isAllowed, string memory issuerFirm) public returns (bool success) {
         require(
-          TokenIOCurrencyAuthorityI(_implementation()).freezeAccount(account, isAllowed, issuerFirm, msg.sender),
+          TokenIOCurrencyAuthorityI(implementationInstance).freezeAccount(account, isAllowed, issuerFirm, msg.sender),
           "Unable to execute freezeAccount"
         );
         return true;
@@ -58,7 +70,7 @@ contract TokenIOCurrencyAuthorityProxy is Ownable, UpgradableProxy {
 
     function approveKYC(address account, bool isApproved, uint limit, string memory issuerFirm) public returns (bool success) {
         require(
-          TokenIOCurrencyAuthorityI(_implementation()).approveKYC(account, isApproved, limit, issuerFirm, msg.sender),
+          TokenIOCurrencyAuthorityI(implementationInstance).approveKYC(account, isApproved, limit, issuerFirm, msg.sender),
           "Unable to execute approveKYC"
         );
 
@@ -67,7 +79,7 @@ contract TokenIOCurrencyAuthorityProxy is Ownable, UpgradableProxy {
 
     function approveKYCAndDeposit(string memory currency, address account, uint amount, uint limit, string memory issuerFirm) public returns (bool success) {
         require(
-          TokenIOCurrencyAuthorityI(_implementation()).approveKYCAndDeposit(currency, account, amount, limit, issuerFirm, msg.sender),
+          TokenIOCurrencyAuthorityI(implementationInstance).approveKYCAndDeposit(currency, account, amount, limit, issuerFirm, msg.sender),
           "Unable to execute approveKYCAndDeposit"
         );
 
@@ -76,35 +88,35 @@ contract TokenIOCurrencyAuthorityProxy is Ownable, UpgradableProxy {
 
     function setAccountSpendingLimit(address account, uint limit, string memory issuerFirm) public returns (bool success) {
       require(
-        TokenIOCurrencyAuthorityI(_implementation()).setAccountSpendingLimit(account, limit, issuerFirm, msg.sender),
+        TokenIOCurrencyAuthorityI(implementationInstance).setAccountSpendingLimit(account, limit, issuerFirm, msg.sender),
         "Unable to execute setAccountSpendingLimit"
       );
       return true;
     }
 
     function getAccountSpendingRemaining(address account) public view returns (uint spendingRemaining) {
-      return TokenIOCurrencyAuthorityI(_implementation()).getAccountSpendingRemaining(account);
+      return TokenIOCurrencyAuthorityI(implementationInstance).getAccountSpendingRemaining(account);
     }
 
     function getAccountSpendingLimit(address account) public view returns (uint spendingLimit) {
-      return TokenIOCurrencyAuthorityI(_implementation()).getAccountSpendingLimit(account);
+      return TokenIOCurrencyAuthorityI(implementationInstance).getAccountSpendingLimit(account);
     }
 
     function setFxBpsRate(string memory currency, uint bpsRate, string memory issuerFirm) public returns (bool success) {
       require(
-        TokenIOCurrencyAuthorityI(_implementation()).setFxBpsRate(currency, bpsRate, issuerFirm, msg.sender),
+        TokenIOCurrencyAuthorityI(implementationInstance).setFxBpsRate(currency, bpsRate, issuerFirm, msg.sender),
         "Unable to execute setFxBpsRate"
       );
       return true;
     }
 
     function getFxUSDAmount(string memory currency, uint fxAmount) public view returns (uint usdAmount) {
-      return TokenIOCurrencyAuthorityI(_implementation()).getFxUSDAmount(currency, fxAmount);
+      return TokenIOCurrencyAuthorityI(implementationInstance).getFxUSDAmount(currency, fxAmount);
     }
 
     function approveForwardedAccount(address originalAccount, address updatedAccount, string memory issuerFirm) public returns (bool success) {
         require(
-          TokenIOCurrencyAuthorityI(_implementation()).approveForwardedAccount(originalAccount, updatedAccount, issuerFirm, msg.sender),
+          TokenIOCurrencyAuthorityI(implementationInstance).approveForwardedAccount(originalAccount, updatedAccount, issuerFirm, msg.sender),
           "Unable to execute approveForwardedAccount"
         );
         return true;
@@ -112,7 +124,7 @@ contract TokenIOCurrencyAuthorityProxy is Ownable, UpgradableProxy {
 
     function deposit(string memory currency, address account, uint amount, string memory issuerFirm) public returns (bool success) {
         require(
-          TokenIOCurrencyAuthorityI(_implementation()).deposit(currency, account, amount, issuerFirm, msg.sender),
+          TokenIOCurrencyAuthorityI(implementationInstance).deposit(currency, account, amount, issuerFirm, msg.sender),
           "Unable to execute deposit"
         );
         return true;
@@ -120,7 +132,7 @@ contract TokenIOCurrencyAuthorityProxy is Ownable, UpgradableProxy {
 
     function withdraw(string memory currency, address account, uint amount, string memory issuerFirm) public returns (bool success) {
         require(
-          TokenIOCurrencyAuthorityI(_implementation()).withdraw(currency, account, amount, issuerFirm, msg.sender),
+          TokenIOCurrencyAuthorityI(implementationInstance).withdraw(currency, account, amount, issuerFirm, msg.sender),
           "Unable to execute withdraw"
         );
         return true;

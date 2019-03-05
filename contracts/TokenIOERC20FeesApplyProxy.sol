@@ -1,8 +1,6 @@
 pragma solidity 0.5.2;
 
 import "./Ownable.sol";
-import "./UpgradableProxy.sol";
-
 
 interface TokenIOERC20FeesApplyI {
   function setParams(string calldata _name, string calldata _symbol, string calldata _tla, string calldata _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) external returns(bool success);
@@ -44,8 +42,8 @@ contract TokenIOERC20FeesApplyProxy is Ownable {
     implementationInstance = _tokenIOERC20FeesApplyImpl;
   }
 
-  function upgradeTo(address _newTokenIOERC20FeesApplyImpl) onlyOwner external {
-    implementationInstance = _newTokenIOERC20FeesApplyImpl;
+  function upgradeTo(address _newImplementationInstance) onlyOwner external {
+    implementationInstance = _newImplementationInstance;
   }
   
   function setParams(

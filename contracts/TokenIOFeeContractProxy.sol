@@ -16,38 +16,48 @@ interface TokenIOFeeContractI {
 
 contract TokenIOFeeContractProxy is Ownable {
 
-  TokenIOFeeContractI tokenIOFeeContractImpl;
+  address implementationInstance;
 
   constructor(address _tokenIOFeeContractImpl) public {
-    tokenIOFeeContractImpl = TokenIOFeeContractI(_tokenIOFeeContractImpl);
+    implementationInstance = _tokenIOFeeContractImpl;
   }
 
-  function upgradeTokenImplamintation(address _newTokenIOFeeContractImpl) onlyOwner external {
-    require(_newTokenIOFeeContractImpl != address(0));
-    tokenIOFeeContractImpl = TokenIOFeeContractI(_newTokenIOFeeContractImpl);
+  function upgradeTo(address _newImplementationInstance) onlyOwner external {
+    require(_newImplementationInstance != address(0));
+    implementationInstance = _newImplementationInstance;
+  }
+
+  function staticCall(bytes calldata payload) external view returns(bytes memory) {
+    (bool res, bytes memory result) = implementationInstance.staticcall(payload);
+    return result;
+  }
+
+  function call(bytes calldata payload) external {
+    (bool res, bytes memory result) = implementationInstance.call(payload);
+    require(res);
   }
   
   function setFeeParams(uint feeBps, uint feeMin, uint feeMax, uint feeFlat, bytes memory feeMsg) public returns (bool success) {
-  	require(tokenIOFeeContractImpl.setFeeParams(feeBps, feeMin, feeMax, feeFlat, feeMsg), 
+  	require(TokenIOFeeContractI(implementationInstance).setFeeParams(feeBps, feeMin, feeMax, feeFlat, feeMsg), 
         "Unable to execute setFeeParams");
     return true;
   }
 
   function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, bytes memory feeMsg, address feeContract) {
-    return tokenIOFeeContractImpl.getFeeParams();
+    return TokenIOFeeContractI(implementationInstance).getFeeParams();
   }
 
   function getTokenBalance(string memory currency) public view returns(uint balance) {
-    return tokenIOFeeContractImpl.getTokenBalance(currency);
+    return TokenIOFeeContractI(implementationInstance).getTokenBalance(currency);
   }
 
   function calculateFees(uint amount) public view returns (uint fees) {
-	return tokenIOFeeContractImpl.calculateFees(amount);
+	return TokenIOFeeContractI(implementationInstance).calculateFees(amount);
   }
 
   function transferCollectedFees(string memory currency, address to, uint amount, bytes memory data) public onlyOwner returns (bool success) {
 	require(
-		tokenIOFeeContractImpl.transferCollectedFees(currency, to, amount, data),
+		TokenIOFeeContractI(implementationInstance).transferCollectedFees(currency, to, amount, data),
 		"Unable to execute transferCollectedFees"
 	);
 	return true;

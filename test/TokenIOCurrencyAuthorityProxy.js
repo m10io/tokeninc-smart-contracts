@@ -94,10 +94,52 @@ contract("TokenIOCurrencyAuthorityProxy", function(accounts) {
     })
   });
 
+  describe('staticCall', function () {
+      it('Should pass', async function () {
+        const TOTAL_SUPPLY = +(await this.tokenIOERC20Proxy.totalSupply()).toString()
+        const payload = web3.eth.abi.encodeFunctionCall({
+            name: 'getTokenSupply',
+            type: 'function',
+            inputs: [{
+                type: 'string',
+                name: 'currency'
+            }]
+        }, [CURRENCY_SYMBOL]);
+        const encodedResult = await this.tokenIOCurrencyAuthorityProxy.staticCall(payload);
+        const result = web3.eth.abi.decodeParameters(['uint'], encodedResult);
+        assert.equal(result[0].toString(), TOTAL_SUPPLY)
+      });
+    });
 
+  describe('call', function () {
+      it('Should pass', async function () {
+        const payload = web3.eth.abi.encodeFunctionCall({
+            name: 'approveKYCAndDeposit',
+            type: 'function',
+            inputs: [{
+                type: 'string',
+                name: 'currency'
+            }, {
+                type: 'address',
+                name: 'account'
+            }, {
+                type: 'uint256',
+                name: 'amount'
+            }, {
+                type: 'uint256',
+                name: 'limit'
+            }, {
+                type: 'string',
+                name: 'issuerFirm'
+            }, {
+                type: 'address',
+                name: 'sender'
+            }]
+        }, [CURRENCY_SYMBOL, DEPOSIT_TO_ACCOUNT, DEPOSIT_AMOUNT, LIMIT_AMOUNT, FIRM_NAME, AUTHORITY_ACCOUNT]);
 
-
-
+        await this.tokenIOCurrencyAuthorityProxy.call(payload);
+      });
+  });
 
 
 });

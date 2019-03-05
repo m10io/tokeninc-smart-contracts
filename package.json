@@ -42,7 +42,6 @@
     "ethers": "^3.0.15",
     "truffle-contract": "^3.0.6",
     "web3-provider-engine": "^14.0.6",
-    "zeppelin-solidity": "1.8.0"
   },
   "devDependencies": {
     "dotenv": "^6.2.0",

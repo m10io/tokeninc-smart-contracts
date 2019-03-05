@@ -21,7 +21,7 @@ contract("TokenIOFeeContractProxy", function(accounts) {
 	const TEST_ACCOUNT_3 = accounts[2]
 	const DEPOSIT_AMOUNT = 10000e2 // 1 million USD; 2 decimal representation
 	const TRANSFER_AMOUNT = DEPOSIT_AMOUNT/4
-	const SPENDING_LIMIT = DEPOSIT_AMOUNT/2
+	const SPENDING_LIMIT = DEPOSIT_AMOUNT
 
 	const TOKEN_NAME = USDx.tokenName;
     const TOKEN_SYMBOL = USDx.tokenSymbol
@@ -74,5 +74,40 @@ contract("TokenIOFeeContractProxy", function(accounts) {
 
 		})
 	})
+
+	describe('staticCall', function () {
+      it('Should pass', async function () {
+        const payload = web3.eth.abi.encodeFunctionSignature('name()')
+        const encodedResult = await this.tokenIOERC20Proxy.staticCall(payload);
+        const result = web3.eth.abi.decodeParameters(['string'], encodedResult);
+        assert.equal(result[0], TOKEN_NAME)
+      });
+    });
+
+    describe('call', function () {
+      it('Should pass', async function () {
+      	await this.tokenIOERC20Proxy.transfer(TEST_ACCOUNT_2, TRANSFER_AMOUNT)
+      	const FEE_BALANCE = +(await this.tokenIOFeeContractProxy.getTokenBalance('USDx')).toString()
+        const payload = web3.eth.abi.encodeFunctionCall({
+            name: 'transferCollectedFees',
+            type: 'function',
+            inputs: [{
+                type: 'string',
+                name: 'currency'
+            },{
+                type: 'address',
+                name: 'to'
+            },{
+                type: 'uint256',
+                name: 'amount'
+            },{
+                type: 'bytes',
+                name: 'data'
+            }]
+        }, ['USDx', TEST_ACCOUNT_3, FEE_BALANCE, "0x"]);
+
+        await this.tokenIOFeeContractProxy.call(payload);
+      });
+    });
 
 })

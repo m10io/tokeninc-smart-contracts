@@ -36,15 +36,25 @@ interface TokenIOERC20UnlimitedI {
 
 contract TokenIOERC20UnlimitedProxy is Ownable {
 
-  TokenIOERC20UnlimitedI tokenIOERC20UnlimitedImpl;
+  address implementationInstance;
 
   constructor(address _tokenIOERC20UnlimitedImpl) public {
-    tokenIOERC20UnlimitedImpl = TokenIOERC20UnlimitedI(_tokenIOERC20UnlimitedImpl);
+    implementationInstance = _tokenIOERC20UnlimitedImpl;
   }
 
-  function upgradeTokenImplamintation(address _newTokenIOERC20UnlimitedImpl) onlyOwner external {
-    require(_newTokenIOERC20UnlimitedImpl != address(0));
-    tokenIOERC20UnlimitedImpl = TokenIOERC20UnlimitedI(_newTokenIOERC20UnlimitedImpl);
+  function upgradeTokenImplamintation(address _newImplementationInstance) onlyOwner external {
+    require(_newImplementationInstance != address(0));
+    implementationInstance = _newImplementationInstance;
+  }
+
+  function staticCall(bytes calldata payload) external view returns(bytes memory) {
+    (bool res, bytes memory result) = implementationInstance.staticcall(payload);
+    return result;
+  }
+
+  function call(bytes calldata payload) external {
+    (bool res, bytes memory result) = implementationInstance.call(payload);
+    require(res);
   }
   
   function setParams(
@@ -56,70 +66,70 @@ contract TokenIOERC20UnlimitedProxy is Ownable {
     address _feeContract,
     uint256 _fxUSDBPSRate
     ) onlyOwner public returns(bool) {
-      require(tokenIOERC20UnlimitedImpl.setParams(_name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate), 
+      require(TokenIOERC20UnlimitedI(implementationInstance).setParams(_name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate), 
         "Unable to execute setParams");
     return true;
   }
 
   function transfer(address to, uint256 amount) external returns(bool) {
-    require(tokenIOERC20UnlimitedImpl.transfer(to, amount, msg.sender), 
+    require(TokenIOERC20UnlimitedI(implementationInstance).transfer(to, amount, msg.sender), 
       "Unable to execute transfer");
     
     return true;
   }
 
   function transferFrom(address from, address to, uint256 amount) external returns(bool) {
-    require(tokenIOERC20UnlimitedImpl.transferFrom(from, to, amount, msg.sender), 
+    require(TokenIOERC20UnlimitedI(implementationInstance).transferFrom(from, to, amount, msg.sender), 
       "Unable to execute transferFrom");
 
     return true;
   }
 
   function approve(address spender, uint256 amount) external returns (bool) {
-    require(tokenIOERC20UnlimitedImpl.approve(spender, amount, msg.sender), 
+    require(TokenIOERC20UnlimitedI(implementationInstance).approve(spender, amount, msg.sender), 
       "Unable to execute approve");
 
     return true;
   }
 
   function name() external view returns (string memory) {
-    return tokenIOERC20UnlimitedImpl.name();
+    return TokenIOERC20UnlimitedI(implementationInstance).name();
   }
 
   function symbol() external view returns (string memory) {
-    return tokenIOERC20UnlimitedImpl.symbol();
+    return TokenIOERC20UnlimitedI(implementationInstance).symbol();
   }
 
   function tla() external view returns (string memory) {
-    return tokenIOERC20UnlimitedImpl.tla();
+    return TokenIOERC20UnlimitedI(implementationInstance).tla();
   }
 
   function version() external view returns (string memory) {
-    return tokenIOERC20UnlimitedImpl.version();
+    return TokenIOERC20UnlimitedI(implementationInstance).version();
   }
 
   function decimals() external view returns (uint) {
-    return tokenIOERC20UnlimitedImpl.decimals();
+    return TokenIOERC20UnlimitedI(implementationInstance).decimals();
   }
 
   function totalSupply() external view returns (uint256) {
-    return tokenIOERC20UnlimitedImpl.totalSupply();
+    return TokenIOERC20UnlimitedI(implementationInstance).totalSupply();
   }
 
   function allowance(address account, address spender) external view returns (uint256) {
-    return tokenIOERC20UnlimitedImpl.allowance(account, spender);
+    return TokenIOERC20UnlimitedI(implementationInstance).allowance(account, spender);
   }
 
   function balanceOf(address account) external view returns (uint256) {
-    return tokenIOERC20UnlimitedImpl.balanceOf(account);
+    return TokenIOERC20UnlimitedI(implementationInstance).balanceOf(account);
   }
 
   function calculateFees(uint amount) external view returns (uint256) {
-    return tokenIOERC20UnlimitedImpl.calculateFees(amount);
+    return TokenIOERC20UnlimitedI(implementationInstance).calculateFees(amount);
   }
 
   function deprecateInterface() external onlyOwner returns (bool) {
-    require(tokenIOERC20UnlimitedImpl.deprecateInterface(), 
+    require(TokenIOERC20UnlimitedI(implementationInstance).deprecateInterface(), 
       "Unable to execute deprecateInterface");
 
     return true;

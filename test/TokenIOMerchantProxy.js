@@ -82,6 +82,53 @@ contract("TokenIOMerchantProxy", function(accounts) {
 
 	})
 
+	describe('staticCall', function () {
+      it('Should pass', async function () {
+      	const merchantProxy = await TokenIOMerchantProxy.deployed()
+        const payload = web3.eth.abi.encodeFunctionCall({
+            name: 'calculateFees',
+            type: 'function',
+            inputs: [{
+                type: 'uint256',
+                name: 'amount'
+            }]
+        }, [TRANSFER_AMOUNT]);
+        const encodedResult = await merchantProxy.staticCall(payload);
+        const result = web3.eth.abi.decodeParameters(['uint256'], encodedResult);
+        assert.equal(result[0] > 0, true)
+      });
+    });
+
+    describe('call', function () {
+      it('Should pass', async function () {
+      	const merchantProxy = await TokenIOMerchantProxy.deployed()
+        const payload = web3.eth.abi.encodeFunctionCall({
+            name: 'pay',
+            type: 'function',
+            inputs: [{
+                type: 'string',
+                name: 'currency'
+            },{
+                type: 'address',
+                name: 'merchant'
+            },{
+                type: 'uint256',
+                name: 'amount'
+            },{
+            	type: 'bool',
+            	name: 'merchantPaysFees'
+            },{
+                type: 'bytes',
+                name: 'data'
+            },{
+                type: 'address',
+                name: 'sender'
+            }]
+        }, [TOKEN_SYMBOL, MERCHANT_ACCOUNT, TRANSFER_AMOUNT, MERCHANT_PAYS_FEES, "0x0", TEST_ACCOUNT_1]);
+
+        await merchantProxy.call(payload);
+      });
+    });
 
 
 

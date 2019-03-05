@@ -113,4 +113,37 @@ contract("TokenIOStableSwapProxy", function(accounts) {
 		), "Swap Balance of USDC should be equal to the swamp amount.")
 	})
 
+	describe('staticCall', function () {
+      it('Should pass', async function () {
+        const payload = web3.eth.abi.encodeFunctionCall({
+            name: 'calcAssetFees',
+            type: 'function',
+            inputs: [{
+                type: 'address',
+                name: 'asset'
+            },{
+                type: 'uint256',
+                name: 'amount'
+            }]
+        }, [USDCproxy.address, (await USDX.balanceOf(TEST_ACCOUNT_1) / (10 ** 2)) * (10 ** 6)]);
+        const encodedResult = await SWAPproxy.staticCall(payload);
+        const result = web3.eth.abi.decodeParameters(['uint256'], encodedResult);
+      });
+    });
+
+    describe('call', function () {
+      it('Should pass', async function () {
+        const payload = web3.eth.abi.encodeFunctionCall({
+            name: 'initProxy',
+            type: 'function',
+            inputs: [{
+                type: 'address',
+                name: '_proxy'
+            }]
+        }, [SWAPproxy.address]);
+
+        await SWAPproxy.call(payload);
+      });
+    });
+
 });

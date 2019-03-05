@@ -1,4 +1,4 @@
-/*var { Wallet, utils, SigningKey } = require('ethers');
+var { Wallet, utils, SigningKey } = require('ethers');
 var Promise = require('bluebird')
 var TokenIOERC20 = artifacts.require("./TokenIOERC20.sol");
 var TokenIOCurrencyAuthority = artifacts.require("./TokenIOCurrencyAuthority.sol");
@@ -37,11 +37,17 @@ contract("TokenIOFXProxy", function(accounts) {
 
 	before(async () => {
 		const storage = await TokenIOStorage.deployed()
-		TOKEN_A = await TokenIOERC20Proxy.new(await TokenIOERC20.new(storage.address).address)
-		TOKEN_B = await TokenIOERC20Proxy.new(await TokenIOERC20.new(storage.address).address)
+		const token1 = await TokenIOERC20.new(storage.address)
+		const token2 = await TokenIOERC20.new(storage.address)
+		await storage.allowOwnership(token1.address)
+		await storage.allowOwnership(token2.address)
+		TOKEN_A = await TokenIOERC20Proxy.new(token1.address)
+		TOKEN_B = await TokenIOERC20Proxy.new(token2.address)
+		await token1.allowOwnership(TOKEN_A.address)
+      	await token1.initProxy(TOKEN_A.address)
+      	await token2.allowOwnership(TOKEN_B.address)
+      	await token2.initProxy(TOKEN_B.address)
 
-		await storage.allowOwnership(TOKEN_A.address)
-		await storage.allowOwnership(TOKEN_B.address)
 		await TOKEN_A.setParams(...Object.values(USDx).map((v) => { return v }))
 		await TOKEN_B.setParams(...Object.values(EURx).map((v) => { return v }))
 
@@ -60,8 +66,7 @@ contract("TokenIOFXProxy", function(accounts) {
 
 	describe("Should Deposit EURx into REQUESTER_WALLET account", function () {
       it("Should pass", async function () {
-		const CA = await TokenIOCurrencyAuthority.deployed();
-		const CAProxy = await TokenIOCurrencyAuthorityProxy.new(CA.address, "0x00");
+		const CAProxy = await TokenIOCurrencyAuthorityProxy.deployed();
 
 		const APPROVE_REQUESTER = await CAProxy.approveKYC(REQUESTER_WALLET.address, true, SPENDING_LIMIT, "Token, Inc.")
 		const APPROVE_FULFILLER = await CAProxy.approveKYC(TEST_ACCOUNT_1, true, SPENDING_LIMIT, "Token, Inc.")
@@ -83,8 +88,7 @@ contract("TokenIOFXProxy", function(accounts) {
 
 	describe("Should allow the swap between the requester and the fulfiller", function () {
       it("Should pass", async function () {
-		const FX = await TokenIOFX.deployed();
-		const FXProxy = await TokenIOERC20Proxy.new(FX.address)
+		const FXProxy = await TokenIOFXProxy.deployed();
 
 		const expiration = ((new Date().getTime() * 1000) + 86400 );
 
@@ -119,4 +123,4 @@ contract("TokenIOFXProxy", function(accounts) {
 	  })
     })
 
-});*/
+});

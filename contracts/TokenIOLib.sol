@@ -980,7 +980,8 @@ library TokenIOLib {
     uint8 sigV,
     bytes32 sigR,
     bytes32 sigS,
-    uint expiration
+    uint expiration,
+    address sender
   ) internal returns (bool success) {
 
     bytes32 fxTxHash = keccak256(abi.encodePacked(requester, symbolA, symbolB, valueA, valueB, expiration));
@@ -988,7 +989,7 @@ library TokenIOLib {
     /// @notice check that sender and requester accounts are verified
     /// @notice Only verified accounts can perform currency swaps
     require(
-      verifyAccounts(self, msg.sender, requester),
+      verifyAccounts(self, sender, requester),
       "Error: Only verified accounts can perform currency swaps.");
 
     /// @dev Immediately set this transaction to be confirmed before updating any params;
@@ -1007,11 +1008,11 @@ library TokenIOLib {
 
     /// @dev Transfer funds from each account to another.
     require(
-      forceTransfer(self, symbolA, msg.sender, requester, valueA, "0x0"),
+      forceTransfer(self, symbolA, sender, requester, valueA, "0x0"),
       "Error: Unable to transfer funds to account.");
 
     require(
-      forceTransfer(self, symbolB, requester, msg.sender, valueB, "0x0"),
+      forceTransfer(self, symbolB, requester, sender, valueB, "0x0"),
       "Error: Unable to transfer funds to account.");
 
     emit FxSwap(symbolA, symbolB, valueA, valueB, expiration, fxTxHash);

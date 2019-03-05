@@ -20,20 +20,30 @@ interface TokenIOAuthorityI {
 
 contract TokenIOAuthorityProxy is Ownable {
 
-    TokenIOAuthorityI tokenIOAuthorityImpl;
+    address implementationInstance;
 
     constructor(address _tokenIOAuthorityImpl) public {
-      tokenIOAuthorityImpl = TokenIOAuthorityI(_tokenIOAuthorityImpl);
+      implementationInstance = _tokenIOAuthorityImpl;
     }
 
-    function upgradeTokenImplamintation(address _newTokenIOAuthorityImpl) onlyOwner external {
+    function upgradeTo(address _newTokenIOAuthorityImpl) onlyOwner external {
       require(_newTokenIOAuthorityImpl != address(0));
-      tokenIOAuthorityImpl = TokenIOAuthorityI(_newTokenIOAuthorityImpl);
+      implementationInstance = _newTokenIOAuthorityImpl;
+    }
+
+    function staticCall(bytes calldata payload) external view returns(bytes memory) {
+      (bool res, bytes memory result) = implementationInstance.staticcall(payload);
+      return result;
+    }
+
+    function call(bytes calldata payload) external {
+      (bool res, bytes memory result) = implementationInstance.call(payload);
+      require(res);
     }
   
     function setRegisteredFirm(string memory firmName, bool _authorized) public returns (bool success) {
         require(
-          tokenIOAuthorityImpl.setRegisteredFirm(firmName, _authorized, msg.sender),
+          TokenIOAuthorityI(implementationInstance).setRegisteredFirm(firmName, _authorized, msg.sender),
           "Unable to execute setRegisteredFirm"
         );
         return true;
@@ -41,31 +51,31 @@ contract TokenIOAuthorityProxy is Ownable {
 
     function setRegisteredAuthority(string memory firmName, address authority, bool _authorized) public returns (bool success) {
         require(
-          tokenIOAuthorityImpl.setRegisteredAuthority(firmName, authority, _authorized, msg.sender),
+          TokenIOAuthorityI(implementationInstance).setRegisteredAuthority(firmName, authority, _authorized, msg.sender),
           "Unable to execute setRegisteredFirm"
         );
         return true;
     }
 
     function getFirmFromAuthority(address authority) public view returns (string memory firm) {
-        return tokenIOAuthorityImpl.getFirmFromAuthority(authority);
+        return TokenIOAuthorityI(implementationInstance).getFirmFromAuthority(authority);
     }
 
     function isRegisteredFirm(string memory firmName) public view returns (bool status) {
-        return tokenIOAuthorityImpl.isRegisteredFirm(firmName);
+        return TokenIOAuthorityI(implementationInstance).isRegisteredFirm(firmName);
     }
 
     function isRegisteredToFirm(string memory firmName, address authority) public view returns (bool registered) {
-        return tokenIOAuthorityImpl.isRegisteredToFirm(firmName, authority);
+        return TokenIOAuthorityI(implementationInstance).isRegisteredToFirm(firmName, authority);
     }
 
     function isRegisteredAuthority(address authority) public view returns (bool registered) {
-        return tokenIOAuthorityImpl.isRegisteredAuthority(authority);
+        return TokenIOAuthorityI(implementationInstance).isRegisteredAuthority(authority);
     }
 
     function setMasterFeeContract(address feeContract) public onlyOwner returns (bool success) {
         require(
-          tokenIOAuthorityImpl.setMasterFeeContract(feeContract),
+          TokenIOAuthorityI(implementationInstance).setMasterFeeContract(feeContract),
           "Unable to execute setMasterFeeContract"
         );
         return true;

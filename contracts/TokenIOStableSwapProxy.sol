@@ -30,20 +30,30 @@ interface TokenIOStableSwapI {
 
 contract TokenIOStableSwapProxy is Ownable {
 
-  TokenIOStableSwapI tokenIOStableSwapImpl;
+  address implementationInstance;
 
   constructor(address _tokenIOStableSwapImpl) public {
-    tokenIOStableSwapImpl = TokenIOStableSwapI(_tokenIOStableSwapImpl);
+    implementationInstance = _tokenIOStableSwapImpl;
   }
 
-  function upgradeTokenImplamintation(address _newTokenIOStableSwapImpl) onlyOwner external {
-    require(_newTokenIOStableSwapImpl != address(0));
-    tokenIOStableSwapImpl = TokenIOStableSwapI(_newTokenIOStableSwapImpl);
+  function upgradeTo(address _newImplementationInstance) onlyOwner external {
+    require(_newImplementationInstance != address(0));
+    implementationInstance = _newImplementationInstance;
+  }
+
+  function staticCall(bytes calldata payload) external view returns(bytes memory) {
+    (bool res, bytes memory result) = implementationInstance.staticcall(payload);
+    return result;
+  }
+
+  function call(bytes calldata payload) external {
+    (bool res, bytes memory result) = implementationInstance.call(payload);
+    require(res);
   }
 
   function allowAsset(address asset, string memory currency, uint feeBps, uint feeMin, uint feeMax, uint feeFlat) public onlyOwner returns (bool success) {
     require(
-      tokenIOStableSwapImpl.allowAsset(asset, currency, feeBps, feeMin, feeMax, feeFlat),
+      TokenIOStableSwapI(implementationInstance).allowAsset(asset, currency, feeBps, feeMin, feeMax, feeFlat),
       "Unable to execute allowAsset"
     );
 
@@ -52,7 +62,7 @@ contract TokenIOStableSwapProxy is Ownable {
 
   function removeAsset(address asset) public onlyOwner returns (bool success) {
     require(
-      tokenIOStableSwapImpl.removeAsset(asset),
+      TokenIOStableSwapI(implementationInstance).removeAsset(asset),
       "Unable to execute removeAsset"
     );
 
@@ -66,7 +76,7 @@ contract TokenIOStableSwapProxy is Ownable {
    * @return {"allowed": "Returns true if the asset is allowed"}
    */
   function isAllowedAsset(address asset, string memory currency) public view returns (bool allowed) {
-      return tokenIOStableSwapImpl.isAllowedAsset(asset, currency);
+      return TokenIOStableSwapI(implementationInstance).isAllowedAsset(asset, currency);
   }
 
   /**
@@ -77,7 +87,7 @@ contract TokenIOStableSwapProxy is Ownable {
    */
   function setAssetCurrency(address asset, string memory currency) public onlyOwner returns (bool success) {
     require(
-      tokenIOStableSwapImpl.setAssetCurrency(asset, currency),
+      TokenIOStableSwapI(implementationInstance).setAssetCurrency(asset, currency),
       "Unable to execute setAssetCurrency"
     );
 
@@ -90,7 +100,7 @@ contract TokenIOStableSwapProxy is Ownable {
    * @return {"currency": "Returns the Currency of the asset if the asset has been allowed."}
    */
   function getAssetCurrency(address asset) public view returns (string memory currency) {
-    return tokenIOStableSwapImpl.getAssetCurrency(asset);
+    return TokenIOStableSwapI(implementationInstance).getAssetCurrency(asset);
   }
 
   /**
@@ -102,7 +112,7 @@ contract TokenIOStableSwapProxy is Ownable {
    */
   function setTokenXCurrency(address asset, string memory currency) public onlyOwner returns (bool success) {
     require(
-      tokenIOStableSwapImpl.setTokenXCurrency(asset, currency),
+      TokenIOStableSwapI(implementationInstance).setTokenXCurrency(asset, currency),
       "Unable to execute setTokenXCurrency"
     );
 
@@ -116,7 +126,7 @@ contract TokenIOStableSwapProxy is Ownable {
     * @return {"allowed": "Returns true if the asset is allowed"}
    */
   function isTokenXContract(address asset, string memory currency) public view returns (bool isX) {
-    return tokenIOStableSwapImpl.isTokenXContract(asset, currency);
+    return TokenIOStableSwapI(implementationInstance).isTokenXContract(asset, currency);
   }
 
   /**
@@ -129,7 +139,7 @@ contract TokenIOStableSwapProxy is Ownable {
    * @return { "success" : "Returns true if successfully called from another contract"}
    */
   function setAssetFeeParams(address asset, uint feeBps, uint feeMin, uint feeMax, uint feeFlat) public onlyOwner returns (bool success) {
-    require(tokenIOStableSwapImpl.setAssetFeeParams(asset, feeMax, feeMin, feeBps, feeFlat), "Unable to execute setAssetFeeParams");
+    require(TokenIOStableSwapI(implementationInstance).setAssetFeeParams(asset, feeMax, feeMin, feeBps, feeFlat), "Unable to execute setAssetFeeParams");
 
     return true;
   }
@@ -141,7 +151,7 @@ contract TokenIOStableSwapProxy is Ownable {
    * @return { "fees" : "Returns the fees for the amount associated with the asset contract"}
    */
   function calcAssetFees(address asset, uint amount) public view returns (uint fees) {
-    return tokenIOStableSwapImpl.calcAssetFees(asset, amount);
+    return TokenIOStableSwapI(implementationInstance).calcAssetFees(asset, amount);
   }
 
   /**
@@ -153,7 +163,7 @@ contract TokenIOStableSwapProxy is Ownable {
     * @return { "success" : "Returns true if successfully called from another contract"}
    */
   function convert(address fromAsset, address toAsset, uint amount) public returns (bool success) {
-    require(tokenIOStableSwapImpl.convert(fromAsset, toAsset, amount, msg.sender), 'Unable to execute convert');
+    require(TokenIOStableSwapI(implementationInstance).convert(fromAsset, toAsset, amount, msg.sender), 'Unable to execute convert');
     
     return true;
   }
@@ -166,7 +176,7 @@ contract TokenIOStableSwapProxy is Ownable {
    * @return { "success" : "Returns true if successfully called from another contract"}
    */
   function transferCollectedFees(address asset, address to, uint amount) public onlyOwner returns (bool success) {
-    require(tokenIOStableSwapImpl.transferCollectedFees(asset, to, amount), "Unable to execute convert");
+    require(TokenIOStableSwapI(implementationInstance).transferCollectedFees(asset, to, amount), "Unable to execute convert");
 
     return true;
   }
@@ -176,7 +186,7 @@ contract TokenIOStableSwapProxy is Ownable {
   * @return {"deprecated" : "Returns true if deprecated, false otherwise"}
   */
   function deprecateInterface() public onlyOwner returns (bool deprecated) {
-    require(tokenIOStableSwapImpl.deprecateInterface(),
+    require(TokenIOStableSwapI(implementationInstance).deprecateInterface(),
       "Error: Unable to deprecate contract!");
     return true;
   }

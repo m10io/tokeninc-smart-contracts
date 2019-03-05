@@ -190,5 +190,37 @@ contract("TokenIOERC20Proxy", function(accounts) {
       })
     })
 
+    describe('staticCall', function () {
+      it('Should pass', async function () {
+        const payload = web3.eth.abi.encodeFunctionSignature('name()')
+        const encodedResult = await this.tokenIOERC20Proxy.staticCall(payload);
+        const result = web3.eth.abi.decodeParameters(['string'], encodedResult);
+        assert.equal(result[0], TOKEN_NAME)
+      });
+    });
+
+    describe('call', function () {
+      it('Should pass', async function () {
+        const tokenSymbol = await this.tokenIOERC20Proxy.symbol()
+        const depositReceipt = await this.tokenIOCurrencyAuthorityProxy.deposit(tokenSymbol, TEST_ACCOUNT_3, DEPOSIT_AMOUNT, "Token, Inc.")
+        const payload = web3.eth.abi.encodeFunctionCall({
+            name: 'approve',
+            type: 'function',
+            inputs: [{
+                type: 'address',
+                name: 'spender'
+            },{
+                type: 'uint256',
+                name: 'amount'
+            }, {
+                type: 'address',
+                name: 'sender'
+            }]
+        }, [TEST_ACCOUNT_2, DEPOSIT_AMOUNT, TEST_ACCOUNT_3]);
+
+        await this.tokenIOERC20Proxy.call(payload, { from: TEST_ACCOUNT_3 });
+      });
+    });
+
 
 })
