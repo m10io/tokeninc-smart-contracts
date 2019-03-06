@@ -47,8 +47,6 @@ library TokenIOLib {
   event FxSwap(string tokenASymbol,string tokenBSymbol,uint tokenAValue,uint tokenBValue, uint expiration, bytes32 transactionHash);
   event AccountForward(address indexed originalAccount, address indexed forwardedAccount);
   event NewAuthority(address indexed authority, string issuerFirm);
-  event UpdateAllowance(uint victim);
-  event USDAmount(uint victim);
   
   
 
@@ -606,8 +604,6 @@ library TokenIOLib {
     require(
       setAccountSpendingAmount(self, sender, getFxUSDAmount(self, currency, amount)),
       "Error: Unable to set spending amount for account.");
-
-    emit USDAmount(getFxUSDAmount(self, currency, amount));
 
     require(
       forceTransfer(self, currency, sender, to, amount, data),
