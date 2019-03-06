@@ -31,6 +31,8 @@ contract TokenIOAuthority is Ownable {
     using TokenIOLib for TokenIOLib.Data;
     TokenIOLib.Data lib;
 
+    address public proxyInstance;
+
     /**
      * @notice Constructor method for Authority contract
      * @param _storageContract Ethereum Address of TokenIOStorage contract
@@ -48,13 +50,20 @@ contract TokenIOAuthority is Ownable {
         owner[msg.sender] = true;
     }
 
+    function initProxy(address _proxy) public onlyOwner {
+      require(_proxy != address(0));
+        
+      proxyInstance = _proxy;
+      lib.proxyInstance = _proxy;
+    }
+
     /**
      * @notice Registers a firm as authorized true/false
      * @param firmName Name of firm
      * @param _authorized Authorization status
      * @return {"success" : "Returns true if lib.setRegisteredFirm succeeds"}
      */
-    function setRegisteredFirm(string memory firmName, bool _authorized) public onlyAuthority(firmName, msg.sender) returns (bool success) {
+    function setRegisteredFirm(string memory firmName, bool _authorized, address sender) public onlyAuthority(firmName, sender) returns (bool success) {
         /// @notice set firm registration status
         require(
           lib.setRegisteredFirm(firmName, _authorized),
@@ -70,7 +79,7 @@ contract TokenIOAuthority is Ownable {
      * @param _authorized Authorization status
      * @return {"success" : "Returns true if lib.setRegisteredAuthority succeeds"}
      */
-    function setRegisteredAuthority(string memory firmName, address authority, bool _authorized) public onlyAuthority(firmName, msg.sender) returns (bool success) {
+    function setRegisteredAuthority(string memory firmName, address authority, bool _authorized, address sender) public onlyAuthority(firmName, sender) returns (bool success) {
         /// @notice set authority of firm to given status
         require(
           lib.setRegisteredAuthority(firmName, authority, _authorized),

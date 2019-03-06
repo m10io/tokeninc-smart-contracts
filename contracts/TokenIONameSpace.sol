@@ -36,6 +36,8 @@ contract TokenIONameSpace is Ownable {
     using TokenIOLib for TokenIOLib.Data;
     TokenIOLib.Data lib;
 
+    address public proxyInstance;
+
     /**
   	* @notice Constructor method for TokenIONameSpace contract
   	* @param _storageContract     address of TokenIOStorage contract
@@ -50,6 +52,13 @@ contract TokenIONameSpace is Ownable {
   			/// @dev set owner to contract initiator
   			owner[msg.sender] = true;
   	}
+
+    function initProxy(address _proxy) public onlyOwner {
+      require(_proxy != address(0));
+        
+      proxyInstance = _proxy;
+      lib.proxyInstance = _proxy;
+    }
 
     /**
      * @notice Returns the address of the contract associated with the currency symbol

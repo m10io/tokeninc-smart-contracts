@@ -2,7 +2,8 @@ const { delay } = require('bluebird')
 
 const TokenIOStorage = artifacts.require("./TokenIOStorage.sol")
 const TokenIOAuthority = artifacts.require("./TokenIOAuthority.sol")
-const TokenIOFeeContract = artifacts.require("./TokenIOFeeContract.sol")
+const TokenIOAuthorityProxy = artifacts.require("./TokenIOAuthorityProxy.sol")
+const TokenIOFeeContractProxy = artifacts.require("./TokenIOFeeContractProxy.sol")
 
 const { mode, development, production } = require('../token.config.js');
 const {
@@ -18,12 +19,17 @@ const deployContracts = async (deployer, accounts) => {
       const authority = await deployer.deploy(TokenIOAuthority, storage.address)
       await storage.allowOwnership(authority.address)
 
-      const masterFeeContract = await TokenIOFeeContract.deployed()
+      const authorityProxy = await deployer.deploy(TokenIOAuthorityProxy, authority.address)
+
+      await authority.allowOwnership(authorityProxy.address)
+      await authority.initProxy(authorityProxy.address)
+
+      const masterFeeContractProxy = await TokenIOFeeContractProxy.deployed()
 
       /* registration */
-      await authority.setRegisteredFirm(firmName, true)
-      await authority.setRegisteredAuthority(firmName, accounts[0], true)
-      await authority.setMasterFeeContract(masterFeeContract.address)
+      await authorityProxy.setRegisteredFirm(firmName, true)
+      await authorityProxy.setRegisteredAuthority(firmName, accounts[0], true)
+      await authorityProxy.setMasterFeeContract(masterFeeContractProxy.address)
 
       return true
   } catch (err) {
