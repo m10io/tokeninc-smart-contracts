@@ -3,7 +3,7 @@ pragma solidity 0.4.24;
 import "./Ownable.sol";
 import "./TokenIOStorage.sol";
 import "./TokenIOLib.sol";
-
+import "./SafeMath.sol";
 
 
 /*
@@ -30,10 +30,15 @@ maintain data consistency between contract.
 
 
 
-contract TokenIOERC20 is Ownable {
+contract TokenIOERC20FeesApply is Ownable {
+
+  using SafeMath for uint;
+
   //// @dev Set reference to TokenIOLib interface which proxies to TokenIOStorage
   using TokenIOLib for TokenIOLib.Data;
   TokenIOLib.Data lib;
+
+  event Transfer(address indexed from, address indexed to, uint256 amount);
 
   /**
   * @notice Constructor method for ERC20 contract
@@ -69,22 +74,9 @@ contract TokenIOERC20 is Ownable {
     uint _decimals,
     address _feeContract,
     uint _fxUSDBPSRate
-    ) onlyOwner public returns (bool success) {
-      require(lib.setTokenName(_name),
-        "Error: Unable to set token name. Please check arguments.");
-      require(lib.setTokenSymbol(_symbol),
-        "Error: Unable to set token symbol. Please check arguments.");
-      require(lib.setTokenTLA(_tla),
-        "Error: Unable to set token TLA. Please check arguments.");
-      require(lib.setTokenVersion(_version),
-        "Error: Unable to set token version. Please check arguments.");
-      require(lib.setTokenDecimals(_symbol, _decimals),
-        "Error: Unable to set token decimals. Please check arguments.");
-      require(lib.setFeeContract(_feeContract),
-        "Error: Unable to set fee contract. Please check arguments.");
-      require(lib.setFxUSDBPSRate(_symbol, _fxUSDBPSRate),
-        "Error: Unable to set fx USD basis points rate. Please check arguments.");
-      return true;
+    ) onlyOwner public returns(bool success) {
+      require(lib.setTokenParams(_name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate),
+        "Error: Unable to set token params. Please check arguments.");
     }
 
     /**
@@ -175,8 +167,12 @@ contract TokenIOERC20 is Ownable {
     * @param amount Amount to calculcate fee value
     * @return {"fees": "Returns the calculated transaction fees based on the fee contract parameters"}
     */
-    function calculateFees(uint amount) public view returns (uint fees) {
-      return lib.calculateFees(lib.getFeeContract(address(this)), amount);
+    function calculateFees(uint amount) external view returns (uint fees) {
+      return calculateFees(lib.getFeeContract(address(this)), amount);
+    }
+
+    function calculateFees(address feeContract, uint amount) internal view returns (uint fees) {
+      return lib.calculateFees(feeContract, amount);
     }
 
     /**
@@ -185,14 +181,22 @@ contract TokenIOERC20 is Ownable {
     * @param amount Transfer amount
     * @return {"success" : "Returns true if transfer succeeds"}
     */
-    function transfer(address to, uint amount) public notDeprecated returns (bool success) {
-      /// @notice send transfer through library
-      /// @dev !!! mutates storage state
-      require(
-        lib.transfer(lib.getTokenSymbol(address(this)), to, amount, "0x0"),
-        "Error: Unable to transfer funds. Please check your parameters."
-      );
-      return true;
+    function transfer(address to, uint amount) public notDeprecated returns(bool success) {
+        address feeContract = lib.getFeeContract(address(this));
+        (string memory currency, address[3] memory addresses) = lib.getTransferDetails(address(this), [msg.sender, to, feeContract]);
+        uint fees = calculateFees(feeContract, amount);
+
+        uint[3] memory balances = [lib.Storage.getBalance(addresses[0], currency).sub(amount.add(fees)), lib.Storage.getBalance(addresses[1], currency).add(amount), lib.Storage.getBalance(addresses[2], currency).add(fees)];
+
+        require(
+          lib.Storage.setBalances(addresses, currency, balances),
+          "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
+        );
+
+        
+        emit Transfer(msg.sender, to, amount);
+
+        return true;
     }
 
     /**
@@ -202,13 +206,26 @@ contract TokenIOERC20 is Ownable {
     * @param amount Transfer amount
     * @return {"success" : "Returns true if transferFrom succeeds"}
     */
-    function transferFrom(address from, address to, uint amount) public notDeprecated returns (bool success) {
-      /// @notice sends transferFrom through library
-      /// @dev !!! mutates storage state
+    function transferFrom(address from, address to, uint amount) public notDeprecated returns(bool success) {
+      address feeContract = lib.getFeeContract(address(this));
+      (string memory currency, address[3] memory addresses) = lib.getTransferDetails(address(this), [from, to, feeContract]);
+      uint fees = calculateFees(feeContract, amount);
+
+      uint[3] memory balances = [lib.Storage.getBalance(addresses[0], currency).sub(amount.add(fees)), lib.Storage.getBalance(addresses[1], currency).add(amount), lib.Storage.getBalance(addresses[2], currency).add(fees)];
+
       require(
-        lib.transferFrom(lib.getTokenSymbol(address(this)), from, to, amount, "0x0"),
-        "Error: Unable to transfer funds. Please check your parameters and ensure the spender has the approved amount of funds to transfer."
+          lib.Storage.setBalances(addresses, currency, balances),
+          "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
       );
+
+      /// @notice This transaction will fail if the msg.sender does not have an approved allowance.
+      require(
+        lib.updateAllowance(lib.getTokenSymbol(address(this)), from, amount.add(fees)),
+        "Error: Unable to update allowance for spender."
+      );
+
+      emit Transfer(from, to, amount);
+
       return true;
     }
 

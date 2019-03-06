@@ -15,7 +15,7 @@ module.exports = {
       host: "104.236.47.153",
       port: 4000,
       network_id: 9, // Match any network id
-	    gas: 8e6
+      gas: 8e6
     },
     ropsten: {
       provider: () => {
