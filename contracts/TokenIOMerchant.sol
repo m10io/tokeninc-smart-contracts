@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.2;
 
 import "./Ownable.sol";
 import "./TokenIOStorage.sol";
@@ -31,6 +31,8 @@ contract TokenIOMerchant is Ownable {
     using TokenIOLib for TokenIOLib.Data;
     TokenIOLib.Data lib;
 
+    address public proxyInstance;
+
     /**
      * @notice Constructor method for Merchant contract
      * @param _storageContract Ethereum Address of TokenIOStorage contract
@@ -46,6 +48,13 @@ contract TokenIOMerchant is Ownable {
 
         /// @dev set owner to contract initiator
         owner[msg.sender] = true;
+    }
+
+    function initProxy(address _proxy) public onlyOwner {
+      require(_proxy != address(0));
+        
+      proxyInstance = _proxy;
+      lib.proxyInstance = _proxy;
     }
 
     /**
@@ -71,11 +80,12 @@ contract TokenIOMerchant is Ownable {
     "contract":"Address of fee contract"
     }
     */
-    function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, bytes feeMsg, address feeAccount) {
-      address feeContract = lib.getFeeContract(address(this));
+    function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, bytes memory feeMsg, address feeAccount) {
+      address feeContract = lib.getFeeContract(proxyInstance);
         (max, min, bps, flat) = lib.getFees(feeContract);
         feeMsg = lib.getFeeMsg(feeContract);
         feeAccount = feeContract;
+        return (bps, min, max, flat, feeMsg, feeAccount);
     }
 
     /**
@@ -84,7 +94,7 @@ contract TokenIOMerchant is Ownable {
     * @return {"fees": "Returns the calculated transaction fees based on the fee contract parameters"}
     */
     function calculateFees(uint amount) public view returns (uint fees) {
-      return lib.calculateFees(lib.getFeeContract(address(this)), amount);
+      return lib.calculateFees(lib.getFeeContract(proxyInstance), amount);
     }
 
     /**
@@ -96,22 +106,22 @@ contract TokenIOMerchant is Ownable {
      * @param  data Optional data to be included when paying the merchant (e.g. item receipt)
      * @return { "success" : "Returns true if successfully called from another contract"}
      */
-    function pay(string currency, address merchant, uint amount, bool merchantPaysFees, bytes data) public returns (bool success) {
+    function pay(string memory currency, address merchant, uint amount, bool merchantPaysFees, bytes memory data, address sender) public returns (bool success) {
       uint fees = calculateFees(amount);
       /// @dev note the spending amount limit is gross of fees
-      require(lib.setAccountSpendingAmount(msg.sender, lib.getFxUSDAmount(currency, amount)),
+      require(lib.setAccountSpendingAmount(sender, lib.getFxUSDAmount(currency, amount)),
         "Error: Unable to set account spending amount.");
-      require(lib.forceTransfer(currency, msg.sender, merchant, amount, data),
+      require(lib.forceTransfer(currency, sender, merchant, amount, data),
         "Error: Unable to transfer funds to account");
 
-      address feeContract = lib.getFeeContract(address(this));
+      address feeContract = lib.getFeeContract(proxyInstance);
       /// @dev If merchantPaysFees == true, the merchant will pay the fees to the fee contract;
       if (merchantPaysFees) {
         require(lib.forceTransfer(currency, merchant, feeContract, fees, lib.getFeeMsg(feeContract)),
           "Error: Unable to transfer fees to fee contract.");
 
       } else {
-        require(lib.forceTransfer(currency, msg.sender, feeContract, fees, lib.getFeeMsg(feeContract)),
+        require(lib.forceTransfer(currency, sender, feeContract, fees, lib.getFeeMsg(feeContract)),
           "Error: Unable to transfer fees to fee contract.");
 
       }

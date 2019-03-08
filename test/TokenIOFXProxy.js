@@ -4,6 +4,9 @@ var TokenIOERC20 = artifacts.require("./TokenIOERC20.sol");
 var TokenIOCurrencyAuthority = artifacts.require("./TokenIOCurrencyAuthority.sol");
 var TokenIOStorage = artifacts.require("./TokenIOStorage.sol");
 var TokenIOFX = artifacts.require("./TokenIOFX.sol");
+var TokenIOERC20Proxy = artifacts.require("./TokenIOERC20Proxy.sol");
+var TokenIOCurrencyAuthorityProxy = artifacts.require("./TokenIOCurrencyAuthorityProxy.sol");
+var TokenIOFXProxy = artifacts.require("./TokenIOFXProxy.sol");
 
 const { mode, development, production } = require('../token.config.js');
 const {
@@ -15,7 +18,7 @@ const USDx = TOKEN_DETAILS['USDx']
 const EURx = TOKEN_DETAILS['EURx']
 
 
-contract("TokenIOFX", function(accounts) {
+contract("TokenIOFXProxy", function(accounts) {
 
 	// Globals
 	const coder = new utils.AbiCoder()
@@ -34,34 +37,42 @@ contract("TokenIOFX", function(accounts) {
 
 	before(async () => {
 		const storage = await TokenIOStorage.deployed()
-		TOKEN_A = await TokenIOERC20.new(storage.address)
-		TOKEN_B = await TokenIOERC20.new(storage.address)
+		const token1 = await TokenIOERC20.new(storage.address)
+		const token2 = await TokenIOERC20.new(storage.address)
+		await storage.allowOwnership(token1.address)
+		await storage.allowOwnership(token2.address)
+		TOKEN_A = await TokenIOERC20Proxy.new(token1.address)
+		TOKEN_B = await TokenIOERC20Proxy.new(token2.address)
+		await token1.allowOwnership(TOKEN_A.address)
+      	await token1.initProxy(TOKEN_A.address)
+      	await token2.allowOwnership(TOKEN_B.address)
+      	await token2.initProxy(TOKEN_B.address)
 
-		await storage.allowOwnership(TOKEN_A.address)
-		await storage.allowOwnership(TOKEN_B.address)
 		await TOKEN_A.setParams(...Object.values(USDx).map((v) => { return v }))
 		await TOKEN_B.setParams(...Object.values(EURx).map((v) => { return v }))
 
 		REQUESTER_WALLET = await Wallet.createRandom()
 	})
 
-	it("Should ensure token symbols are correctly set", async () => {
+	describe("Should ensure token symbols are correctly set", function () {
+      it("Should pass", async function () {
 		TOKEN_A_SYMBOL = await TOKEN_A.symbol()
 		TOKEN_B_SYMBOL = await TOKEN_B.symbol()
 
 		assert.equal(TOKEN_A_SYMBOL, "USDx", "Initiated Token should be USDx")
 		assert.equal(TOKEN_B_SYMBOL, "EURx", "Initiated Token should be EURx")
-
+	  })
 	})
 
-	it("Should Deposit EURx into REQUESTER_WALLET account", async () => {
-		const CA = await TokenIOCurrencyAuthority.deployed();
+	describe("Should Deposit EURx into REQUESTER_WALLET account", function () {
+      it("Should pass", async function () {
+		const CAProxy = await TokenIOCurrencyAuthorityProxy.deployed();
 
-		const APPROVE_REQUESTER = await CA.approveKYC(REQUESTER_WALLET.address, true, SPENDING_LIMIT, "Token, Inc.")
-		const APPROVE_FULFILLER = await CA.approveKYC(TEST_ACCOUNT_1, true, SPENDING_LIMIT, "Token, Inc.")
+		const APPROVE_REQUESTER = await CAProxy.approveKYC(REQUESTER_WALLET.address, true, SPENDING_LIMIT, "Token, Inc.")
+		const APPROVE_FULFILLER = await CAProxy.approveKYC(TEST_ACCOUNT_1, true, SPENDING_LIMIT, "Token, Inc.")
 
-		const DEPOSIT_REQUESTER_AMOUNT_TX = await CA.deposit(TOKEN_B_SYMBOL, REQUESTER_WALLET.address, REQUESTER_OFFERED_AMOUNT, "Token, Inc.")
-		const DEPOSIT_FULFILLER_AMOUNT_TX = await CA.deposit(TOKEN_A_SYMBOL, TEST_ACCOUNT_1, REQUESTER_DESIRED_AMOUNT, "Token, Inc.")
+		const DEPOSIT_REQUESTER_AMOUNT_TX = await CAProxy.deposit(TOKEN_B_SYMBOL, REQUESTER_WALLET.address, REQUESTER_OFFERED_AMOUNT, "Token, Inc.")
+		const DEPOSIT_FULFILLER_AMOUNT_TX = await CAProxy.deposit(TOKEN_A_SYMBOL, TEST_ACCOUNT_1, REQUESTER_DESIRED_AMOUNT, "Token, Inc.")
 
 		assert.equal(DEPOSIT_REQUESTER_AMOUNT_TX['receipt']['status'], "0x1", "Transaction should be successful")
 		assert.equal(DEPOSIT_FULFILLER_AMOUNT_TX['receipt']['status'], "0x1", "Transaction should be successful")
@@ -72,11 +83,12 @@ contract("TokenIOFX", function(accounts) {
 
 		const FULFILLER_BALANCE = +(await TOKEN_A.balanceOf(TEST_ACCOUNT_1)).toString()
 		assert.equal(FULFILLER_BALANCE, REQUESTER_DESIRED_AMOUNT, "Fulfiller balance should equal the requester desired amount")
+	  })
+    })
 
-	})
-
-	it("Should allow the swap between the requester and the fulfiller", async () => {
-		const FX = await TokenIOFX.deployed();
+	describe("Should allow the swap between the requester and the fulfiller", function () {
+      it("Should pass", async function () {
+		const FXProxy = await TokenIOFXProxy.deployed();
 
 		const expiration = ((new Date().getTime() * 1000) + 86400 );
 
@@ -95,7 +107,7 @@ contract("TokenIOFX", function(accounts) {
 		assert.equal(+(await TOKEN_A.balanceOf(TEST_ACCOUNT_1)).toString(), REQUESTER_DESIRED_AMOUNT, "Fulfiller balance should equal the requester desired amount")
 		assert.equal(+(await TOKEN_B.balanceOf(TEST_ACCOUNT_1)).toString(), 0, "Fulfiller balance for token B should be zero")
 
-		const SWAP_TX = await FX.swap(
+		const SWAP_TX = await FXProxy.swap(
 			REQUESTER_WALLET.address.toLowerCase(),
 			TOKEN_A_SYMBOL, TOKEN_B_SYMBOL,
 			REQUESTER_DESIRED_AMOUNT, REQUESTER_OFFERED_AMOUNT,
@@ -108,7 +120,7 @@ contract("TokenIOFX", function(accounts) {
 		assert.equal(+(await TOKEN_B.balanceOf(REQUESTER_WALLET.address)).toString(), 0, "Requester balance for token B should be zero after swap")
 		assert.equal(+(await TOKEN_B.balanceOf(TEST_ACCOUNT_1)).toString(), REQUESTER_OFFERED_AMOUNT, "Requester balance should equal desired amount")
 		assert.equal(+(await TOKEN_A.balanceOf(TEST_ACCOUNT_1)).toString(), 0, "Fulfiller balance for token A should be zero after swap")
-
-	})
+	  })
+    })
 
 });

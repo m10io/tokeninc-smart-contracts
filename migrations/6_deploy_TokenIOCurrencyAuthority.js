@@ -2,6 +2,7 @@ const { delay } = require('bluebird')
 
 const TokenIOStorage = artifacts.require("./TokenIOStorage.sol")
 const TokenIOCurrencyAuthority = artifacts.require("./TokenIOCurrencyAuthority.sol")
+const TokenIOCurrencyAuthorityProxy = artifacts.require("./TokenIOCurrencyAuthorityProxy.sol")
 
 const deployContracts = async (deployer, accounts) => {
   try {
@@ -12,6 +13,10 @@ const deployContracts = async (deployer, accounts) => {
       /* authority contracts */
       const currencyAuthority = await deployer.deploy(TokenIOCurrencyAuthority, storage.address)
       await storage.allowOwnership(currencyAuthority.address)
+      const currencyAuthorityProxy = await deployer.deploy(TokenIOCurrencyAuthorityProxy, currencyAuthority.address)
+
+      await currencyAuthority.allowOwnership(currencyAuthorityProxy.address)
+      await currencyAuthority.initProxy(currencyAuthorityProxy.address)
 
       return true
   } catch (err) {

@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.2;
 
 import "./Ownable.sol";
 import "./SafeMath.sol";
@@ -43,6 +43,8 @@ contract TokenIOStableSwap is Ownable {
   event AllowedERC20Asset(address asset, string currency);
   event RemovedERC20Asset(address asset, string currency);
 
+  address public proxyInstance;
+
   /**
   * @notice Constructor method for TokenIOStableSwap contract
   * @param _storageContract     address of TokenIOStorage contract
@@ -58,6 +60,13 @@ contract TokenIOStableSwap is Ownable {
     owner[msg.sender] = true;
   }
 
+  function initProxy(address _proxy) public onlyOwner {
+      require(_proxy != address(0));
+        
+      proxyInstance = _proxy;
+      lib.proxyInstance = _proxy;
+  }
+
 	/**
 	 * @notice Allows the address of the asset to be accepted by this contract by the currency type. This method is only called by admins.
 	 * @notice This method may be deprecated or refactored to allow for multiple interfaces
@@ -69,7 +78,7 @@ contract TokenIOStableSwap is Ownable {
 	 * @param feeFlat Flat Swap Fee
 	 * @return { "success" : "Returns true if successfully called from another contract"}
 	 */
-	function allowAsset(address asset, string currency, uint feeBps, uint feeMin, uint feeMax, uint feeFlat) public onlyOwner notDeprecated returns (bool success) {
+	function allowAsset(address asset, string memory currency, uint feeBps, uint feeMin, uint feeMax, uint feeFlat) public onlyOwner notDeprecated returns (bool success) {
 		bytes32 id = keccak256(abi.encodePacked('allowed.stable.asset', asset, currency));
     require(
       lib.Storage.setBool(id, true),
@@ -104,7 +113,7 @@ contract TokenIOStableSwap is Ownable {
 	 * @param  currency string Currency symbol of the token (e.g. `USD`, `EUR`, `GBP`, `JPY`, `AUD`, `CAD`, `CHF`, `NOK`, `NZD`, `SEK`)
 	 * @return {"allowed": "Returns true if the asset is allowed"}
 	 */
-	function isAllowedAsset(address asset, string currency) public view returns (bool allowed) {
+	function isAllowedAsset(address asset, string memory currency) public view returns (bool allowed) {
 		if (isTokenXContract(asset, currency)) {
 			return true;
 		} else {
@@ -119,7 +128,7 @@ contract TokenIOStableSwap is Ownable {
    * @param currency string Currency of the asset (NOTE: This is the currency for the asset)
    * @return { "success" : "Returns true if successfully called from another contract"}
    */
-  function setAssetCurrency(address asset, string currency) public onlyOwner returns (bool success) {
+  function setAssetCurrency(address asset, string memory currency) public onlyOwner returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('asset.currency', asset));
     require(
       lib.Storage.setString(id, currency),
@@ -133,7 +142,7 @@ contract TokenIOStableSwap is Ownable {
    * @param asset Ethereum address of the asset to get the currency for
    * @return {"currency": "Returns the Currency of the asset if the asset has been allowed."}
    */
-  function getAssetCurrency(address asset) public view returns (string currency) {
+  function getAssetCurrency(address asset) public view returns (string memory currency) {
     bytes32 id = keccak256(abi.encodePacked('asset.currency', asset));
     return lib.Storage.getString(id);
   }
@@ -145,7 +154,7 @@ contract TokenIOStableSwap is Ownable {
 	 * @param  currency string Currency symbol of the token (e.g. `USD`, `EUR`, `GBP`, `JPY`, `AUD`, `CAD`, `CHF`, `NOK`, `NZD`, `SEK`)
 	 * @return { "success" : "Returns true if successfully called from another contract"}
 	 */
-	function setTokenXCurrency(address asset, string currency) public onlyOwner notDeprecated returns (bool success) {
+	function setTokenXCurrency(address asset, string memory currency) public onlyOwner notDeprecated returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('tokenx', asset, currency));
     require(
       lib.Storage.setBool(id, true),
@@ -164,7 +173,7 @@ contract TokenIOStableSwap is Ownable {
     * @param  currency string Currency symbol of the token (e.g. `USD`, `EUR`, `GBP`, `JPY`, `AUD`, `CAD`, `CHF`, `NOK`, `NZD`, `SEK`)
     * @return {"allowed": "Returns true if the asset is allowed"}
    */
-	function isTokenXContract(address asset, string currency) public view returns (bool isX) {
+	function isTokenXContract(address asset, string memory currency) public view returns (bool isX) {
 		bytes32 id = keccak256(abi.encodePacked('tokenx', asset, currency));
 		return lib.Storage.getBool(id);
 	}
@@ -181,17 +190,7 @@ contract TokenIOStableSwap is Ownable {
   function setAssetFeeParams(address asset, uint feeBps, uint feeMin, uint feeMax, uint feeFlat) public onlyOwner notDeprecated returns (bool success) {
     /// @dev This method bypasses the setFee library methods and directly sets the fee params for a requested asset.
     /// @notice Fees can be different per asset. Some assets may have different liquidity requirements.
-    require(lib.Storage.setUint(keccak256(abi.encodePacked('fee.max', asset)), feeMax),
-      'Error: Failed to set fee parameters with storage contract. Please check permissions.');
-
-    require(lib.Storage.setUint(keccak256(abi.encodePacked('fee.min', asset)), feeMin),
-      'Error: Failed to set fee parameters with storage contract. Please check permissions.');
-
-    require(lib.Storage.setUint(keccak256(abi.encodePacked('fee.bps', asset)), feeBps),
-      'Error: Failed to set fee parameters with storage contract. Please check permissions.');
-
-    require(lib.Storage.setUint(keccak256(abi.encodePacked('fee.flat', asset)), feeFlat),
-      'Error: Failed to set fee parameters with storage contract. Please check permissions.');
+    require(lib.setFees(asset, feeMax, feeMin, feeBps, feeFlat), "Error: Unable to set fee contract settings");
 
     return true;
   }
@@ -214,7 +213,7 @@ contract TokenIOStableSwap is Ownable {
     * @param  amount Amount of fromAsset to be transferred.
     * @return { "success" : "Returns true if successfully called from another contract"}
    */
-	function convert(address fromAsset, address toAsset, uint amount) public notDeprecated returns (bool success) {
+	function convert(address fromAsset, address toAsset, uint amount, address sender) public notDeprecated returns (bool success) {
     /// @notice lookup currency from one of the assets, check if allowed by both assets.
     string memory currency = getAssetCurrency(fromAsset);
     uint fromDecimals = ERC20Interface(fromAsset).decimals();
@@ -231,7 +230,7 @@ contract TokenIOStableSwap is Ownable {
       /// @dev the amount being transferred must be in the same decimal representation of the asset
       /// e.g. If decimals = 6 and want to transfer $100.00 the amount passed to this contract should be 100e6 (100 * 10 ** 6)
       require(
-        ERC20Interface(fromAsset).transferFrom(msg.sender, address(this), amount),
+        ERC20Interface(fromAsset).transferFrom(sender, address(this), amount),
         'Error: Unable to transferFrom your asset holdings. Please ensure this contract has an approved allowance equal to or greater than the amount called in transferFrom method.'
       );
 
@@ -241,7 +240,7 @@ contract TokenIOStableSwap is Ownable {
       /// @dev Ensure amount is converted for the correct decimal representation;
       uint convertedAmountFrom = (netAmountFrom.mul(10**toDecimals)).div(10**fromDecimals);
       require(
-        lib.deposit(lib.getTokenSymbol(toAsset), msg.sender, convertedAmountFrom, 'Token, Inc.'),
+        lib.deposit(lib.getTokenSymbol(toAsset), sender, convertedAmountFrom, 'Token, Inc.'),
         "Error: Unable to deposit funds. Please check issuerFirm and firm authority are registered"
       );
 		} else if(isTokenXContract(fromAsset, currency)) {
@@ -252,13 +251,13 @@ contract TokenIOStableSwap is Ownable {
       uint netAmountTo = convertedAmount.sub(fees);
       /// @dev Ensure amount is converted for the correct decimal representation;
       require(
-      	ERC20Interface(toAsset).transfer(msg.sender, netAmountTo),
+      	ERC20Interface(toAsset).transfer(sender, netAmountTo),
       	'Unable to call the requested erc20 contract.'
       );
 
       /// @dev Withdraw TokenX asset from the user
       require(
-      	lib.withdraw(lib.getTokenSymbol(fromAsset), msg.sender, amount, 'Token, Inc.'),
+      	lib.withdraw(lib.getTokenSymbol(fromAsset), sender, amount, 'Token, Inc.'),
       	"Error: Unable to withdraw funds. Please check issuerFirm and firm authority are registered and have issued funds that can be withdrawn"
       );
 		} else {
@@ -266,7 +265,7 @@ contract TokenIOStableSwap is Ownable {
 		}
 
     /// @dev Log the swap event for event listeners
-    emit StableSwap(fromAsset, toAsset, msg.sender, amount, currency);
+    emit StableSwap(fromAsset, toAsset, sender, amount, currency);
     return true;
 	}
 
@@ -291,14 +290,14 @@ contract TokenIOStableSwap is Ownable {
 	* @return {"deprecated" : "Returns true if deprecated, false otherwise"}
 	*/
 	function deprecateInterface() public onlyOwner returns (bool deprecated) {
-		require(lib.setDeprecatedContract(address(this)),
+		require(lib.setDeprecatedContract(proxyInstance),
       "Error: Unable to deprecate contract!");
 		return true;
 	}
 
 	modifier notDeprecated() {
 		/// @notice throws if contract is deprecated
-		require(!lib.isContractDeprecated(address(this)),
+		require(!lib.isContractDeprecated(proxyInstance),
 			"Error: Contract has been deprecated, cannot perform operation!");
 		_;
 	}

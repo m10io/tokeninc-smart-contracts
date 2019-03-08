@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.2;
 
 import "./Ownable.sol";
 import "./TokenIOStorage.sol";
@@ -36,6 +36,7 @@ contract TokenIOFeeContract is Ownable {
 	using TokenIOLib for TokenIOLib.Data;
 	TokenIOLib.Data lib;
 
+	address public proxyInstance;
 
 	/**
 	* @notice Constructor method for ERC20 contract
@@ -52,6 +53,13 @@ contract TokenIOFeeContract is Ownable {
 			owner[msg.sender] = true;
 	}
 
+	function initProxy(address _proxy) public onlyOwner {
+	    require(_proxy != address(0));
+	    
+	    proxyInstance = _proxy;
+	    lib.proxyInstance = _proxy;
+  	}
+
 	/**
 	 * @notice Set Fee Parameters for Fee Contract
 	 * @dev The min, max, flat transaction fees should be relative to decimal precision
@@ -61,8 +69,8 @@ contract TokenIOFeeContract is Ownable {
 	 * @param feeFlat Flat transaction fee
 	 * returns {"success" : "Returns true if successfully called from another contract"}
 	 */
-	function setFeeParams(uint feeBps, uint feeMin, uint feeMax, uint feeFlat, bytes feeMsg) public onlyOwner returns (bool success) {
-		require(lib.setFees(feeMax, feeMin, feeBps, feeFlat), "Error: Unable to set fee contract settings");
+	function setFeeParams(uint feeBps, uint feeMin, uint feeMax, uint feeFlat, bytes memory feeMsg) public onlyOwner returns (bool success) {
+		require(lib.setFees(proxyInstance, feeMax, feeMin, feeBps, feeFlat), "Error: Unable to set fee contract settings");
 		require(lib.setFeeMsg(feeMsg), "Error: Unable to set fee contract default message.");
 		return true;
 	}
@@ -77,10 +85,11 @@ contract TokenIOFeeContract is Ownable {
 		"feeContract": "Address of this contract"
 	}
 	*/
-	function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, bytes feeMsg, address feeContract) {
-            (max, min, bps, flat) = lib.getFees(address(this));
-            feeMsg = lib.getFeeMsg(address(this));
-            feeContract = address(this);
+	function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, bytes memory feeMsg, address feeContract) {
+            (max, min, bps, flat) = lib.getFees(proxyInstance);
+            feeMsg = lib.getFeeMsg(proxyInstance);
+            feeContract = proxyInstance;
+            return (max, min, bps, flat, feeMsg, feeContract);
 	}
 
 	/**
@@ -88,8 +97,8 @@ contract TokenIOFeeContract is Ownable {
 	 * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
 	 * @return {"balance": "Balance of TokenIO TSM currency account"}
 	 */
-	function getTokenBalance(string currency) public view returns(uint balance) {
-		return lib.getTokenBalance(currency, address(this));
+	function getTokenBalance(string memory currency) public view returns(uint balance) {
+		return lib.getTokenBalance(currency, proxyInstance);
 	}
 
 	/** @notice Calculates fee of a given transfer amount
@@ -97,7 +106,7 @@ contract TokenIOFeeContract is Ownable {
 	 * @return { "fees": "Returns the fees associated with this contract"}
 	 */
 	function calculateFees(uint amount) public view returns (uint fees) {
-		return lib.calculateFees(address(this), amount);
+		return lib.calculateFees(proxyInstance, amount);
 	}
 
 
@@ -109,9 +118,9 @@ contract TokenIOFeeContract is Ownable {
 	 * @param  data		  Arbitrary bytes data message to include in transfer
 	 * @return {"success": "Returns ture if successfully called from another contract"}
 	 */
-	function transferCollectedFees(string currency, address to, uint amount, bytes data) public onlyOwner returns (bool success) {
+	function transferCollectedFees(string memory currency, address to, uint amount, bytes memory data) public onlyOwner returns (bool success) {
 		require(
-			lib.forceTransfer(currency, address(this), to, amount, data),
+			lib.forceTransfer(currency, proxyInstance, to, amount, data),
 			"Error: unable to transfer fees to account."
 		);
 		return true;
