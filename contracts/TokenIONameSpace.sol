@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.2;
 
 
 /**
@@ -36,6 +36,8 @@ contract TokenIONameSpace is Ownable {
     using TokenIOLib for TokenIOLib.Data;
     TokenIOLib.Data lib;
 
+    address public proxyInstance;
+
     /**
   	* @notice Constructor method for TokenIONameSpace contract
   	* @param _storageContract     address of TokenIOStorage contract
@@ -51,13 +53,20 @@ contract TokenIONameSpace is Ownable {
   			owner[msg.sender] = true;
   	}
 
+    function initProxy(address _proxy) public onlyOwner {
+      require(_proxy != address(0));
+        
+      proxyInstance = _proxy;
+      lib.proxyInstance = _proxy;
+    }
+
     /**
      * @notice Returns the address of the contract associated with the currency symbol
      * @notice This method may be deprecated or refactored to allow for multiple interfaces
      * @param  currency string Currency symbol of the token (e.g. USDx, JYPx, GBPx)
      * @return {"contractAddress": "Returns the token contract address associated with the currency"}
      */
-    function getTokenNameSpace(string currency) public view returns (address contractAddress) {
+    function getTokenNameSpace(string memory currency) public view returns (address contractAddress) {
         return lib.getTokenNameSpace(currency);
     }
 

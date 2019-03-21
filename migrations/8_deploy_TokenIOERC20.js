@@ -2,6 +2,7 @@ const { delay } = require('bluebird')
 
 const TokenIOStorage = artifacts.require("./TokenIOStorage.sol")
 const TokenIOERC20 = artifacts.require("./TokenIOERC20.sol")
+const TokenIOERC20Proxy = artifacts.require("./TokenIOERC20Proxy.sol")
 
 const { mode, development, production } = require('../token.config.js');
 const {
@@ -17,7 +18,12 @@ const deployContracts = async (deployer, accounts) => {
       /* token */
       const token = await deployer.deploy(TokenIOERC20, storage.address)
       await storage.allowOwnership(token.address)
-      await token.setParams(...Object.values(TOKEN_DETAILS['USDx']).map((v) => { return v }))
+      
+      const tokenProxy = await deployer.deploy(TokenIOERC20Proxy, token.address)
+      await token.allowOwnership(tokenProxy.address)
+      await token.initProxy(tokenProxy.address)
+
+      await tokenProxy.setParams(...Object.values(TOKEN_DETAILS['USDx']).map((v) => { return v }))
 
       return true
   } catch (err) {

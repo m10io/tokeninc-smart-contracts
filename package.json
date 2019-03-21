@@ -36,17 +36,18 @@
   "repository": "https://github.com/tokenio/tokeninc-smart-contracts.git",
   "dependencies": {
     "bluebird": "^3.5.1",
+    "bignumber.js": "^7.2.0",
+    "ethereumjs-abi": "^0.6.5",
     "ethereumjs-util": "^5.1.5",
     "ethers": "^3.0.15",
     "truffle-contract": "^3.0.6",
     "web3-provider-engine": "^14.0.6",
-    "zeppelin-solidity": "1.8.0"
   },
   "devDependencies": {
     "dotenv": "^6.2.0",
-    "solc": "^0.4.24",
+    "solc": "^0.5.2",
     "solmd": "^0.3.0",
-    "truffle": "^4.1.12",
+    "truffle": "5.0.2",
     "truffle-hdwallet-provider": "0.0.5"
   }
 }
