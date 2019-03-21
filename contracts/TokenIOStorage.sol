@@ -353,10 +353,14 @@ contract TokenIOStorage is Ownable {
      * @return { "_value" : "Returns the bool value associated with the key" }
      */
     function getRelatedAccounts(address[3] memory _addresses) internal view returns (address[3] memory relatedAddresses) {
-        for(uint i = 0; i < _addresses.length; i++) {
-            relatedAddresses[i] = relatedAccounts[_addresses[i]];
-            relatedAddresses[i] = (address(0) != relatedAddresses[i]) ? relatedAddresses[i] : _addresses[i];
-        }
+        relatedAddresses[0] = relatedAccounts[_addresses[0]];
+        relatedAddresses[0] = (address(0) != relatedAddresses[0]) ? relatedAddresses[0] : _addresses[0];
+
+        relatedAddresses[1] = relatedAccounts[_addresses[1]];
+        relatedAddresses[1] = (address(0) != relatedAddresses[1]) ? relatedAddresses[1] : _addresses[1];
+
+        relatedAddresses[2] = relatedAccounts[_addresses[2]];
+        relatedAddresses[2] = (address(0) != relatedAddresses[2]) ? relatedAddresses[2] : _addresses[2];
 
         return relatedAddresses;
     }
@@ -419,9 +423,9 @@ contract TokenIOStorage is Ownable {
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
     function setBalances(address[3] calldata _addresses, string calldata _currency, uint[3] calldata _values) external onlyOwner returns(bool success) {
-        for(uint i = 0; i < _addresses.length; i++) {
-            balances[_addresses[i]][_currency] = _values[i];
-        }
+        balances[_addresses[0]][_currency] = _values[0];
+        balances[_addresses[1]][_currency] = _values[1];
+        balances[_addresses[2]][_currency] = _values[2];
         return true;
     }
 
