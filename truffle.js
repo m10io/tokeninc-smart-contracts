@@ -8,7 +8,7 @@ module.exports = {
     develop: {
       host: "127.0.0.1",
       port: 8545,
-      network_id: "*", // Match any network id
+      network_id: 0, // Match any network id
       gas: 6e6
     },
     poa: {
@@ -41,11 +41,13 @@ module.exports = {
       gasPrice: 10e9 // 10 gwei
     }
   },
-  solc: {
-    optimizer: {
-      enabled: true,
-      runs: 200
-    },
-    version: '0.5.2'
+  compilers: {
+    solc: {
+      version: '0.5.2',
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
+    }
   }
 };
