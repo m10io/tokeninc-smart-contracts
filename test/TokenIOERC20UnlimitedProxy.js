@@ -187,4 +187,24 @@ contract("TokenIOERC20UnlimitedProxy", function(accounts) {
       });
     });
 
+    describe("Deprecate interface", function () {
+      it("Should pass", async function () {
+        const kycReceipt1 = await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_1, true, LIMIT_AMOUNT, "Token, Inc.")
+        const kycReceipt2= await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_2, true, LIMIT_AMOUNT, "Token, Inc.")
+        const kycReceipt3= await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_3, true, LIMIT_AMOUNT, "Token, Inc.")
+
+        await this.tokenIOStorage.allowOwnership(this.tokenIOERC20UnlimitedProxy.address)
+        const tokenSymbol = await this.tokenIOERC20UnlimitedProxy.symbol()
+        const depositReceipt = await this.tokenIOCurrencyAuthorityProxy.deposit(tokenSymbol, TEST_ACCOUNT_1, DEPOSIT_AMOUNT, "Token, Inc.")
+
+        await this.tokenIOERC20UnlimitedProxy.deprecateInterface();
+
+        try {
+           const { receipt: { status } } = await this.tokenIOERC20UnlimitedProxy.transfer(TEST_ACCOUNT_2, TRANSFER_AMOUNT);
+        } catch (error) {
+           assert.equal(error.message.match(RegExp('revert')).length, 1, "Expected interface is not deprecated");
+        }
+      })
+    })
+
 })

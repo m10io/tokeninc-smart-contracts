@@ -110,4 +110,26 @@ contract("TokenIOFeeContractProxy", function(accounts) {
       });
     });
 
+    describe('Deprecate interface', function () {
+       it('Should pass', async function () {
+        const APPROVE_ACCOUNT_1_TX = await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_1, true, SPENDING_LIMIT, "Token, Inc.")
+        const APPROVE_ACCOUNT_2_TX = await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_2, true, SPENDING_LIMIT, "Token, Inc.")
+        const APPROVE_ACCOUNT_3_TX = await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_3, true, SPENDING_LIMIT, "Token, Inc.")
+
+        assert.equal(APPROVE_ACCOUNT_1_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+        assert.equal(APPROVE_ACCOUNT_2_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+        const DEPOSIT_TX = await this.tokenIOCurrencyAuthorityProxy.deposit('USDx', TEST_ACCOUNT_1, DEPOSIT_AMOUNT, "Token, Inc.")
+        assert.equal(DEPOSIT_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+        await this.tokenIOERC20Proxy.deprecateInterface();
+
+        try {
+            const { receipt: { status } } = await this.tokenIOERC20Proxy.transfer(TEST_ACCOUNT_2, TRANSFER_AMOUNT);
+        } catch (error) {
+            assert.equal(error.message.match(RegExp('revert')).length, 1, "Expected interface is not deprecated");
+        }
+      });
+   });
+
 })

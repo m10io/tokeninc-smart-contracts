@@ -158,7 +158,7 @@ contract TokenIOERC20Unlimited is Ownable {
     * @param amount Transfer amount
     * @return {"success" : "Returns true if transfer succeeds"}
     */
-    function transfer(address to, uint amount, address sender) public notDeprecated returns (bool success) {
+    function transfer(address to, uint amount, address sender) public notDeprecated onlyOwner returns (bool success) {
       /// @notice send transfer through library
       /// @dev !!! mutates storage state
       require(
@@ -178,7 +178,7 @@ contract TokenIOERC20Unlimited is Ownable {
     * @param amount Transfer amount
     * @return {"success" : "Returns true if transferFrom succeeds"}
     */
-    function transferFrom(address from, address to, uint amount, address sender) public notDeprecated returns (bool success) {
+    function transferFrom(address from, address to, uint amount, address sender) public notDeprecated onlyOwner returns (bool success) {
       /// @notice sends transferFrom through library
       /// @dev !!! mutates storage state
       require(
@@ -202,7 +202,7 @@ contract TokenIOERC20Unlimited is Ownable {
     * @param amount Allowance amount
     * @return {"success" : "Returns true if approve succeeds"}
     */
-    function approve(address spender, uint amount, address sender) public notDeprecated returns (bool success) {
+    function approve(address spender, uint amount, address sender) public notDeprecated onlyOwner returns (bool success) {
       /// @notice sends approve through library
       /// @dev !!! mtuates storage states
       require(

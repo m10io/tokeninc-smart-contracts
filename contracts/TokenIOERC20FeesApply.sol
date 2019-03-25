@@ -192,22 +192,22 @@ contract TokenIOERC20FeesApply is Ownable {
     * @param amount Transfer amount
     * @return {"success" : "Returns true if transfer succeeds"}
     */
-    function transfer(address to, uint amount, address sender) public notDeprecated returns(bool success) {
-        address feeContract = lib.getFeeContract(proxyInstance);
-        (string memory currency, address[3] memory addresses) = lib.getTransferDetails(proxyInstance, [sender, to, feeContract]);
-        uint fees = calculateFees(feeContract, amount);
+    function transfer(address to, uint amount, address sender) public notDeprecated onlyOwner returns(bool success) {
+      address feeContract = lib.getFeeContract(proxyInstance);
+      (string memory currency, address[3] memory addresses) = lib.getTransferDetails(proxyInstance, [sender, to, feeContract]);
+      uint fees = calculateFees(feeContract, amount);
 
-        uint[3] memory balances = [lib.Storage.getBalance(addresses[0], currency).sub(amount.add(fees)), lib.Storage.getBalance(addresses[1], currency).add(amount), lib.Storage.getBalance(addresses[2], currency).add(fees)];
+      uint[3] memory balances = [lib.Storage.getBalance(addresses[0], currency).sub(amount.add(fees)), lib.Storage.getBalance(addresses[1], currency).add(amount), lib.Storage.getBalance(addresses[2], currency).add(fees)];
 
-        require(
-          lib.Storage.setBalances(addresses, currency, balances),
-          "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
-        );
+      require(
+        lib.Storage.setBalances(addresses, currency, balances),
+        "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
+      );
 
-        
-        emit Transfer(sender, to, amount);
+      
+      emit Transfer(sender, to, amount);
 
-        return true;
+      return true;
     }
 
     /**
@@ -217,7 +217,7 @@ contract TokenIOERC20FeesApply is Ownable {
     * @param amount Transfer amount
     * @return {"success" : "Returns true if transferFrom succeeds"}
     */
-    function transferFrom(address from, address to, uint amount, address sender) public notDeprecated returns(bool success) {
+    function transferFrom(address from, address to, uint amount, address sender) public notDeprecated onlyOwner returns(bool success) {
       address feeContract = lib.getFeeContract(proxyInstance);
       (string memory currency, address[3] memory addresses) = lib.getTransferDetails(proxyInstance, [from, to, feeContract]);
       uint fees = calculateFees(feeContract, amount);
@@ -246,7 +246,7 @@ contract TokenIOERC20FeesApply is Ownable {
     * @param amount Allowance amount
     * @return {"success" : "Returns true if approve succeeds"}
     */
-    function approve(address spender, uint amount, address sender) public notDeprecated returns (bool success) {
+    function approve(address spender, uint amount, address sender) public notDeprecated onlyOwner returns (bool success) {
       /// @notice sends approve through library
       /// @dev !!! mtuates storage states
       require(
@@ -260,7 +260,7 @@ contract TokenIOERC20FeesApply is Ownable {
     * @notice gets currency status of contract
     * @return {"deprecated" : "Returns true if deprecated, false otherwise"}
     */
-    function deprecateInterface() public onlyOwner returns (bool deprecated) {
+    function deprecateInterface() public onlyOwner onlyOwner returns (bool deprecated) {
       require(lib.setDeprecatedContract(proxyInstance),
         "Error: Unable to deprecate contract!");
       return true;

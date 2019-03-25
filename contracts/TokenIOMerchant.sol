@@ -106,7 +106,7 @@ contract TokenIOMerchant is Ownable {
      * @param  data Optional data to be included when paying the merchant (e.g. item receipt)
      * @return { "success" : "Returns true if successfully called from another contract"}
      */
-    function pay(string memory currency, address merchant, uint amount, bool merchantPaysFees, bytes memory data, address sender) public returns (bool success) {
+    function pay(string memory currency, address merchant, uint amount, bool merchantPaysFees, bytes memory data, address sender) public onlyOwner returns (bool success) {
       uint fees = calculateFees(amount);
       /// @dev note the spending amount limit is gross of fees
       require(lib.setAccountSpendingAmount(sender, lib.getFxUSDAmount(currency, amount)),
