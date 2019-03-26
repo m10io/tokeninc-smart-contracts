@@ -87,6 +87,15 @@ contract("TokenIOERC20FeesApplyProxy", function(accounts) {
     });
 
     describe('APPROVE: should give allowance of remaining balance of account 1 to account 2', function () {
+      it('Should fail due to allowance > msg.sender token balance', async function () {
+        const balance1a = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_1))
+        try {
+            const { receipt: { status } } = await this.tokenIOERC20FeesApplyProxy.approve(TEST_ACCOUNT_2, balance1a+1);
+        } catch (error) {
+            assert.equal(error.message.match(RegExp('revert')).length, 1, "Allowance > token balance");
+      }
+
+      });
       it('Should pass', async function () {
         const balance1a = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_1))
 
@@ -95,6 +104,15 @@ contract("TokenIOERC20FeesApplyProxy", function(accounts) {
 
         assert.notEqual(allowance, 0, "Allowance should not equal zero.")
         assert.equal(allowance, balance1a, "Allowance should be the same value as the balance of account 1")
+      });
+
+      it('Should fail due to allowance is not zero', async function () {
+        const balance1a = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_1))
+        try {
+            const { receipt: { status } } = await this.tokenIOERC20FeesApplyProxy.approve(TEST_ACCOUNT_2, balance1a);
+        } catch (error) {
+            assert.equal(error.message.match(RegExp('revert')).length, 1, "Allowance is not zero");
+        }
       });
     });
 
@@ -130,6 +148,21 @@ contract("TokenIOERC20FeesApplyProxy", function(accounts) {
       it('Should pass', async function () {
         const TX_FEES = +(await this.tokenIOERC20FeesApplyProxy.calculateFees(TRANSFER_AMOUNT)).toString()
         assert.notEqual(TX_FEES, 0, "TX fee should not equal zero.")
+      });
+
+      it('Should return maxFee 100', async function () {
+        const TX_FEES = +(await this.tokenIOERC20FeesApplyProxy.calculateFees(1000000)).toString()
+        assert.equal(TX_FEES, 100, "TX fee should be max")
+      });
+
+      it('Should return minFee 10', async function () {
+        const TX_FEES = +(await this.tokenIOERC20FeesApplyProxy.calculateFees(1)).toString()
+        assert.equal(TX_FEES, 10, "TX fee should be min")
+      });
+
+      it('Should return custom fee 10', async function () {
+        const TX_FEES = +(await this.tokenIOERC20FeesApplyProxy.calculateFees(50000)).toString()
+        assert.equal(TX_FEES, 12, "TX fee should be custom")
       });
     });
 
