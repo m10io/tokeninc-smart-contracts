@@ -418,7 +418,7 @@ contract TokenIOStorage is Ownable {
      * @param _values balance values
      * @return { "success" : "Returns true when successfully called from another contract" }
      */
-    function setBalances(address[3] calldata _addresses, string calldata _currency, uint[3] calldata _values) external onlyOwner returns(bool success) {
+    function setBalances(address[2] calldata _addresses, string calldata _currency, uint[2] calldata _values) external onlyOwner returns(bool success) {
         for(uint i = 0; i < _addresses.length; i++) {
             balances[_addresses[i]][_currency] = _values[i];
         }

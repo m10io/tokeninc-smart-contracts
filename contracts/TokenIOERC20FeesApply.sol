@@ -197,13 +197,19 @@ contract TokenIOERC20FeesApply is Ownable {
       (string memory currency, address[3] memory addresses) = lib.getTransferDetails(proxyInstance, [sender, to, feeContract]);
       uint fees = calculateFees(feeContract, amount);
 
-      uint[3] memory balances = [lib.Storage.getBalance(addresses[0], currency).sub(amount.add(fees)), lib.Storage.getBalance(addresses[1], currency).add(amount), lib.Storage.getBalance(addresses[2], currency).add(fees)];
+      uint[2] memory balances = [lib.Storage.getBalance(addresses[0], currency).sub(amount.add(fees)), lib.Storage.getBalance(addresses[1], currency).add(amount)];
 
       require(
-        lib.Storage.setBalances(addresses, currency, balances),
+        lib.Storage.setBalances([addresses[0], addresses[1]], currency, balances),
         "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
       );
 
+      if(fees > 0) {
+      	require(
+	      lib.Storage.setBalance(addresses[2], currency, lib.Storage.getBalance(addresses[2], currency).add(fees)),
+	      "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
+      	);
+      }
       
       emit Transfer(sender, to, amount);
 
@@ -222,12 +228,19 @@ contract TokenIOERC20FeesApply is Ownable {
       (string memory currency, address[3] memory addresses) = lib.getTransferDetails(proxyInstance, [from, to, feeContract]);
       uint fees = calculateFees(feeContract, amount);
 
-      uint[3] memory balances = [lib.Storage.getBalance(addresses[0], currency).sub(amount.add(fees)), lib.Storage.getBalance(addresses[1], currency).add(amount), lib.Storage.getBalance(addresses[2], currency).add(fees)];
+      uint[2] memory balances = [lib.Storage.getBalance(addresses[0], currency).sub(amount.add(fees)), lib.Storage.getBalance(addresses[1], currency).add(amount)];
 
       require(
-          lib.Storage.setBalances(addresses, currency, balances),
+          lib.Storage.setBalances([addresses[0], addresses[1]], currency, balances),
           "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
       );
+
+      if(fees > 0) {
+      	require(
+	      lib.Storage.setBalance(addresses[2], currency, lib.Storage.getBalance(addresses[2], currency).add(fees)),
+	      "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
+      	);
+      }
 
       /// @notice This transaction will fail if the msg.sender does not have an approved allowance.
       require(
