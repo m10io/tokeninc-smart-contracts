@@ -52,6 +52,14 @@ contract("TokenIOERC20FeesApplyProxy", function(accounts) {
         }
       });
 
+      it('Should fail due to amount must not be 0', async function () {
+        try {
+            const { receipt: { status } } = await this.tokenIOERC20FeesApplyProxy.transfer(TEST_ACCOUNT_2, 0);
+        } catch (error) {
+            assert.equal(error.message.match(RegExp('revert')).length, 1, "Amount of transfer must not be 0");
+        }
+      });
+
       it('Should pass', async function () {
         await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_1, true, LIMIT_AMOUNT, "Token, Inc.")
         await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_2, true, LIMIT_AMOUNT, "Token, Inc.")
@@ -93,9 +101,9 @@ contract("TokenIOERC20FeesApplyProxy", function(accounts) {
             const { receipt: { status } } = await this.tokenIOERC20FeesApplyProxy.approve(TEST_ACCOUNT_2, balance1a+1);
         } catch (error) {
             assert.equal(error.message.match(RegExp('revert')).length, 1, "Allowance > token balance");
-      }
-
+        }
       });
+
       it('Should pass', async function () {
         const balance1a = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_1))
 

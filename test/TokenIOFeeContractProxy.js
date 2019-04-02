@@ -38,7 +38,23 @@ contract("TokenIOFeeContractProxy", function(accounts) {
     });
 
 	describe('Should transfer an amount of funds and send the fees to the fee contract', function () {
-		it("Should pass", async function () {
+		it('Should fail due to not enough balance', async function () {
+        try {
+            const { receipt: { status } } = await this.tokenIOERC20Proxy.transfer(TEST_ACCOUNT_2, TRANSFER_AMOUNT);
+        } catch (error) {
+            assert.equal(error.message.match(RegExp('revert')).length, 1, "Not enough balance");
+        }
+      });
+
+    it('Should fail due to amount must not be 0', async function () {
+        try {
+            const { receipt: { status } } = await this.tokenIOERC20Proxy.transfer(TEST_ACCOUNT_2, 0);
+        } catch (error) {
+            assert.equal(error.message.match(RegExp('revert')).length, 1, "Amount of transfer must not be 0");
+        }
+    });
+
+    it("Should pass", async function () {
 			const APPROVE_ACCOUNT_1_TX = await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_1, true, SPENDING_LIMIT, "Token, Inc.")
 			const APPROVE_ACCOUNT_2_TX = await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_2, true, SPENDING_LIMIT, "Token, Inc.")
 			const APPROVE_ACCOUNT_3_TX = await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_3, true, SPENDING_LIMIT, "Token, Inc.")
