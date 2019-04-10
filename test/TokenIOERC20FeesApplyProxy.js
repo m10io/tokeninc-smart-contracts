@@ -60,7 +60,7 @@ contract("TokenIOERC20FeesApplyProxy", function(accounts) {
         }
       });
 
-      it('Should pass', async function () {
+      it('should successfully supply uints, debiting the sender and crediting the receiver', async function () {
         await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_1, true, LIMIT_AMOUNT, "Token, Inc.")
         await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_2, true, LIMIT_AMOUNT, "Token, Inc.")
         await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_3, true, LIMIT_AMOUNT, "Token, Inc.")
@@ -188,12 +188,12 @@ contract("TokenIOERC20FeesApplyProxy", function(accounts) {
     describe('ALLOWANCE: should return allowance of account2 on behalf of account 1', function () {
       it('Should pass', async function () {
         const allowance = await this.tokenIOERC20FeesApplyProxy.allowance(TEST_ACCOUNT_1, TEST_ACCOUNT_2)
-        assert.equal(allowance.toNumber(), 249848)
+        assert.equal(allowance.toNumber(), 250000)
       });
     });
 
     describe('staticCall', function () {
-      it('Should pass', async function () {
+      it('Should get name with staticCall', async function () {
         const payload = web3.eth.abi.encodeFunctionSignature('name()')
         const encodedResult = await this.tokenIOERC20FeesApplyProxy.staticCall(payload);
         const result = web3.eth.abi.decodeParameters(['string'], encodedResult);
@@ -202,7 +202,7 @@ contract("TokenIOERC20FeesApplyProxy", function(accounts) {
     });
 
     describe('call', function () {
-      it('Should pass', async function () {
+      it('Should call transfer function with call function', async function () {
         const TEST_ACT_1_BEG_BALANCE = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_1)).toString()
         const TEST_ACT_2_BEG_BALANCE = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_2)).toString()
 
@@ -227,22 +227,5 @@ contract("TokenIOERC20FeesApplyProxy", function(accounts) {
         assert.equal(+(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_2)).toString(), TEST_ACT_2_BEG_BALANCE + 1)
       });
     });
-
-    describe('Deprecate interface', function () {
-       it('Should pass', async function () {
-        await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_1, true, LIMIT_AMOUNT, "Token, Inc.")
-        await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_2, true, LIMIT_AMOUNT, "Token, Inc.")
-        await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_3, true, LIMIT_AMOUNT, "Token, Inc.")
-        await this.tokenIOCurrencyAuthorityProxy.deposit(await this.tokenIOERC20FeesApplyProxy.symbol(), TEST_ACCOUNT_1, DEPOSIT_AMOUNT, "Token, Inc.");
-
-        await this.tokenIOERC20FeesApplyProxy.deprecateInterface();
-
-        try {
-            const { receipt: { status } } = await this.tokenIOERC20FeesApplyProxy.transfer(TEST_ACCOUNT_2, TRANSFER_AMOUNT);
-        } catch (error) {
-            assert.equal(error.message.match(RegExp('revert')).length, 1, "Expected interface is not deprecated");
-        }
-      });
-   });
 
 })

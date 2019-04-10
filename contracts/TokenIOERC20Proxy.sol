@@ -3,8 +3,6 @@ pragma solidity 0.5.2;
 import "./Ownable.sol";
 
 interface TokenIOERC20I {
-  function setParams(string calldata _name, string calldata _symbol, string calldata _tla, string calldata _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) external returns(bool success);
-
   function name() external view returns (string memory _name);
 
   function symbol() external view returns (string memory _symbol);
@@ -55,20 +53,6 @@ contract TokenIOERC20Proxy is Ownable {
   function call(bytes calldata payload) external {
     (bool res, bytes memory result) = implementationInstance.call(payload);
     require(res);
-  }
-  
-  function setParams(
-    string memory _name,
-    string memory _symbol,
-    string memory _tla,
-    string memory _version,
-    uint256 _decimals,
-    address _feeContract,
-    uint256 _fxUSDBPSRate
-    ) onlyOwner public returns(bool) {
-      require(TokenIOERC20I(implementationInstance).setParams(_name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate), 
-        "Unable to execute setParams");
-    return true;
   }
 
   function transfer(address to, uint256 amount) external returns(bool) {

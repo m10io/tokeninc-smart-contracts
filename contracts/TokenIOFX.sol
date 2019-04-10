@@ -85,7 +85,7 @@ contract TokenIOFX is Ownable {
     bytes32 sigS,
     uint expiration,
     address sender
-  ) public onlyOwner returns (bool success) {
+  ) public returns (bool success) {
     require(
       lib.execSwap(requester, symbolA, symbolB, valueA, valueB, sigV, sigR, sigS, expiration, sender),
       "Error: Unable to perform atomic currency swap. Please check parameters."

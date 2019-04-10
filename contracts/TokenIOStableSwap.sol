@@ -213,7 +213,7 @@ contract TokenIOStableSwap is Ownable {
     * @param  amount Amount of fromAsset to be transferred.
     * @return { "success" : "Returns true if successfully called from another contract"}
    */
-	function convert(address fromAsset, address toAsset, uint amount, address sender) public onlyOwner notDeprecated returns (bool success) {
+	function convert(address fromAsset, address toAsset, uint amount, address sender) public notDeprecated returns (bool success) {
     /// @notice lookup currency from one of the assets, check if allowed by both assets.
     string memory currency = getAssetCurrency(fromAsset);
     uint fromDecimals = ERC20Interface(fromAsset).decimals();

@@ -63,7 +63,7 @@ contract TokenIOAuthority is Ownable {
      * @param _authorized Authorization status
      * @return {"success" : "Returns true if lib.setRegisteredFirm succeeds"}
      */
-    function setRegisteredFirm(string memory firmName, bool _authorized, address sender) public onlyOwner onlyAuthority(firmName, sender) returns (bool success) {
+    function setRegisteredFirm(string memory firmName, bool _authorized, address sender) public onlyAuthority(firmName, sender) returns (bool success) {
         /// @notice set firm registration status
         require(
           lib.setRegisteredFirm(firmName, _authorized),
@@ -79,7 +79,7 @@ contract TokenIOAuthority is Ownable {
      * @param _authorized Authorization status
      * @return {"success" : "Returns true if lib.setRegisteredAuthority succeeds"}
      */
-    function setRegisteredAuthority(string memory firmName, address authority, bool _authorized, address sender) public onlyOwner onlyAuthority(firmName, sender) returns (bool success) {
+    function setRegisteredAuthority(string memory firmName, address authority, bool _authorized, address sender) public onlyAuthority(firmName, sender) returns (bool success) {
         /// @notice set authority of firm to given status
         require(
           lib.setRegisteredAuthority(firmName, authority, _authorized),

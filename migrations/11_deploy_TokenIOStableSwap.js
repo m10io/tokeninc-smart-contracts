@@ -18,18 +18,17 @@ const deployContracts = async (deployer, accounts) => {
 
       const swapProxy = await deployer.deploy(TokenIOStableSwapProxy, swap.address)
 
-      await swap.allowOwnership(swapProxy.address)
       await swap.initProxy(swapProxy.address)
 
       // Allow USD asset
       const usdx = await TokenIOERC20Proxy.deployed();
       const params1 = [ usdx.address, await usdx.tla() ]
-      await swapProxy.setTokenXCurrency(...params1);
+      await swap.setTokenXCurrency(...params1);
 
       // Allow other interfaces for USDx
       const usdxUnlimited = await TokenIOERC20UnlimitedProxy.deployed();
       const params2 = [ usdxUnlimited.address, await usdxUnlimited.tla() ]
-      await swapProxy.setTokenXCurrency(...params2);
+      await swap.setTokenXCurrency(...params2);
 
       // Allow USDC
       // NOTE: Fees must be in the decimal representation of the asset
@@ -39,7 +38,7 @@ const deployContracts = async (deployer, accounts) => {
       const feeMax = 1e12; // $1 million max fee; (6 decimal representation)
       const feeFlat = 0;
       const params3 = [ USDC, "USD",  feeBps, feeMin, feeMax, feeFlat ]
-      await swapProxy.allowAsset(...params3);
+      await swap.allowAsset(...params3);
 
       return true
   } catch (err) {

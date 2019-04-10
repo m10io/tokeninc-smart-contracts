@@ -56,20 +56,6 @@ contract TokenIOERC20UnlimitedProxy is Ownable {
     (bool res, bytes memory result) = implementationInstance.call(payload);
     require(res);
   }
-  
-  function setParams(
-    string memory _name,
-    string memory _symbol,
-    string memory _tla,
-    string memory _version,
-    uint256 _decimals,
-    address _feeContract,
-    uint256 _fxUSDBPSRate
-    ) onlyOwner public returns(bool) {
-      require(TokenIOERC20UnlimitedI(implementationInstance).setParams(_name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate), 
-        "Unable to execute setParams");
-    return true;
-  }
 
   function transfer(address to, uint256 amount) external returns(bool) {
     require(TokenIOERC20UnlimitedI(implementationInstance).transfer(to, amount, msg.sender), 
@@ -126,13 +112,6 @@ contract TokenIOERC20UnlimitedProxy is Ownable {
 
   function calculateFees(uint amount) external view returns (uint256) {
     return TokenIOERC20UnlimitedI(implementationInstance).calculateFees(amount);
-  }
-
-  function deprecateInterface() external onlyOwner returns (bool) {
-    require(TokenIOERC20UnlimitedI(implementationInstance).deprecateInterface(), 
-      "Unable to execute deprecateInterface");
-
-    return true;
   }
 
 }

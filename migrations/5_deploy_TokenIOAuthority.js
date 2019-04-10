@@ -21,7 +21,6 @@ const deployContracts = async (deployer, accounts) => {
 
       const authorityProxy = await deployer.deploy(TokenIOAuthorityProxy, authority.address)
 
-      await authority.allowOwnership(authorityProxy.address)
       await authority.initProxy(authorityProxy.address)
 
       const masterFeeContractProxy = await TokenIOFeeContractProxy.deployed()
@@ -29,7 +28,7 @@ const deployContracts = async (deployer, accounts) => {
       /* registration */
       await authorityProxy.setRegisteredFirm(firmName, true)
       await authorityProxy.setRegisteredAuthority(firmName, accounts[0], true)
-      await authorityProxy.setMasterFeeContract(masterFeeContractProxy.address)
+      await authority.setMasterFeeContract(masterFeeContractProxy.address)
 
       return true
   } catch (err) {

@@ -38,9 +38,6 @@ contract("TokenIOERC20Proxy", function(accounts) {
       this.tokenIOFeeContractProxy = await TokenIOFeeContractProxy.deployed();
       this.tokenIOStorage = await TokenIOStorage.deployed();
       this.tokenIOCurrencyAuthorityProxy = await TokenIOCurrencyAuthorityProxy.deployed();
-
-      await this.tokenIOERC20Proxy.setParams(TOKEN_NAME, TOKEN_SYMBOL, TOKEN_TLA, TOKEN_VERSION, TOKEN_DECIMALS, this.tokenIOFeeContractProxy.address, 10000);
-      await this.tokenIOFeeContractProxy.setFeeParams(TOKEN_FEE_BPS, TOKEN_FEE_MIN, TOKEN_FEE_MAX, TOKEN_FEE_FLAT, TOKEN_FEE_MSG);
     });
 
     /* PARAMETERS */

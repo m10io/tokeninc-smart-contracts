@@ -14,7 +14,6 @@ const deployContracts = async (deployer, accounts) => {
       await storage.allowOwnership(fx.address)
 
       const fxProxy = await deployer.deploy(TokenIOFXProxy, fx.address)
-      fx.allowOwnership(fxProxy.address)
       fx.initProxy(fxProxy.address)
 
       return true

@@ -52,15 +52,7 @@ contract TokenIOFeeContractProxy is Ownable {
   }
 
   function calculateFees(uint amount) public view returns (uint fees) {
-	return TokenIOFeeContractI(implementationInstance).calculateFees(amount);
-  }
-
-  function transferCollectedFees(string memory currency, address to, uint amount, bytes memory data) public onlyOwner returns (bool success) {
-	require(
-		TokenIOFeeContractI(implementationInstance).transferCollectedFees(currency, to, amount, data),
-		"Unable to execute transferCollectedFees"
-	);
-	return true;
+	  return TokenIOFeeContractI(implementationInstance).calculateFees(amount);
   }
 
 }
