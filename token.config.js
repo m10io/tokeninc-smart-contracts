@@ -1,4 +1,4 @@
-const USDx = {
+ const USDx = {
   // Ensure these values are ordered in the object for the respective param list
   // index in the erc20 contract setPrams() method.
   tokenName: 'TokenX USD', // tokenName
@@ -86,7 +86,7 @@ const AUTHORITY_DETAILS = {
 
 const FEE_PARAMS = {
     feeBps: 2, // bps fee
-    feeMin: 0, // min fee
+    feeMin: 10, // min fee
     feeMax: 100, // max fee
     feeFlat: 2, // flat fee
     feeMsg: "0x547846656573"

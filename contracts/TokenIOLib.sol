@@ -1030,7 +1030,7 @@ library TokenIOLib {
 
     bytes32 id = keccak256(abi.encodePacked('depcrecated', contractAddress));
 
-    require(self.Storage.setBool(id, true),
+    require(self.Storage.setDeprecated(contractAddress, true),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract.");
 
     return true;

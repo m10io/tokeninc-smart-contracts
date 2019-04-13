@@ -73,12 +73,4 @@ contract TokenIOAuthorityProxy is Ownable {
         return TokenIOAuthorityI(implementationInstance).isRegisteredAuthority(authority);
     }
 
-    function setMasterFeeContract(address feeContract) public onlyOwner returns (bool success) {
-        require(
-          TokenIOAuthorityI(implementationInstance).setMasterFeeContract(feeContract),
-          "Unable to execute setMasterFeeContract"
-        );
-        return true;
-    }
-
 }

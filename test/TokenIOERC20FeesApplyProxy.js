@@ -44,7 +44,23 @@ contract("TokenIOERC20FeesApplyProxy", function(accounts) {
     });
 
     describe('TRANSFER:should supply uints, debiting the sender and crediting the receiver', function () {
-      it('Should pass', async function () {
+      it('Should fail due to not enough balance', async function () {
+        try {
+            const { receipt: { status } } = await this.tokenIOERC20FeesApplyProxy.transfer(TEST_ACCOUNT_2, TRANSFER_AMOUNT);
+        } catch (error) {
+            assert.equal(error.message.match(RegExp('revert')).length, 1, "Not enough balance");
+        }
+      });
+
+      it('Should fail due to amount must not be 0', async function () {
+        try {
+            const { receipt: { status } } = await this.tokenIOERC20FeesApplyProxy.transfer(TEST_ACCOUNT_2, 0);
+        } catch (error) {
+            assert.equal(error.message.match(RegExp('revert')).length, 1, "Amount of transfer must not be 0");
+        }
+      });
+
+      it('should successfully supply uints, debiting the sender and crediting the receiver', async function () {
         await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_1, true, LIMIT_AMOUNT, "Token, Inc.")
         await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_2, true, LIMIT_AMOUNT, "Token, Inc.")
         await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_3, true, LIMIT_AMOUNT, "Token, Inc.")
@@ -79,6 +95,15 @@ contract("TokenIOERC20FeesApplyProxy", function(accounts) {
     });
 
     describe('APPROVE: should give allowance of remaining balance of account 1 to account 2', function () {
+      it('Should fail due to allowance > msg.sender token balance', async function () {
+        const balance1a = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_1))
+        try {
+            const { receipt: { status } } = await this.tokenIOERC20FeesApplyProxy.approve(TEST_ACCOUNT_2, balance1a+1);
+        } catch (error) {
+            assert.equal(error.message.match(RegExp('revert')).length, 1, "Allowance > token balance");
+        }
+      });
+
       it('Should pass', async function () {
         const balance1a = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_1))
 
@@ -88,11 +113,19 @@ contract("TokenIOERC20FeesApplyProxy", function(accounts) {
         assert.notEqual(allowance, 0, "Allowance should not equal zero.")
         assert.equal(allowance, balance1a, "Allowance should be the same value as the balance of account 1")
       });
+
+      it('Should fail due to allowance is not zero', async function () {
+        const balance1a = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_1))
+        try {
+            const { receipt: { status } } = await this.tokenIOERC20FeesApplyProxy.approve(TEST_ACCOUNT_2, balance1a);
+        } catch (error) {
+            assert.equal(error.message.match(RegExp('revert')).length, 1, "Allowance is not zero");
+        }
+      });
     });
 
-    describe('TRANSFER_FROM: account 2 should spend funds transfering from account1 to account 3  on behalf of account1', function () {
+    describe('TRANSFER_FROM: Not enough funds', function () {
       it('Should pass', async function () {
-
         const TEST_ACT_1_BEG_BALANCE = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_1)).toString()
         const TEST_ACT_2_BEG_BALANCE = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_2)).toString()
         const TEST_ACT_3_BEG_BALANCE = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_3)).toString()
@@ -124,6 +157,21 @@ contract("TokenIOERC20FeesApplyProxy", function(accounts) {
         const TX_FEES = +(await this.tokenIOERC20FeesApplyProxy.calculateFees(TRANSFER_AMOUNT)).toString()
         assert.notEqual(TX_FEES, 0, "TX fee should not equal zero.")
       });
+
+      it('Should return maxFee 100', async function () {
+        const TX_FEES = +(await this.tokenIOERC20FeesApplyProxy.calculateFees(1000000)).toString()
+        assert.equal(TX_FEES, 100, "TX fee should be max")
+      });
+
+      it('Should return minFee 10', async function () {
+        const TX_FEES = +(await this.tokenIOERC20FeesApplyProxy.calculateFees(1)).toString()
+        assert.equal(TX_FEES, 10, "TX fee should be min")
+      });
+
+      it('Should return custom fee 10', async function () {
+        const TX_FEES = +(await this.tokenIOERC20FeesApplyProxy.calculateFees(50000)).toString()
+        assert.equal(TX_FEES, 12, "TX fee should be custom")
+      });
     });
 
     describe('BALANCE_OF: should get balance of account1', function () {
@@ -140,12 +188,12 @@ contract("TokenIOERC20FeesApplyProxy", function(accounts) {
     describe('ALLOWANCE: should return allowance of account2 on behalf of account 1', function () {
       it('Should pass', async function () {
         const allowance = await this.tokenIOERC20FeesApplyProxy.allowance(TEST_ACCOUNT_1, TEST_ACCOUNT_2)
-        assert.equal(allowance.toNumber(), 249848)
+        assert.equal(allowance.toNumber(), 250000)
       });
     });
 
     describe('staticCall', function () {
-      it('Should pass', async function () {
+      it('Should get name with staticCall', async function () {
         const payload = web3.eth.abi.encodeFunctionSignature('name()')
         const encodedResult = await this.tokenIOERC20FeesApplyProxy.staticCall(payload);
         const result = web3.eth.abi.decodeParameters(['string'], encodedResult);
@@ -154,7 +202,7 @@ contract("TokenIOERC20FeesApplyProxy", function(accounts) {
     });
 
     describe('call', function () {
-      it('Should pass', async function () {
+      it('Should call transfer function with call function', async function () {
         const TEST_ACT_1_BEG_BALANCE = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_1)).toString()
         const TEST_ACT_2_BEG_BALANCE = +(await this.tokenIOERC20FeesApplyProxy.balanceOf(TEST_ACCOUNT_2)).toString()
 

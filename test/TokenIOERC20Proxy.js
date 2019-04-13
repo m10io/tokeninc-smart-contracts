@@ -38,9 +38,6 @@ contract("TokenIOERC20Proxy", function(accounts) {
       this.tokenIOFeeContractProxy = await TokenIOFeeContractProxy.deployed();
       this.tokenIOStorage = await TokenIOStorage.deployed();
       this.tokenIOCurrencyAuthorityProxy = await TokenIOCurrencyAuthorityProxy.deployed();
-
-      await this.tokenIOERC20Proxy.setParams(TOKEN_NAME, TOKEN_SYMBOL, TOKEN_TLA, TOKEN_VERSION, TOKEN_DECIMALS, this.tokenIOFeeContractProxy.address, 10000);
-      await this.tokenIOFeeContractProxy.setFeeParams(TOKEN_FEE_BPS, TOKEN_FEE_MIN, TOKEN_FEE_MAX, TOKEN_FEE_FLAT, TOKEN_FEE_MSG);
     });
 
     /* PARAMETERS */
@@ -222,5 +219,24 @@ contract("TokenIOERC20Proxy", function(accounts) {
       });
     });
 
+    describe("Deprecate interface", function () {
+      it("Should pass", async function () {
+        const kycReceipt1 = await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_1, true, LIMIT_AMOUNT, "Token, Inc.")
+        const kycReceipt2= await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_2, true, LIMIT_AMOUNT, "Token, Inc.")
+        const kycReceipt3= await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_3, true, LIMIT_AMOUNT, "Token, Inc.")
+
+        await this.tokenIOStorage.allowOwnership(this.tokenIOERC20Proxy.address)
+        const tokenSymbol = await this.tokenIOERC20Proxy.symbol()
+        const depositReceipt = await this.tokenIOCurrencyAuthorityProxy.deposit(tokenSymbol, TEST_ACCOUNT_1, DEPOSIT_AMOUNT, "Token, Inc.")
+
+        await this.tokenIOERC20Proxy.deprecateInterface();
+
+        try {
+           const { receipt: { status } } = await this.tokenIOERC20Proxy.transfer(TEST_ACCOUNT_2, TRANSFER_AMOUNT);
+        } catch (error) {
+           assert.equal(error.message.match(RegExp('revert')).length, 1, "Expected interface is not deprecated");
+        }
+      })
+    })
 
 })

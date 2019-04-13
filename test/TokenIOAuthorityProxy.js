@@ -90,7 +90,7 @@ contract("TokenIOAuthorityProxy", function(accounts) {
     });
 
     describe('call', function () {
-      it('Should pass', async function () {
+      it('Should fail due to proxy is not an owner of logic contract', async function () {
         const payload = web3.eth.abi.encodeFunctionCall({
             name: 'setMasterFeeContract',
             type: 'function',

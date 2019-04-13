@@ -20,10 +20,9 @@ const deployContracts = async (deployer, accounts) => {
       await storage.allowOwnership(token.address)
 
       const tokenProxy = await deployer.deploy(TokenIOERC20FeesApplyProxy, token.address)
-      await token.allowOwnership(tokenProxy.address)
       await token.initProxy(tokenProxy.address)
 
-      await tokenProxy.setParams(...Object.values(TOKEN_DETAILS['USDx']).map((v) => { return v }))
+      await token.setParams(...Object.values(TOKEN_DETAILS['USDx']).map((v) => { return v }))
 
       return true
   } catch (err) {

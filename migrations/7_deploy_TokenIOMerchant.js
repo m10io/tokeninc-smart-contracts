@@ -17,10 +17,9 @@ const deployContracts = async (deployer, accounts) => {
       const merchant = await deployer.deploy(TokenIOMerchant, storage.address)
       await storage.allowOwnership(merchant.address)
       const merchantProxy = await deployer.deploy(TokenIOMerchantProxy, merchant.address)
-      await merchant.allowOwnership(merchantProxy.address)
       await merchant.initProxy(merchantProxy.address)
 
-      await merchantProxy.setParams(masterFeeContractProxy.address)
+      await merchant.setParams(masterFeeContractProxy.address)
 
       return true
   } catch (err) {

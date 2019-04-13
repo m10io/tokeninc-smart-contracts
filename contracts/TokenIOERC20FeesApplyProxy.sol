@@ -3,8 +3,6 @@ pragma solidity 0.5.2;
 import "./Ownable.sol";
 
 interface TokenIOERC20FeesApplyI {
-  function setParams(string calldata _name, string calldata _symbol, string calldata _tla, string calldata _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) external returns(bool success);
-
   function name() external view returns (string memory _name);
 
   function symbol() external view returns (string memory _symbol);
@@ -30,8 +28,6 @@ interface TokenIOERC20FeesApplyI {
   function transferFrom(address from, address to, uint amount, address sender) external returns(bool success);
 
   function approve(address spender, uint amount, address sender) external returns (bool success);
-
-  function deprecateInterface() external returns (bool deprecated);
 }
 
 contract TokenIOERC20FeesApplyProxy is Ownable {
@@ -46,20 +42,6 @@ contract TokenIOERC20FeesApplyProxy is Ownable {
     implementationInstance = _newImplementationInstance;
   }
   
-  function setParams(
-    string memory _name,
-    string memory _symbol,
-    string memory _tla,
-    string memory _version,
-    uint256 _decimals,
-    address _feeContract,
-    uint256 _fxUSDBPSRate
-    ) onlyOwner public returns(bool) {
-      require(TokenIOERC20FeesApplyI(implementationInstance).setParams(_name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate), 
-        "Unable to execute setParams");
-    return true;
-  }
-
   function staticCall(bytes calldata payload) external view returns(bytes memory) {
     (bool res, bytes memory result) = implementationInstance.staticcall(payload);
     return result;
@@ -125,13 +107,6 @@ contract TokenIOERC20FeesApplyProxy is Ownable {
 
   function calculateFees(uint amount) external view returns (uint256) {
     return TokenIOERC20FeesApplyI(implementationInstance).calculateFees(amount);
-  }
-
-  function deprecateInterface() external onlyOwner returns (bool) {
-    require(TokenIOERC20FeesApplyI(implementationInstance).deprecateInterface(), 
-      "Unable to execute deprecateInterface");
-
-    return true;
   }
 
 }

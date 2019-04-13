@@ -41,8 +41,8 @@ contract("TokenIOFXProxy", function(accounts) {
 		const token2 = await TokenIOERC20.new(storage.address)
 		await storage.allowOwnership(token1.address)
 		await storage.allowOwnership(token2.address)
-		TOKEN_A = await TokenIOERC20Proxy.new(token1.address)
-		TOKEN_B = await TokenIOERC20Proxy.new(token2.address)
+		TOKEN_A = token1;
+		TOKEN_B = token2;
 		await token1.allowOwnership(TOKEN_A.address)
       	await token1.initProxy(TOKEN_A.address)
       	await token2.allowOwnership(TOKEN_B.address)

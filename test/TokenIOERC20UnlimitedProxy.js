@@ -74,6 +74,22 @@ contract("TokenIOERC20UnlimitedProxy", function(accounts) {
     /* PUBLIC FUNCTIONS */
 
     describe("TRANSFER:should supply uints, debiting the sender and crediting the receiver", function () {
+      it('Should fail due to not enough balance', async function () {
+        try {
+            const { receipt: { status } } = await this.tokenIOERC20UnlimitedProxy.transfer(TEST_ACCOUNT_2, TRANSFER_AMOUNT);
+        } catch (error) {
+            assert.equal(error.message.match(RegExp('revert')).length, 1, "Not enough balance");
+        }
+      });
+
+      it('Should fail due to amount must not be 0', async function () {
+        try {
+            const { receipt: { status } } = await this.tokenIOERC20UnlimitedProxy.transfer(TEST_ACCOUNT_2, 0);
+        } catch (error) {
+            assert.equal(error.message.match(RegExp('revert')).length, 1, "Amount of transfer must not be 0");
+        }
+      });
+
       it("Should pass", async function () {
         const kycReceipt1 = await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_1, true, LIMIT_AMOUNT, "Token, Inc.")
         const kycReceipt2= await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_2, true, LIMIT_AMOUNT, "Token, Inc.")
@@ -111,6 +127,15 @@ contract("TokenIOERC20UnlimitedProxy", function(accounts) {
     })
 
     describe("APPROVE:should give allowance of remaining balance of account 1 to account 2 allowances[account1][account2]: 0 --> 100", function () {
+      it('Should fail due to allowance > msg.sender token balance', async function () {
+        const balance1a = +(await this.tokenIOERC20UnlimitedProxy.balanceOf(TEST_ACCOUNT_1))
+        try {
+            const { receipt: { status } } = await this.tokenIOERC20UnlimitedProxy.approve(TEST_ACCOUNT_2, balance1a+1);
+        } catch (error) {
+            assert.equal(error.message.match(RegExp('revert')).length, 1, "Allowance > token balance");
+        }
+      });
+
       it("Should pass", async function () {
         const kycReceipt1 = await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_1, true, LIMIT_AMOUNT, "Token, Inc.")
 
@@ -127,6 +152,15 @@ contract("TokenIOERC20UnlimitedProxy", function(accounts) {
         assert.notEqual(allowance, 0, "Allowance should not equal zero.")
         assert.equal(allowance, balance1a, "Allowance should be the same value as the balance of account 1")
       })
+
+      it('Should fail due to allowance is not zero', async function () {
+        const balance1a = +(await this.tokenIOERC20UnlimitedProxy.balanceOf(TEST_ACCOUNT_1))
+        try {
+            const { receipt: { status } } = await this.tokenIOERC20UnlimitedProxy.approve(TEST_ACCOUNT_2, balance1a);
+        } catch (error) {
+            assert.equal(error.message.match(RegExp('revert')).length, 1, "Allowance is not zero");
+        }
+      });
     })
 
     describe("TRANSFER_FROM:account 2 should spend funds transfering from account1 to account 3  on behalf of account1", function () {
@@ -186,5 +220,25 @@ contract("TokenIOERC20UnlimitedProxy", function(accounts) {
         await this.tokenIOERC20UnlimitedProxy.call(payload);
       });
     });
+
+    describe("Deprecate interface", function () {
+      it("Should pass", async function () {
+        const kycReceipt1 = await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_1, true, LIMIT_AMOUNT, "Token, Inc.")
+        const kycReceipt2= await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_2, true, LIMIT_AMOUNT, "Token, Inc.")
+        const kycReceipt3= await this.tokenIOCurrencyAuthorityProxy.approveKYC(TEST_ACCOUNT_3, true, LIMIT_AMOUNT, "Token, Inc.")
+
+        await this.tokenIOStorage.allowOwnership(this.tokenIOERC20UnlimitedProxy.address)
+        const tokenSymbol = await this.tokenIOERC20UnlimitedProxy.symbol()
+        const depositReceipt = await this.tokenIOCurrencyAuthorityProxy.deposit(tokenSymbol, TEST_ACCOUNT_1, DEPOSIT_AMOUNT, "Token, Inc.")
+
+        await this.tokenIOERC20UnlimitedProxy.deprecateInterface();
+
+        try {
+           const { receipt: { status } } = await this.tokenIOERC20UnlimitedProxy.transfer(TEST_ACCOUNT_2, TRANSFER_AMOUNT);
+        } catch (error) {
+           assert.equal(error.message.match(RegExp('revert')).length, 1, "Expected interface is not deprecated");
+        }
+      })
+    })
 
 })
