@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.2;
 
 import "./Ownable.sol";
 import "./TokenIOLib.sol";
@@ -35,7 +35,8 @@ contract TokenIOFX is Ownable {
   using TokenIOLib for TokenIOLib.Data;
   TokenIOLib.Data lib;
 
-
+  address public proxyInstance;
+  
   /**
 	* @notice Constructor method for TokenIOFX contract
 	* @param _storageContract Address of TokenIOStorage contract
@@ -51,6 +52,12 @@ contract TokenIOFX is Ownable {
 			owner[msg.sender] = true;
 	}
 
+  function initProxy(address _proxy) public onlyOwner {
+      require(_proxy != address(0));
+      
+      proxyInstance = _proxy;
+      lib.proxyInstance = _proxy;
+  }
 
   /**
    * @notice Accepts a signed fx request to swap currency pairs at a given amount;
@@ -69,17 +76,18 @@ contract TokenIOFX is Ownable {
    */
   function swap(
     address requester,
-    string symbolA,
-    string symbolB,
+    string memory symbolA,
+    string memory symbolB,
     uint valueA,
     uint valueB,
     uint8 sigV,
     bytes32 sigR,
     bytes32 sigS,
-    uint expiration
+    uint expiration,
+    address sender
   ) public returns (bool success) {
     require(
-      lib.execSwap(requester, symbolA, symbolB, valueA, valueB, sigV, sigR, sigS, expiration),
+      lib.execSwap(requester, symbolA, symbolB, valueA, valueB, sigV, sigR, sigS, expiration, sender),
       "Error: Unable to perform atomic currency swap. Please check parameters."
     );
     return true;

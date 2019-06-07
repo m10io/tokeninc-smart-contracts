@@ -30,10 +30,12 @@ maintain data consistency between contract.
 
 
 
-contract TokenIOERC20 is Ownable {
+contract TokenIOERC20Unlimited is Ownable {
   //// @dev Set reference to TokenIOLib interface which proxies to TokenIOStorage
   using TokenIOLib for TokenIOLib.Data;
   TokenIOLib.Data lib;
+
+  event Transfer(address indexed from, address indexed to, uint256 amount);
 
   address public proxyInstance;
 
@@ -151,31 +153,6 @@ contract TokenIOERC20 is Ownable {
     }
 
     /**
-    * @notice Gets fee parameters
-    * @return {
-      "bps":"Fee amount as a mesuare of basis points",
-      "min":"Minimum fee amount",
-      "max":"Maximum fee amount",
-      "flat":"Flat fee amount",
-      "contract":"Address of fee contract"
-      }
-    */
-    function getFeeParams() public view returns (uint bps, uint min, uint max, uint flat, bytes memory feeMsg, address feeAccount) {
-      feeAccount = lib.getFeeContract(proxyInstance);
-      (max, min, bps, flat) = lib.getFees(feeAccount);
-      feeMsg = lib.getFeeMsg(feeAccount);
-    }
-
-    /**
-    * @notice Calculates fee of a given transfer amount
-    * @param amount Amount to calculcate fee value
-    * @return {"fees": "Returns the calculated transaction fees based on the fee contract parameters"}
-    */
-    function calculateFees(uint amount) public view returns (uint fees) {
-      return lib.calculateFees(lib.getFeeContract(proxyInstance), amount);
-    }
-
-    /**
     * @notice transfers 'amount' from msg.sender to a receiving account 'to'
     * @param to Receiving address
     * @param amount Transfer amount
@@ -185,9 +162,12 @@ contract TokenIOERC20 is Ownable {
       /// @notice send transfer through library
       /// @dev !!! mutates storage state
       require(
-        lib.transfer(lib.getTokenSymbol(proxyInstance), to, amount, sender, "0x0"),
+        lib.forceTransfer(lib.getTokenSymbol(proxyInstance), sender, to, amount, "0x0"),
         "Error: Unable to transfer funds. Please check your parameters."
       );
+
+      /// @dev Emit Log event
+      emit Transfer(sender, to, amount);
       return true;
     }
 
@@ -202,9 +182,17 @@ contract TokenIOERC20 is Ownable {
       /// @notice sends transferFrom through library
       /// @dev !!! mutates storage state
       require(
-        lib.transferFrom(from, to, amount, "0x0", sender),
+        lib.forceTransfer(lib.getTokenSymbol(proxyInstance), from, to, amount, "0x0"),
         "Error: Unable to transfer funds. Please check your parameters and ensure the spender has the approved amount of funds to transfer."
       );
+
+      /// @notice This transaction will fail if the msg.sender does not have an approved allowance.
+      require(
+        lib.updateAllowance(lib.getTokenSymbol(proxyInstance), from, amount, sender),
+        "Error: Unable to update allowance for spender."
+      );
+
+      emit Transfer(from, to, amount);
       return true;
     }
 

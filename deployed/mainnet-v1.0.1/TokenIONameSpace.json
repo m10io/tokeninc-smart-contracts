@@ -1,0 +1,1297 @@
+{
+  "contractName": "TokenIONameSpace",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "allowedAddress",
+          "type": "address"
+        }
+      ],
+      "name": "allowOwnership",
+      "outputs": [
+        {
+          "name": "success",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "allowedAddress",
+          "type": "address"
+        }
+      ],
+      "name": "removeOwnership",
+      "outputs": [
+        {
+          "name": "success",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "owner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [
+        {
+          "name": "success",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "name": "_storageContract",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "allowedAddress",
+          "type": "address"
+        }
+      ],
+      "name": "AllowOwnership",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "allowedAddress",
+          "type": "address"
+        }
+      ],
+      "name": "RevokeOwnership",
+      "type": "event"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "currency",
+          "type": "string"
+        }
+      ],
+      "name": "getTokenNameSpace",
+      "outputs": [
+        {
+          "name": "contractAddress",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b506040516020806106eb833981016040908152905133600090815260208190529182208054600160ff19918216811783558054600160a060020a031916600160a060020a03909416939093178355815416909117905561067590819061007690396000f30060806040526004361061006c5763ffffffff7c0100000000000000000000000000000000000000000000000000000000600035041663394387b181146100715780634bbc142c146100e6578063666a34271461011b578063666e1b391461013c578063f2fde38b1461015d575b600080fd5b34801561007d57600080fd5b506040805160206004803580820135601f81018490048402850184019095528484526100ca94369492936024939284019190819084018382808284375094975061017e9650505050505050565b60408051600160a060020a039092168252519081900360200190f35b3480156100f257600080fd5b50610107600160a060020a0360043516610197565b604080519115158252519081900360200190f35b34801561012757600080fd5b50610107600160a060020a0360043516610277565b34801561014857600080fd5b50610107600160a060020a0360043516610354565b34801561016957600080fd5b50610107600160a060020a0360043516610369565b600061019160018363ffffffff6104c716565b92915050565b3360009081526020819052604081205460ff161515610226576040805160e560020a62461bcd02815260206004820152603960248201527f4572726f723a205472616e73616374696f6e2073656e646572206973206e6f7460448201527f20616c6c6f7765642062792074686520636f6e74726163742e00000000000000606482015290519081900360840190fd5b600160a060020a038216600081815260208190526040808220805460ff19166001179055517f1c965cca064792c08083e8746b9062155a2f163d9f9ddab08196d5b2e3a818c59190a2506001919050565b3360009081526020819052604081205460ff161515610306576040805160e560020a62461bcd02815260206004820152603960248201527f4572726f723a205472616e73616374696f6e2073656e646572206973206e6f7460448201527f20616c6c6f7765642062792074686520636f6e74726163742e00000000000000606482015290519081900360840190fd5b600160a060020a038216600081815260208190526040808220805460ff19169055517f2d760b10f59f9d65a092cfebe73f70fd0a4e19e59791ffd61ee3057a0010ad989190a2506001919050565b60006020819052908152604090205460ff1681565b3360009081526020819052604081205460ff1615156103f8576040805160e560020a62461bcd02815260206004820152603960248201527f4572726f723a205472616e73616374696f6e2073656e646572206973206e6f7460448201527f20616c6c6f7765642062792074686520636f6e74726163742e00000000000000606482015290519081900360840190fd5b600160a060020a0382161515610458576040805160e560020a62461bcd02815260206004820152601f60248201527f4572726f723a206e65774f776e65722063616e6e6f74206265206e756c6c2100604482015290519081900360640190fd5b604051600160a060020a0383169033907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e090600090a350600160a060020a03166000908152602081905260408082208054600160ff199182168117909255338452919092208054909116905590565b6000808260405160200180807f746f6b656e2e6e616d6573706163650000000000000000000000000000000000815250600f0182805190602001908083835b602083106105255780518252601f199092019160209182019101610506565b6001836020036101000a0380198251168184511680821785525050505050509050019150506040516020818303038152906040526040518082805190602001908083835b602083106105885780518252601f199092019160209182019101610569565b51815160209384036101000a6000190180199092169116179052604080519290940182900382208a547f21f8a721000000000000000000000000000000000000000000000000000000008452600484018290529451909750600160a060020a0390941695506321f8a721945060248083019491935090918290030181600087803b15801561061557600080fd5b505af1158015610629573d6000803e3d6000fd5b505050506040513d602081101561063f57600080fd5b50519493505050505600a165627a7a723058209fcd53ffea422196530e7f8d1ecf7c3e85b79a5ff60b736957e69e6c4b8b0dd60029",
+  "deployedBytecode": "0x60806040526004361061006c5763ffffffff7c0100000000000000000000000000000000000000000000000000000000600035041663394387b181146100715780634bbc142c146100e6578063666a34271461011b578063666e1b391461013c578063f2fde38b1461015d575b600080fd5b34801561007d57600080fd5b506040805160206004803580820135601f81018490048402850184019095528484526100ca94369492936024939284019190819084018382808284375094975061017e9650505050505050565b60408051600160a060020a039092168252519081900360200190f35b3480156100f257600080fd5b50610107600160a060020a0360043516610197565b604080519115158252519081900360200190f35b34801561012757600080fd5b50610107600160a060020a0360043516610277565b34801561014857600080fd5b50610107600160a060020a0360043516610354565b34801561016957600080fd5b50610107600160a060020a0360043516610369565b600061019160018363ffffffff6104c716565b92915050565b3360009081526020819052604081205460ff161515610226576040805160e560020a62461bcd02815260206004820152603960248201527f4572726f723a205472616e73616374696f6e2073656e646572206973206e6f7460448201527f20616c6c6f7765642062792074686520636f6e74726163742e00000000000000606482015290519081900360840190fd5b600160a060020a038216600081815260208190526040808220805460ff19166001179055517f1c965cca064792c08083e8746b9062155a2f163d9f9ddab08196d5b2e3a818c59190a2506001919050565b3360009081526020819052604081205460ff161515610306576040805160e560020a62461bcd02815260206004820152603960248201527f4572726f723a205472616e73616374696f6e2073656e646572206973206e6f7460448201527f20616c6c6f7765642062792074686520636f6e74726163742e00000000000000606482015290519081900360840190fd5b600160a060020a038216600081815260208190526040808220805460ff19169055517f2d760b10f59f9d65a092cfebe73f70fd0a4e19e59791ffd61ee3057a0010ad989190a2506001919050565b60006020819052908152604090205460ff1681565b3360009081526020819052604081205460ff1615156103f8576040805160e560020a62461bcd02815260206004820152603960248201527f4572726f723a205472616e73616374696f6e2073656e646572206973206e6f7460448201527f20616c6c6f7765642062792074686520636f6e74726163742e00000000000000606482015290519081900360840190fd5b600160a060020a0382161515610458576040805160e560020a62461bcd02815260206004820152601f60248201527f4572726f723a206e65774f776e65722063616e6e6f74206265206e756c6c2100604482015290519081900360640190fd5b604051600160a060020a0383169033907f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e090600090a350600160a060020a03166000908152602081905260408082208054600160ff199182168117909255338452919092208054909116905590565b6000808260405160200180807f746f6b656e2e6e616d6573706163650000000000000000000000000000000000815250600f0182805190602001908083835b602083106105255780518252601f199092019160209182019101610506565b6001836020036101000a0380198251168184511680821785525050505050509050019150506040516020818303038152906040526040518082805190602001908083835b602083106105885780518252601f199092019160209182019101610569565b51815160209384036101000a6000190180199092169116179052604080519290940182900382208a547f21f8a721000000000000000000000000000000000000000000000000000000008452600484018290529451909750600160a060020a0390941695506321f8a721945060248083019491935090918290030181600087803b15801561061557600080fd5b505af1158015610629573d6000803e3d6000fd5b505050506040513d602081101561063f57600080fd5b50519493505050505600a165627a7a723058209fcd53ffea422196530e7f8d1ecf7c3e85b79a5ff60b736957e69e6c4b8b0dd60029",
+  "sourceMap": "1076:1347:10:-;;;1414:474;8:9:-1;5:2;;;30:1;27;20:12;5:2;1414:474:10;;;;;;;;;;;;;;;;1117:10:1;1111:5;:17;;;1414:474:10;1111:17:1;;;;;;:24;;1131:4;-1:-1:-1;;1111:24:1;;;;;;;1758:46:10;;-1:-1:-1;;;;;;1758:46:10;-1:-1:-1;;;;;1758:46:10;;;;;;;;;1858:24;;;;;;;;1076:1347;;;;;;;;",
+  "deployedSourceMap": "1076:1347:10:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;2275:145;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;2275:145:10;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;2275:145:10;;-1:-1:-1;2275:145:10;;-1:-1:-1;;;;;;;2275:145:10;;;;;-1:-1:-1;;;;;2275:145:10;;;;;;;;;;;;;;2127:185:1;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;2127:185:1;-1:-1:-1;;;;;2127:185:1;;;;;;;;;;;;;;;;;;;;;;;2571:188;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;2571:188:1;-1:-1:-1;;;;;2571:188:1;;;;;725:37;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;725:37:1;-1:-1:-1;;;;;725:37:1;;;;;1589:291;;8:9:-1;5:2;;;30:1;27;20:12;5:2;-1:-1;1589:291:1;-1:-1:-1;;;;;1589:291:1;;;;;2275:145:10;2340:23;2382:31;:3;2404:8;2382:31;:21;:31;:::i;:::-;2375:38;2275:145;-1:-1:-1;;2275:145:10:o;2127:185:1:-;1261:10;2201:12;1255:17;;;;;;;;;;;;;1247:87;;;;;;;-1:-1:-1;;;;;1247:87:1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;;;;2221:21:1;;:5;:21;;;;;;;;;;;:28;;-1:-1:-1;;2221:28:1;2245:4;2221:28;;;2260:30;;;2221:5;2260:30;-1:-1:-1;2303:4:1;2127:185;;;:::o;2571:188::-;1261:10;2646:12;1255:17;;;;;;;;;;;;;1247:87;;;;;;;-1:-1:-1;;;;;1247:87:1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;;;;2666:21:1;;2690:5;2666:21;;;;;;;;;;;:29;;-1:-1:-1;;2666:29:1;;;2706:31;;;2690:5;2706:31;-1:-1:-1;2750:4:1;2571:188;;;:::o;725:37::-;;;;;;;;;;;;;;;;:::o;1589:291::-;1261:10;1660:12;1255:17;;;;;;;;;;;;;1247:87;;;;;;;-1:-1:-1;;;;;1247:87:1;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;;;;1688:22:1;;;;1680:66;;;;;-1:-1:-1;;;;;1680:66:1;;;;;;;;;;;;;;;;;;;;;;;;;;;;1757:42;;-1:-1:-1;;;;;1757:42:1;;;1778:10;;1757:42;;;;;-1:-1:-1;;;;;;1805:15:1;:5;:15;;;;;;;;;;;:22;;1823:4;-1:-1:-1;;1805:22:1;;;;;;;;1839:10;1833:17;;;;;;:25;;;;;;;1823:4;1589:291::o;18422:231:8:-;18508:23;18539:10;18598:8;18562:45;;;;;;;;;;;;;;;;;;;;;;36:153:-1;66:2;58:11;;36:153;;176:10;;164:23;;-1:-1;;139:12;;;;98:2;89:12;;;;114;36:153;;;274:1;267:3;263:2;259:12;254:3;250:22;246:30;315:4;311:9;305:3;299:10;295:26;356:4;350:3;344:10;340:21;389:7;380;377:20;372:3;365:33;3:399;;;18562:45:8;;;;;;;;;;;49:4:-1;39:7;30;26:21;22:32;13:7;6:49;18562:45:8;;;18552:56;;;;;;;;;;;;;36:153:-1;66:2;58:11;;36:153;;176:10;;164:23;;-1:-1;;139:12;;;;98:2;89:12;;;;114;36:153;;;299:10;344;;263:2;259:12;;;254:3;250:22;-1:-1;;246:30;311:9;;295:26;;;340:21;;377:20;365:33;;18552:56:8;;;;;;;;;;;;18621:12;;:27;;;;;;;;;;;18552:56;;-1:-1:-1;;;;;;18621:12:8;;;;-1:-1:-1;18621:23:8;;-1:-1:-1;18621:27:8;;;;;263:2:-1;;-1:-1;18621:27:8;;;;;;;-1:-1:-1;18621:12:8;:27;;;5:2:-1;;;;30:1;27;20:12;5:2;18621:27:8;;;;8:9:-1;5:2;;;45:16;42:1;39;24:38;77:16;74:1;67:27;5:2;18621:27:8;;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;-1:-1;18621:27:8;;18422:231;-1:-1:-1;;;;18422:231:8:o",
+  "source": "pragma solidity 0.4.24;\n\n\n/**\nCOPYRIGHT 2018 Token, Inc.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,\nINCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A\nPARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR\nCOPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER\nIN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION\nWITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\n\n\n\n@title Token Name Space Interface for Token, Inc. Smart Money System\n\n@author Ryan Tate <ryan.tate@token.io>, Sean Pollock <sean.pollock@token.io>\n\n@notice Contract uses generalized storage contract, `TokenIOStorage`, for\nupgradeability of interface contract.\n\n@dev In the event that the main contract becomes deprecated, the upgraded contract\nwill be set as the owner of this contract, and use this contract's storage to\nmaintain data consistency between contract.\n\n*/\n\nimport \"./Ownable.sol\";\nimport \"./TokenIOStorage.sol\";\nimport \"./TokenIOLib.sol\";\n\ncontract TokenIONameSpace is Ownable {\n\n    /// @dev Set reference to TokenIOLib interface which proxies to TokenIOStorage\n    using TokenIOLib for TokenIOLib.Data;\n    TokenIOLib.Data lib;\n\n    /**\n  \t* @notice Constructor method for TokenIONameSpace contract\n  \t* @param _storageContract     address of TokenIOStorage contract\n  \t*/\n  \tconstructor(address _storageContract) public {\n  \t\t\t/// @dev Set the storage contract for the interface\n  \t\t\t/// @dev NOTE: This contract will be unable to use the storage constract until\n  \t\t\t/// @dev contract address is authorized with the storage contract\n  \t\t\t/// @dev Once authorized, Use the `setParams` method to set storage values\n  \t\t\tlib.Storage = TokenIOStorage(_storageContract);\n\n  \t\t\t/// @dev set owner to contract initiator\n  \t\t\towner[msg.sender] = true;\n  \t}\n\n    /**\n     * @notice Returns the address of the contract associated with the currency symbol\n     * @notice This method may be deprecated or refactored to allow for multiple interfaces\n     * @param  currency string Currency symbol of the token (e.g. USDx, JYPx, GBPx)\n     * @return {\"contractAddress\": \"Returns the token contract address associated with the currency\"}\n     */\n    function getTokenNameSpace(string currency) public view returns (address contractAddress) {\n        return lib.getTokenNameSpace(currency);\n    }\n\n}\n",
+  "sourcePath": "/Users/ryan/Projects/TokenInc/tokeninc-smart-contracts/contracts/TokenIONameSpace.sol",
+  "ast": {
+    "absolutePath": "/Users/ryan/Projects/TokenInc/tokeninc-smart-contracts/contracts/TokenIONameSpace.sol",
+    "exportedSymbols": {
+      "TokenIONameSpace": [
+        4890
+      ]
+    },
+    "id": 4891,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 4845,
+        "literals": [
+          "solidity",
+          "0.4",
+          ".24"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:10"
+      },
+      {
+        "absolutePath": "/Users/ryan/Projects/TokenInc/tokeninc-smart-contracts/contracts/Ownable.sol",
+        "file": "./Ownable.sol",
+        "id": 4846,
+        "nodeType": "ImportDirective",
+        "scope": 4891,
+        "sourceUnit": 185,
+        "src": "993:23:10",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/Users/ryan/Projects/TokenInc/tokeninc-smart-contracts/contracts/TokenIOStorage.sol",
+        "file": "./TokenIOStorage.sol",
+        "id": 4847,
+        "nodeType": "ImportDirective",
+        "scope": 4891,
+        "sourceUnit": 5226,
+        "src": "1017:30:10",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/Users/ryan/Projects/TokenInc/tokeninc-smart-contracts/contracts/TokenIOLib.sol",
+        "file": "./TokenIOLib.sol",
+        "id": 4848,
+        "nodeType": "ImportDirective",
+        "scope": 4891,
+        "sourceUnit": 4607,
+        "src": "1048:26:10",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 4849,
+              "name": "Ownable",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 184,
+              "src": "1105:7:10",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_Ownable_$184",
+                "typeString": "contract Ownable"
+              }
+            },
+            "id": 4850,
+            "nodeType": "InheritanceSpecifier",
+            "src": "1105:7:10"
+          }
+        ],
+        "contractDependencies": [
+          184
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 4890,
+        "linearizedBaseContracts": [
+          4890,
+          184
+        ],
+        "name": "TokenIONameSpace",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "id": 4853,
+            "libraryName": {
+              "contractScope": null,
+              "id": 4851,
+              "name": "TokenIOLib",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 4606,
+              "src": "1209:10:10",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_TokenIOLib_$4606",
+                "typeString": "library TokenIOLib"
+              }
+            },
+            "nodeType": "UsingForDirective",
+            "src": "1203:37:10",
+            "typeName": {
+              "contractScope": null,
+              "id": 4852,
+              "name": "TokenIOLib.Data",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 1630,
+              "src": "1224:15:10",
+              "typeDescriptions": {
+                "typeIdentifier": "t_struct$_Data_$1630_storage_ptr",
+                "typeString": "struct TokenIOLib.Data"
+              }
+            }
+          },
+          {
+            "constant": false,
+            "id": 4855,
+            "name": "lib",
+            "nodeType": "VariableDeclaration",
+            "scope": 4890,
+            "src": "1245:19:10",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_struct$_Data_$1630_storage",
+              "typeString": "struct TokenIOLib.Data"
+            },
+            "typeName": {
+              "contractScope": null,
+              "id": 4854,
+              "name": "TokenIOLib.Data",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 1630,
+              "src": "1245:15:10",
+              "typeDescriptions": {
+                "typeIdentifier": "t_struct$_Data_$1630_storage_ptr",
+                "typeString": "struct TokenIOLib.Data"
+              }
+            },
+            "value": null,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 4875,
+              "nodeType": "Block",
+              "src": "1459:429:10",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 4866,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 4860,
+                        "name": "lib",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 4855,
+                        "src": "1758:3:10",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Data_$1630_storage",
+                          "typeString": "struct TokenIOLib.Data storage ref"
+                        }
+                      },
+                      "id": 4862,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberName": "Storage",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 1629,
+                      "src": "1758:11:10",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_contract$_TokenIOStorage_$5225",
+                        "typeString": "contract TokenIOStorage"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "arguments": [
+                        {
+                          "argumentTypes": null,
+                          "id": 4864,
+                          "name": "_storageContract",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 4857,
+                          "src": "1787:16:10",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": [
+                          {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        ],
+                        "id": 4863,
+                        "name": "TokenIOStorage",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 5225,
+                        "src": "1772:14:10",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_type$_t_contract$_TokenIOStorage_$5225_$",
+                          "typeString": "type(contract TokenIOStorage)"
+                        }
+                      },
+                      "id": 4865,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "kind": "typeConversion",
+                      "lValueRequested": false,
+                      "names": [],
+                      "nodeType": "FunctionCall",
+                      "src": "1772:32:10",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_contract$_TokenIOStorage_$5225",
+                        "typeString": "contract TokenIOStorage"
+                      }
+                    },
+                    "src": "1758:46:10",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_TokenIOStorage_$5225",
+                      "typeString": "contract TokenIOStorage"
+                    }
+                  },
+                  "id": 4867,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1758:46:10"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 4873,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "baseExpression": {
+                        "argumentTypes": null,
+                        "id": 4868,
+                        "name": "owner",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 62,
+                        "src": "1858:5:10",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+                          "typeString": "mapping(address => bool)"
+                        }
+                      },
+                      "id": 4871,
+                      "indexExpression": {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 4869,
+                          "name": "msg",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 5240,
+                          "src": "1864:3:10",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_magic_message",
+                            "typeString": "msg"
+                          }
+                        },
+                        "id": 4870,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "sender",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": null,
+                        "src": "1864:10:10",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "1858:17:10",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "hexValue": "74727565",
+                      "id": 4872,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "bool",
+                      "lValueRequested": false,
+                      "nodeType": "Literal",
+                      "src": "1878:4:10",
+                      "subdenomination": null,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      },
+                      "value": "true"
+                    },
+                    "src": "1858:24:10",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 4874,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1858:24:10"
+                }
+              ]
+            },
+            "documentation": "@notice Constructor method for TokenIONameSpace contract\n@param _storageContract     address of TokenIOStorage contract",
+            "id": 4876,
+            "implemented": true,
+            "isConstructor": true,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4858,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4857,
+                  "name": "_storageContract",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4876,
+                  "src": "1426:24:10",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 4856,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1426:7:10",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1425:26:10"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 4859,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1459:0:10"
+            },
+            "scope": 4890,
+            "src": "1414:474:10",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 4888,
+              "nodeType": "Block",
+              "src": "2365:55:10",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 4885,
+                        "name": "currency",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 4878,
+                        "src": "2404:8:10",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_string_memory_ptr",
+                          "typeString": "string memory"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_string_memory_ptr",
+                          "typeString": "string memory"
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 4883,
+                        "name": "lib",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 4855,
+                        "src": "2382:3:10",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Data_$1630_storage",
+                          "typeString": "struct TokenIOLib.Data storage ref"
+                        }
+                      },
+                      "id": 4884,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "getTokenNameSpace",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 2366,
+                      "src": "2382:21:10",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_view$_t_struct$_Data_$1630_storage_ptr_$_t_string_memory_ptr_$returns$_t_address_$bound_to$_t_struct$_Data_$1630_storage_ptr_$",
+                        "typeString": "function (struct TokenIOLib.Data storage pointer,string memory) view returns (address)"
+                      }
+                    },
+                    "id": 4886,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2382:31:10",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "functionReturnParameters": 4882,
+                  "id": 4887,
+                  "nodeType": "Return",
+                  "src": "2375:38:10"
+                }
+              ]
+            },
+            "documentation": "@notice Returns the address of the contract associated with the currency symbol\n@notice This method may be deprecated or refactored to allow for multiple interfaces\n@param  currency string Currency symbol of the token (e.g. USDx, JYPx, GBPx)\n@return {\"contractAddress\": \"Returns the token contract address associated with the currency\"}",
+            "id": 4889,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getTokenNameSpace",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4879,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4878,
+                  "name": "currency",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4889,
+                  "src": "2302:15:10",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 4877,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2302:6:10",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2301:17:10"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 4882,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4881,
+                  "name": "contractAddress",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4889,
+                  "src": "2340:23:10",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 4880,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2340:7:10",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2339:25:10"
+            },
+            "scope": 4890,
+            "src": "2275:145:10",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 4891,
+        "src": "1076:1347:10"
+      }
+    ],
+    "src": "0:2424:10"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/ryan/Projects/TokenInc/tokeninc-smart-contracts/contracts/TokenIONameSpace.sol",
+    "exportedSymbols": {
+      "TokenIONameSpace": [
+        4890
+      ]
+    },
+    "id": 4891,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 4845,
+        "literals": [
+          "solidity",
+          "0.4",
+          ".24"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:10"
+      },
+      {
+        "absolutePath": "/Users/ryan/Projects/TokenInc/tokeninc-smart-contracts/contracts/Ownable.sol",
+        "file": "./Ownable.sol",
+        "id": 4846,
+        "nodeType": "ImportDirective",
+        "scope": 4891,
+        "sourceUnit": 185,
+        "src": "993:23:10",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/Users/ryan/Projects/TokenInc/tokeninc-smart-contracts/contracts/TokenIOStorage.sol",
+        "file": "./TokenIOStorage.sol",
+        "id": 4847,
+        "nodeType": "ImportDirective",
+        "scope": 4891,
+        "sourceUnit": 5226,
+        "src": "1017:30:10",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/Users/ryan/Projects/TokenInc/tokeninc-smart-contracts/contracts/TokenIOLib.sol",
+        "file": "./TokenIOLib.sol",
+        "id": 4848,
+        "nodeType": "ImportDirective",
+        "scope": 4891,
+        "sourceUnit": 4607,
+        "src": "1048:26:10",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 4849,
+              "name": "Ownable",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 184,
+              "src": "1105:7:10",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_Ownable_$184",
+                "typeString": "contract Ownable"
+              }
+            },
+            "id": 4850,
+            "nodeType": "InheritanceSpecifier",
+            "src": "1105:7:10"
+          }
+        ],
+        "contractDependencies": [
+          184
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 4890,
+        "linearizedBaseContracts": [
+          4890,
+          184
+        ],
+        "name": "TokenIONameSpace",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "id": 4853,
+            "libraryName": {
+              "contractScope": null,
+              "id": 4851,
+              "name": "TokenIOLib",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 4606,
+              "src": "1209:10:10",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_TokenIOLib_$4606",
+                "typeString": "library TokenIOLib"
+              }
+            },
+            "nodeType": "UsingForDirective",
+            "src": "1203:37:10",
+            "typeName": {
+              "contractScope": null,
+              "id": 4852,
+              "name": "TokenIOLib.Data",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 1630,
+              "src": "1224:15:10",
+              "typeDescriptions": {
+                "typeIdentifier": "t_struct$_Data_$1630_storage_ptr",
+                "typeString": "struct TokenIOLib.Data"
+              }
+            }
+          },
+          {
+            "constant": false,
+            "id": 4855,
+            "name": "lib",
+            "nodeType": "VariableDeclaration",
+            "scope": 4890,
+            "src": "1245:19:10",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_struct$_Data_$1630_storage",
+              "typeString": "struct TokenIOLib.Data"
+            },
+            "typeName": {
+              "contractScope": null,
+              "id": 4854,
+              "name": "TokenIOLib.Data",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 1630,
+              "src": "1245:15:10",
+              "typeDescriptions": {
+                "typeIdentifier": "t_struct$_Data_$1630_storage_ptr",
+                "typeString": "struct TokenIOLib.Data"
+              }
+            },
+            "value": null,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 4875,
+              "nodeType": "Block",
+              "src": "1459:429:10",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 4866,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 4860,
+                        "name": "lib",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 4855,
+                        "src": "1758:3:10",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Data_$1630_storage",
+                          "typeString": "struct TokenIOLib.Data storage ref"
+                        }
+                      },
+                      "id": 4862,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "memberName": "Storage",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 1629,
+                      "src": "1758:11:10",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_contract$_TokenIOStorage_$5225",
+                        "typeString": "contract TokenIOStorage"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "arguments": [
+                        {
+                          "argumentTypes": null,
+                          "id": 4864,
+                          "name": "_storageContract",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 4857,
+                          "src": "1787:16:10",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": [
+                          {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        ],
+                        "id": 4863,
+                        "name": "TokenIOStorage",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 5225,
+                        "src": "1772:14:10",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_type$_t_contract$_TokenIOStorage_$5225_$",
+                          "typeString": "type(contract TokenIOStorage)"
+                        }
+                      },
+                      "id": 4865,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "kind": "typeConversion",
+                      "lValueRequested": false,
+                      "names": [],
+                      "nodeType": "FunctionCall",
+                      "src": "1772:32:10",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_contract$_TokenIOStorage_$5225",
+                        "typeString": "contract TokenIOStorage"
+                      }
+                    },
+                    "src": "1758:46:10",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_contract$_TokenIOStorage_$5225",
+                      "typeString": "contract TokenIOStorage"
+                    }
+                  },
+                  "id": 4867,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1758:46:10"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 4873,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "baseExpression": {
+                        "argumentTypes": null,
+                        "id": 4868,
+                        "name": "owner",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 62,
+                        "src": "1858:5:10",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+                          "typeString": "mapping(address => bool)"
+                        }
+                      },
+                      "id": 4871,
+                      "indexExpression": {
+                        "argumentTypes": null,
+                        "expression": {
+                          "argumentTypes": null,
+                          "id": 4869,
+                          "name": "msg",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 5240,
+                          "src": "1864:3:10",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_magic_message",
+                            "typeString": "msg"
+                          }
+                        },
+                        "id": 4870,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "sender",
+                        "nodeType": "MemberAccess",
+                        "referencedDeclaration": null,
+                        "src": "1864:10:10",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "1858:17:10",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "hexValue": "74727565",
+                      "id": 4872,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "bool",
+                      "lValueRequested": false,
+                      "nodeType": "Literal",
+                      "src": "1878:4:10",
+                      "subdenomination": null,
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      },
+                      "value": "true"
+                    },
+                    "src": "1858:24:10",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 4874,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1858:24:10"
+                }
+              ]
+            },
+            "documentation": "@notice Constructor method for TokenIONameSpace contract\n@param _storageContract     address of TokenIOStorage contract",
+            "id": 4876,
+            "implemented": true,
+            "isConstructor": true,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4858,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4857,
+                  "name": "_storageContract",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4876,
+                  "src": "1426:24:10",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 4856,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1426:7:10",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1425:26:10"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 4859,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1459:0:10"
+            },
+            "scope": 4890,
+            "src": "1414:474:10",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 4888,
+              "nodeType": "Block",
+              "src": "2365:55:10",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 4885,
+                        "name": "currency",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 4878,
+                        "src": "2404:8:10",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_string_memory_ptr",
+                          "typeString": "string memory"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_string_memory_ptr",
+                          "typeString": "string memory"
+                        }
+                      ],
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 4883,
+                        "name": "lib",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 4855,
+                        "src": "2382:3:10",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Data_$1630_storage",
+                          "typeString": "struct TokenIOLib.Data storage ref"
+                        }
+                      },
+                      "id": 4884,
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "getTokenNameSpace",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 2366,
+                      "src": "2382:21:10",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_internal_view$_t_struct$_Data_$1630_storage_ptr_$_t_string_memory_ptr_$returns$_t_address_$bound_to$_t_struct$_Data_$1630_storage_ptr_$",
+                        "typeString": "function (struct TokenIOLib.Data storage pointer,string memory) view returns (address)"
+                      }
+                    },
+                    "id": 4886,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2382:31:10",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "functionReturnParameters": 4882,
+                  "id": 4887,
+                  "nodeType": "Return",
+                  "src": "2375:38:10"
+                }
+              ]
+            },
+            "documentation": "@notice Returns the address of the contract associated with the currency symbol\n@notice This method may be deprecated or refactored to allow for multiple interfaces\n@param  currency string Currency symbol of the token (e.g. USDx, JYPx, GBPx)\n@return {\"contractAddress\": \"Returns the token contract address associated with the currency\"}",
+            "id": 4889,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getTokenNameSpace",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4879,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4878,
+                  "name": "currency",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4889,
+                  "src": "2302:15:10",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 4877,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2302:6:10",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2301:17:10"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 4882,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4881,
+                  "name": "contractAddress",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4889,
+                  "src": "2340:23:10",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 4880,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2340:7:10",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2339:25:10"
+            },
+            "scope": 4890,
+            "src": "2275:145:10",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 4891,
+        "src": "1076:1347:10"
+      }
+    ],
+    "src": "0:2424:10"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.4.24+commit.e67f0147.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "2.0.1",
+  "updatedAt": "2018-10-22T22:56:14.042Z"
+}

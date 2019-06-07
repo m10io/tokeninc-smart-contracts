@@ -24,7 +24,7 @@ contract("TokenIOStorage", function(accounts) {
 	const TEST_ACCOUNT_1 = accounts[0]
 	const TEST_ACCOUNT_2 = accounts[1]
 	const DEPOSIT_AMOUNT = 10000e2
-    const SPENDING_LIMIT = DEPOSIT_AMOUNT/2
+  	const SPENDING_LIMIT = DEPOSIT_AMOUNT/2
 
 	it("Should get the token details directly from the storage contract", async () => {
 		const storage = await TokenIOStorage.deployed()
@@ -46,7 +46,7 @@ contract("TokenIOStorage", function(accounts) {
 		const storage = await TokenIOStorage.deployed()
 		const token = await TokenIOERC20.deployed()
 
-		const APPROVE_AND_DEPOSIT = await CA.approveKYCAndDeposit('USDx', TEST_ACCOUNT_2, DEPOSIT_AMOUNT, SPENDING_LIMIT, "Token, Inc.")
+		const APPROVE_AND_DEPOSIT = await CA.approveKYCAndDeposit('USDx', TEST_ACCOUNT_2, DEPOSIT_AMOUNT, SPENDING_LIMIT, "Token, Inc.", TEST_ACCOUNT_1)
 		assert.equal(APPROVE_AND_DEPOSIT['receipt']['status'], "0x1", "Transaction should succeed.")
 
 		const TOKEN_SUPPLY = +(await CA.getTokenSupply('USDx')).toString()
@@ -127,7 +127,7 @@ contract("TokenIOStorage", function(accounts) {
 		assert.equal(DELETE_TX['receipt']['status'], "0x1", "Transaction should succeed.")
 
 		const GET_VALUE_END = await storage.getBytes(id)
-		assert.equal("0x", GET_VALUE_END, "Bytes value should be deleted from storage.")
+		assert.equal(null, GET_VALUE_END, "Bytes value should be deleted from storage.")
 	})
 
 	it("Should set, get, and delete a bool value", async () => {
@@ -162,6 +162,91 @@ contract("TokenIOStorage", function(accounts) {
 
 		const GET_VALUE_END = +(await storage.getInt(id)).toString()
 		assert.equal(0, GET_VALUE_END, "Int value should be deleted from storage.")
+	})
+
+	it("Should set, get and delete token name value", async () => {
+		const storage = await TokenIOStorage.deployed()
+		const id = "0x166a8e28b4afdb04d6ce602644452c71e9f5f885"; // test account
+		const value = "test"
+		const SET_TX = await storage.setTokenName(id, value)
+		assert.equal(SET_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_BEG = await storage.getTokenName(id)
+		assert.equal(value, GET_VALUE_BEG, "Int value should be the same value retrieved from storage.")
+
+		const DELETE_TX = await storage.deleteTokenName(id)
+		assert.equal(DELETE_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_END = await storage.getTokenName(id)
+		assert.equal("", GET_VALUE_END, "String value should be deleted from storage.")
+	})
+
+	it("Should set, get and delete token symbol value", async () => {
+		const storage = await TokenIOStorage.deployed()
+		const id = "0x166a8e28b4afdb04d6ce602644452c71e9f5f885"; // test account
+		const value = "test symbol"
+		const SET_TX = await storage.setTokenSymbol(id, value)
+		assert.equal(SET_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_BEG = await storage.getTokenSymbol(id)
+		assert.equal(value, GET_VALUE_BEG, "Int value should be the same value retrieved from storage.")
+
+		const DELETE_TX = await storage.deleteTokenSymbol(id)
+		assert.equal(DELETE_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_END = await storage.getTokenSymbol(id)
+		assert.equal("", GET_VALUE_END, "String value should be deleted from storage.")
+	})
+
+	it("Should set, get and delete TLA value", async () => {
+		const storage = await TokenIOStorage.deployed()
+		const id = "0x166a8e28b4afdb04d6ce602644452c71e9f5f885"; // test account
+		const value = "test TLA"
+		const SET_TX = await storage.setTokenTLA(id, value)
+		assert.equal(SET_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_BEG = await storage.getTokenTLA(id)
+		assert.equal(value, GET_VALUE_BEG, "Int value should be the same value retrieved from storage.")
+
+		const DELETE_TX = await storage.deleteTokenTLA(id)
+		assert.equal(DELETE_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_END = await storage.getTokenTLA(id)
+		assert.equal("", GET_VALUE_END, "String value should be deleted from storage.")
+	})
+
+	it("Should set, get and delete token version value", async () => {
+		const storage = await TokenIOStorage.deployed()
+		const id = "0x166a8e28b4afdb04d6ce602644452c71e9f5f885"; // test account
+		const value = "test Token version"
+		const SET_TX = await storage.setTokenVersion(id, value)
+		assert.equal(SET_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_BEG = await storage.getTokenVersion(id)
+		assert.equal(value, GET_VALUE_BEG, "Int value should be the same value retrieved from storage.")
+
+		const DELETE_TX = await storage.deleteTokenVersion(id)
+		assert.equal(DELETE_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_END = await storage.getTokenVersion(id)
+		assert.equal("", GET_VALUE_END, "String value should be deleted from storage.")
+	})
+
+	it("Should set, get and delete token fee contract", async () => {
+		const storage = await TokenIOStorage.deployed()
+		const id = "0x166a8e28b4afdb04d6ce602644452c71e9f5f885"; // test account
+		const value = "0x3fd181cf0594b266ee8187e1dad94de229c98192"
+		const SET_TX = await storage.setTokenFeeContract(id, value)
+		assert.equal(SET_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_BEG = await storage.getTokenFeeContract(id)
+		assert.equal(value, GET_VALUE_BEG.toLowerCase(), "Int value should be the same value retrieved from storage.")
+
+		const DELETE_TX = await storage.deleteTokenFeeContract(id)
+		assert.equal(DELETE_TX['receipt']['status'], "0x1", "Transaction should succeed.")
+
+		const GET_VALUE_END = await storage.getTokenFeeContract(id)
+		assert.equal("0x0000000000000000000000000000000000000000", GET_VALUE_END, "String value should be deleted from storage.")
 	})
 
 	it("Should not allow an unauthorized account to set or delete a storage value", async () => {

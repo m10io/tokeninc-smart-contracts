@@ -4,9 +4,21 @@ const USDx = {
   tokenName: 'TokenX USD', // tokenName
   tokenSymbol: 'USDx', // tokenSymbol
   tokenTLA: 'USD', // tokenTLA
-  tokenVersion: 'v0.3.0', // tokenVersion
+  tokenVersion: 'v1.0.1', // tokenVersion
   tokenDecimals: 2, // tokenDecimals
-  feeContract: "0x0", // fee account
+  feeContract: "0x0000000000000000000000000000000000000000", // fee account
+  fxBPSRate: 10000
+}
+
+const USDc = {
+  // Ensure these values are ordered in the object for the respective param list
+  // index in the erc20 contract setPrams() method.
+  tokenName: 'Dummy Token For USDc', // tokenName
+  tokenSymbol: 'USDc', // tokenSymbol
+  tokenTLA: 'USD', // tokenTLA
+  tokenVersion: 'v1.0.1', // tokenVersion
+  tokenDecimals: 6, // tokenDecimals
+  feeContract: "0x0000000000000000000000000000000000000000", // fee account
   fxBPSRate: 10000
 }
 
@@ -16,9 +28,9 @@ const MXNx = {
   tokenName: 'TokenX MXN', // tokenName
   tokenSymbol: 'MXNx', // tokenSymbol
   tokenTLA: 'MXN', // tokenTLA
-  tokenVersion: 'v0.3.0', // tokenVersion
+  tokenVersion: 'v1.0.1', // tokenVersion
   tokenDecimals: 2, // tokenDecimals
-  feeContract: "0x0", // fee account
+  feeContract: "0x0000000000000000000000000000000000000000", // fee account
   fxBPSRate: 510
 }
 
@@ -28,9 +40,9 @@ const GBPx = {
   tokenName: 'TokenX GBP', // tokenName
   tokenSymbol: 'GBPx', // tokenSymbol
   tokenTLA: 'GBP', // tokenTLA
-  tokenVersion: 'v0.3.0', // tokenVersion
+  tokenVersion: 'v1.0.1', // tokenVersion
   tokenDecimals: 2, // tokenDecimals
-  feeContract: "0x0", // fee account
+  feeContract: "0x0000000000000000000000000000000000000000", // fee account
   fxBPSRate: 13200
 }
 
@@ -40,9 +52,9 @@ const JPYx = {
   tokenName: 'TokenX JPY', // tokenName
   tokenSymbol: 'JPYx', // tokenSymbol
   tokenTLA: 'JPY', // tokenTLA
-  tokenVersion: 'v0.3.0', // tokenVersion
+  tokenVersion: 'v1.0.1', // tokenVersion
   tokenDecimals: 0, // tokenDecimals
-  feeContract: "0x0", // fee account
+  feeContract: "0x0000000000000000000000000000000000000000", // fee account
   fxBPSRate: 90
 }
 
@@ -52,13 +64,14 @@ const EURx = {
   tokenName: 'TokenX EUR', // tokenName
   tokenSymbol: 'EURx', // tokenSymbol
   tokenTLA: 'EUR', // tokenTLA
-  tokenVersion: 'v0.3.0', // tokenVersion
+  tokenVersion: 'v1.0.1', // tokenVersion
   tokenDecimals: 2, // tokenDecimals
-  feeContract: "0x0", // fee account
+  feeContract: "0x0000000000000000000000000000000000000000", // fee account
   fxBPSRate: 11700
 }
 
 const TOKEN_DETAILS = {
+  USDc, // DUMMY TOKEN, NOT FOR DEPLOYMENT, ONLY FOR TESTS
   USDx,
   EURx,
   // MXNx,
@@ -92,12 +105,3 @@ module.exports = {
     FEE_PARAMS
   }
 }
-
-
-// "Token USD",
-// "USDx",
-// "USD",
-// "v0.1.2",
-// 2,
-// "0x310bd4225ecef15ba21bab3fce87289ee6568f4f",
-// 10000

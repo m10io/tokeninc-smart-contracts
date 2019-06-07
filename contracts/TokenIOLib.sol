@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity 0.5.2;
 
 import "./SafeMath.sol";
 import "./TokenIOStorage.sol";
@@ -34,6 +34,7 @@ library TokenIOLib {
   /// @dev the Data struct uses the Storage contract for stateful setters
   struct Data {
     TokenIOStorage Storage;
+    address proxyInstance;
   }
 
   /// @notice Not using `Log` prefix for events to be consistent with ERC20 named events;
@@ -46,6 +47,15 @@ library TokenIOLib {
   event FxSwap(string tokenASymbol,string tokenBSymbol,uint tokenAValue,uint tokenBValue, uint expiration, bytes32 transactionHash);
   event AccountForward(address indexed originalAccount, address indexed forwardedAccount);
   event NewAuthority(address indexed authority, string issuerFirm);
+  
+  
+
+  function setTokenParams(Data storage self, string memory _name, string memory _symbol, string memory _tla, string memory _version, uint _decimals, address _feeContract, uint _fxUSDBPSRate) internal returns(bool success) {
+       require(
+        self.Storage.setTokenParams(self.proxyInstance, _name, _symbol, _tla, _version, _decimals, _feeContract, _fxUSDBPSRate), 
+       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract.");
+       return true;
+  }
 
   /**
    * @notice Set the token name for Token interfaces
@@ -55,15 +65,14 @@ library TokenIOLib {
    * @param tokenName Name of the token contract
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
-  function setTokenName(Data storage self, string tokenName) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('token.name', address(this)));
+  function setTokenName(Data storage self, string memory tokenName) internal returns (bool success) {
     require(
-      self.Storage.setString(id, tokenName),
+      self.Storage.setTokenName(self.proxyInstance, tokenName),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
     );
     return true;
   }
-
+  
   /**
    * @notice Set the token symbol for Token interfaces
    * @dev This method must be set by the token interface's setParams() method
@@ -72,10 +81,9 @@ library TokenIOLib {
    * @param tokenSymbol Symbol of the token contract
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
-  function setTokenSymbol(Data storage self, string tokenSymbol) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('token.symbol', address(this)));
+  function setTokenSymbol(Data storage self, string memory tokenSymbol) internal returns (bool success) {
     require(
-      self.Storage.setString(id, tokenSymbol),
+      self.Storage.setTokenSymbol(self.proxyInstance, tokenSymbol),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
     );
     return true;
@@ -89,10 +97,9 @@ library TokenIOLib {
    * @param tokenTLA TLA of the token contract
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
-  function setTokenTLA(Data storage self, string tokenTLA) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('token.tla', address(this)));
+  function setTokenTLA(Data storage self, string memory tokenTLA) internal returns (bool success) {
     require(
-      self.Storage.setString(id, tokenTLA),
+      self.Storage.setTokenTLA(self.proxyInstance, tokenTLA),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
     );
     return true;
@@ -106,10 +113,9 @@ library TokenIOLib {
    * @param tokenVersion Semantic (vMAJOR.MINOR.PATCH | e.g. v0.1.0) version of the token contract
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
-  function setTokenVersion(Data storage self, string tokenVersion) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('token.version', address(this)));
+  function setTokenVersion(Data storage self, string memory tokenVersion) internal returns (bool success) {
     require(
-      self.Storage.setString(id, tokenVersion),
+      self.Storage.setTokenVersion(self.proxyInstance, tokenVersion),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
     );
     return true;
@@ -126,85 +132,27 @@ library TokenIOLib {
    * @param tokenDecimals Decimal representation of the token contract unit amount
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
-  function setTokenDecimals(Data storage self, string currency, uint tokenDecimals) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('token.decimals', currency));
+  function setTokenDecimals(Data storage self, string memory currency, uint tokenDecimals) internal returns (bool success) {
     require(
-      self.Storage.setUint(id, tokenDecimals),
+      self.Storage.setTokenDecimals(currency, tokenDecimals),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
     );
     return true;
   }
 
   /**
-   * @notice Set basis point fee for contract interface
-   * @dev Transaction fees can be set by the TokenIOFeeContract
-   * @dev Fees vary by contract interface specified `feeContract`
+   * @notice Set fees for contract interface
+   * @dev fee can be set by the TokenIOFeeContract
    * @dev | This method has an `internal` view
    * @param self Internal storage proxying TokenIOStorage contract
-   * @param feeBPS Basis points fee for interface contract transactions
+   * @param maxFee Maximum fee for interface contract transactions
+   * @param minFee Minimum fee for interface contract transactions 
+   * @param bpsFee Basis points fee for interface contract transactions
+   * @param flatFee Flat fee for interface contract transactions
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
-  function setFeeBPS(Data storage self, uint feeBPS) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('fee.bps', address(this)));
-    require(
-      self.Storage.setUint(id, feeBPS),
-      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
-    );
-    return true;
-  }
-
-  /**
-   * @notice Set minimum fee for contract interface
-   * @dev Transaction fees can be set by the TokenIOFeeContract
-   * @dev Fees vary by contract interface specified `feeContract`
-   * @dev | This method has an `internal` view
-   * @param self Internal storage proxying TokenIOStorage contract
-   * @param feeMin Minimum fee for interface contract transactions
-   * @return {"success" : "Returns true when successfully called from another contract"}
-   */
-  function setFeeMin(Data storage self, uint feeMin) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('fee.min', address(this)));
-    require(
-      self.Storage.setUint(id, feeMin),
-      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
-    );
-    return true;
-  }
-
-  /**
-   * @notice Set maximum fee for contract interface
-   * @dev Transaction fees can be set by the TokenIOFeeContract
-   * @dev Fees vary by contract interface specified `feeContract`
-   * @dev | This method has an `internal` view
-   * @param self Internal storage proxying TokenIOStorage contract
-   * @param feeMax Maximum fee for interface contract transactions
-   * @return {"success" : "Returns true when successfully called from another contract"}
-   */
-  function setFeeMax(Data storage self, uint feeMax) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('fee.max', address(this)));
-    require(
-      self.Storage.setUint(id, feeMax),
-      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
-    );
-    return true;
-  }
-
-  /**
-   * @notice Set flat fee for contract interface
-   * @dev Transaction fees can be set by the TokenIOFeeContract
-   * @dev Fees vary by contract interface specified `feeContract`
-   * @dev | This method has an `internal` view
-   * @param self Internal storage proxying TokenIOStorage contract
-   * @param feeFlat Flat fee for interface contract transactions
-   * @return {"success" : "Returns true when successfully called from another contract"}
-   */
-  function setFeeFlat(Data storage self, uint feeFlat) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('fee.flat', address(this)));
-    require(
-      self.Storage.setUint(id, feeFlat),
-      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
-    );
-    return true;
+  function setFees(Data storage self, address asset, uint maxFee, uint minFee, uint bpsFee, uint flatFee) internal returns (bool success) {
+      return self.Storage.setFees(asset, maxFee, minFee, bpsFee, flatFee);
   }
 
   /**
@@ -216,8 +164,8 @@ library TokenIOLib {
    * @param feeMsg Fee message included in a transaction with fees
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
-  function setFeeMsg(Data storage self, bytes feeMsg) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('fee.msg', address(this)));
+  function setFeeMsg(Data storage self, bytes memory feeMsg) internal returns (bool success) {
+    bytes32 id = keccak256(abi.encodePacked('fee.msg', self.proxyInstance));
     require(
       self.Storage.setBytes(id, feeMsg),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
@@ -236,9 +184,8 @@ library TokenIOLib {
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
   function setFeeContract(Data storage self, address feeContract) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('fee.account', address(this)));
     require(
-      self.Storage.setAddress(id, feeContract),
+      self.Storage.setTokenFeeContract(self.proxyInstance, feeContract),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
     );
     return true;
@@ -253,10 +200,10 @@ library TokenIOLib {
    * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
-  function setTokenNameSpace(Data storage self, string currency) internal returns (bool success) {
+  function setTokenNameSpace(Data storage self, string memory currency) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('token.namespace', currency));
     require(
-      self.Storage.setAddress(id, address(this)),
+      self.Storage.setAddress(id, self.proxyInstance),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
     );
     return true;
@@ -273,7 +220,7 @@ library TokenIOLib {
    * @param issuerFirm Firm name for issuing KYC approval
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
-  function setKYCApproval(Data storage self, address account, bool isApproved, string issuerFirm) internal returns (bool success) {
+  function setKYCApproval(Data storage self, address account, bool isApproved, string memory issuerFirm) internal returns (bool success) {
       bytes32 id = keccak256(abi.encodePacked('account.kyc', getForwardedAccount(self, account)));
       require(
         self.Storage.setBool(id, isApproved),
@@ -296,7 +243,7 @@ library TokenIOLib {
    * @param issuerFirm Firm name for issuing approval
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
-  function setAccountStatus(Data storage self, address account, bool isAllowed, string issuerFirm) internal returns (bool success) {
+  function setAccountStatus(Data storage self, address account, bool isAllowed, string memory issuerFirm) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('account.allowed', getForwardedAccount(self, account)));
     require(
       self.Storage.setBool(id, isAllowed),
@@ -321,12 +268,7 @@ library TokenIOLib {
    * @return {"success" : "Returns true when successfully called from another contract"}
    */
   function setForwardedAccount(Data storage self, address originalAccount, address forwardedAccount) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('master.account', forwardedAccount));
-    require(
-      self.Storage.setAddress(id, originalAccount),
-      "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
-    );
-    return true;
+      return self.Storage.setRelatedAccount(forwardedAccount, originalAccount);
   }
 
   /**
@@ -338,13 +280,11 @@ library TokenIOLib {
    * @return { "registeredAccount" : "Will return the original account of a forwarded account or the account itself if no account found"}
    */
   function getForwardedAccount(Data storage self, address account) internal view returns (address registeredAccount) {
-    bytes32 id = keccak256(abi.encodePacked('master.account', account));
-    address originalAccount = self.Storage.getAddress(id);
-    if (originalAccount != 0x0) {
-      return originalAccount;
-    } else {
-      return account;
-    }
+      return self.Storage.getRelatedAccount(account);
+  }
+
+  function getTransferDetails(Data storage self, address account, address[3] memory addresses) internal view returns(string memory, address[3] memory) {
+      return self.Storage.getTransferDetails(account, addresses);
   }
 
   /**
@@ -380,7 +320,7 @@ library TokenIOLib {
    * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @return { "contractAddress" : "Returns the contract interface address for a symbol" }
    */
-  function getTokenNameSpace(Data storage self, string currency) internal view returns (address contractAddress) {
+  function getTokenNameSpace(Data storage self, string memory currency) internal view returns (address contractAddress) {
     bytes32 id = keccak256(abi.encodePacked('token.namespace', currency));
     return self.Storage.getAddress(id);
   }
@@ -393,9 +333,8 @@ library TokenIOLib {
    * @param contractAddress Contract address of the queryable interface
    * @return {"tokenName" : "Name of the token contract"}
    */
-  function getTokenName(Data storage self, address contractAddress) internal view returns (string tokenName) {
-    bytes32 id = keccak256(abi.encodePacked('token.name', contractAddress));
-    return self.Storage.getString(id);
+  function getTokenName(Data storage self, address contractAddress) internal view returns (string memory tokenName) {
+    return self.Storage.getTokenName(contractAddress);
   }
 
   /**
@@ -406,9 +345,8 @@ library TokenIOLib {
    * @param contractAddress Contract address of the queryable interface
    * @return {"tokenSymbol" : "Symbol of the token contract"}
    */
-  function getTokenSymbol(Data storage self, address contractAddress) internal view returns (string tokenSymbol) {
-    bytes32 id = keccak256(abi.encodePacked('token.symbol', contractAddress));
-    return self.Storage.getString(id);
+  function getTokenSymbol(Data storage self, address contractAddress) internal view returns (string memory tokenSymbol) {
+    return self.Storage.getTokenSymbol(contractAddress);
   }
 
   /**
@@ -419,9 +357,8 @@ library TokenIOLib {
    * @param contractAddress Contract address of the queryable interface
    * @return {"tokenTLA" : "TLA of the token contract"}
    */
-  function getTokenTLA(Data storage self, address contractAddress) internal view returns (string tokenTLA) {
-    bytes32 id = keccak256(abi.encodePacked('token.tla', contractAddress));
-    return self.Storage.getString(id);
+  function getTokenTLA(Data storage self, address contractAddress) internal view returns (string memory tokenTLA) {
+    return self.Storage.getTokenTLA(contractAddress);
   }
 
   /**
@@ -432,9 +369,8 @@ library TokenIOLib {
    * @param contractAddress Contract address of the queryable interface
    * @return {"tokenVersion" : "Semantic version of the token contract"}
    */
-  function getTokenVersion(Data storage self, address contractAddress) internal view returns (string) {
-    bytes32 id = keccak256(abi.encodePacked('token.version', contractAddress));
-    return self.Storage.getString(id);
+  function getTokenVersion(Data storage self, address contractAddress) internal view returns (string memory) {   
+    return self.Storage.getTokenVersion(contractAddress);
   }
 
   /**
@@ -445,57 +381,12 @@ library TokenIOLib {
    * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @return {"tokenDecimals" : "Decimals of the token contract"}
    */
-  function getTokenDecimals(Data storage self, string currency) internal view returns (uint tokenDecimals) {
-    bytes32 id = keccak256(abi.encodePacked('token.decimals', currency));
-    return self.Storage.getUint(id);
+  function getTokenDecimals(Data storage self, string memory currency) internal view returns (uint tokenDecimals) {
+    return self.Storage.getTokenDecimals(currency);
   }
 
-  /**
-   * @notice Get the basis points fee of the contract address; typically TokenIOFeeContract
-   * @dev | This method has an `internal` view
-   * @param self Internal storage proxying TokenIOStorage contract
-   * @param contractAddress Contract address of the queryable interface
-   * @return { "feeBps" : "Returns the basis points fees associated with the contract address"}
-   */
-  function getFeeBPS(Data storage self, address contractAddress) internal view returns (uint feeBps) {
-    bytes32 id = keccak256(abi.encodePacked('fee.bps', contractAddress));
-    return self.Storage.getUint(id);
-  }
-
-  /**
-   * @notice Get the minimum fee of the contract address; typically TokenIOFeeContract
-   * @dev | This method has an `internal` view
-   * @param self Internal storage proxying TokenIOStorage contract
-   * @param contractAddress Contract address of the queryable interface
-   * @return { "feeMin" : "Returns the minimum fees associated with the contract address"}
-   */
-  function getFeeMin(Data storage self, address contractAddress) internal view returns (uint feeMin) {
-    bytes32 id = keccak256(abi.encodePacked('fee.min', contractAddress));
-    return self.Storage.getUint(id);
-  }
-
-  /**
-   * @notice Get the maximum fee of the contract address; typically TokenIOFeeContract
-   * @dev | This method has an `internal` view
-   * @param self Internal storage proxying TokenIOStorage contract
-   * @param contractAddress Contract address of the queryable interface
-   * @return { "feeMax" : "Returns the maximum fees associated with the contract address"}
-   */
-  function getFeeMax(Data storage self, address contractAddress) internal view returns (uint feeMax) {
-    bytes32 id = keccak256(abi.encodePacked('fee.max', contractAddress));
-    return self.Storage.getUint(id);
-  }
-
-  /**
-   * @notice Get the flat fee of the contract address; typically TokenIOFeeContract
-   * @dev | This method has an `internal` view
-   * @param self Internal storage proxying TokenIOStorage contract
-   * @param contractAddress Contract address of the queryable interface
-   * @return { "feeFlat" : "Returns the flat fees associated with the contract address"}
-   */
-  function getFeeFlat(Data storage self, address contractAddress) internal view returns (uint feeFlat) {
-    bytes32 id = keccak256(abi.encodePacked('fee.flat', contractAddress));
-    return self.Storage.getUint(id);
+  function getFees(Data storage self, address contractAddress) internal view returns (uint maxFee, uint minFee, uint bpsFee, uint flatFee) {
+      return self.Storage.getFees(contractAddress);
   }
 
   /**
@@ -505,7 +396,7 @@ library TokenIOLib {
    * @param contractAddress Contract address of the queryable interface
    * @return { "feeMsg" : "Returns the fee message (bytes) associated with the contract address"}
    */
-  function getFeeMsg(Data storage self, address contractAddress) internal view returns (bytes feeMsg) {
+  function getFeeMsg(Data storage self, address contractAddress) internal view returns (bytes memory feeMsg) {
     bytes32 id = keccak256(abi.encodePacked('fee.msg', contractAddress));
     return self.Storage.getBytes(id);
   }
@@ -519,9 +410,8 @@ library TokenIOLib {
    * @return { "success" : "Returns true when successfully called from another contract"}
    */
   function setMasterFeeContract(Data storage self, address contractAddress) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('fee.contract.master'));
     require(
-      self.Storage.setAddress(id, contractAddress),
+      self.Storage.setTokenFeeContract(address(0), contractAddress),
       "Error: Unable to set storage value. Please ensure contract interface is allowed by the storage contract."
     );
     return true;
@@ -534,8 +424,7 @@ library TokenIOLib {
    * @return { "masterFeeContract" : "Returns the master fee contract set for TSM."}
    */
   function getMasterFeeContract(Data storage self) internal view returns (address masterFeeContract) {
-    bytes32 id = keccak256(abi.encodePacked('fee.contract.master'));
-    return self.Storage.getAddress(id);
+    return self.Storage.getTokenFeeContract(address(0));
   }
 
   /**
@@ -548,10 +437,9 @@ library TokenIOLib {
    * @return { "feeContract" : "Returns the fee contract associated with a contract interface"}
    */
   function getFeeContract(Data storage self, address contractAddress) internal view returns (address feeContract) {
-    bytes32 id = keccak256(abi.encodePacked('fee.account', contractAddress));
 
-    address feeAccount = self.Storage.getAddress(id);
-    if (feeAccount == 0x0) {
+    address feeAccount = self.Storage.getTokenFeeContract(contractAddress);
+    if (feeAccount == address(0)) {
       return getMasterFeeContract(self);
     } else {
       return feeAccount;
@@ -565,7 +453,7 @@ library TokenIOLib {
    * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @return { "supply" : "Returns the token supply of the given currency"}
    */
-  function getTokenSupply(Data storage self, string currency) internal view returns (uint supply) {
+  function getTokenSupply(Data storage self, string memory currency) internal view returns (uint supply) {
     bytes32 id = keccak256(abi.encodePacked('token.supply', currency));
     return self.Storage.getUint(id);
   }
@@ -578,7 +466,7 @@ library TokenIOLib {
    * @param spender Ethereum address of spender
    * @return { "allowance" : "Returns the allowance of a given spender for a given account"}
    */
-  function getTokenAllowance(Data storage self, string currency, address account, address spender) internal view returns (uint allowance) {
+  function getTokenAllowance(Data storage self, string memory currency, address account, address spender) internal view returns (uint allowance) {
     bytes32 id = keccak256(abi.encodePacked('token.allowance', currency, getForwardedAccount(self, account), getForwardedAccount(self, spender)));
     return self.Storage.getUint(id);
   }
@@ -591,9 +479,8 @@ library TokenIOLib {
    * @param account Ethereum address of account holder
    * @return { "balance" : "Return the balance of a given account for a specified currency"}
    */
-  function getTokenBalance(Data storage self, string currency, address account) internal view returns (uint balance) {
-    bytes32 id = keccak256(abi.encodePacked('token.balance', currency, getForwardedAccount(self, account)));
-    return self.Storage.getUint(id);
+  function getTokenBalance(Data storage self, string memory currency, address account) internal view returns (uint balance) {
+      return self.Storage.getBalance(getForwardedAccount(self, account), currency);
   }
 
   /**
@@ -604,7 +491,7 @@ library TokenIOLib {
    * @param account Ethereum address of account holder
    * @return { "frozenBalance" : "Return the frozen balance of a given account for a specified currency"}
    */
-  function getTokenFrozenBalance(Data storage self, string currency, address account) internal view returns (uint frozenBalance) {
+  function getTokenFrozenBalance(Data storage self, string memory currency, address account) internal view returns (uint frozenBalance) {
     bytes32 id = keccak256(abi.encodePacked('token.frozen', currency, getForwardedAccount(self, account)));
     return self.Storage.getUint(id);
   }
@@ -618,7 +505,7 @@ library TokenIOLib {
    * @param amount Amount of tokens to freeze for account
    * @return { "success" : "Return true if successfully called from another contract"}
    */
-  function setTokenFrozenBalance(Data storage self, string currency, address account, uint amount) internal returns (bool success) {
+  function setTokenFrozenBalance(Data storage self, string memory currency, address account, uint amount) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('token.frozen', currency, getForwardedAccount(self, account)));
     require(
       self.Storage.setUint(id, amount),
@@ -637,10 +524,13 @@ library TokenIOLib {
    */
   function calculateFees(Data storage self, address contractAddress, uint amount) internal view returns (uint calculatedFees) {
 
-    uint maxFee = self.Storage.getUint(keccak256(abi.encodePacked('fee.max', contractAddress)));
-    uint minFee = self.Storage.getUint(keccak256(abi.encodePacked('fee.min', contractAddress)));
-    uint bpsFee = self.Storage.getUint(keccak256(abi.encodePacked('fee.bps', contractAddress)));
-    uint flatFee = self.Storage.getUint(keccak256(abi.encodePacked('fee.flat', contractAddress)));
+    uint maxFee;
+    uint minFee;
+    uint bpsFee;
+    uint flatFee;
+
+    (maxFee, minFee, bpsFee, flatFee) = self.Storage.getFees(contractAddress);
+
     uint fees = ((amount.mul(bpsFee)).div(10000)).add(flatFee);
 
     if (fees > maxFee) {
@@ -704,24 +594,24 @@ library TokenIOLib {
    * @param data Arbitrary bytes data to include with the transaction
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function transfer(Data storage self, string currency, address to, uint amount, bytes data) internal returns (bool success) {
-    require(address(to) != 0x0, "Error: `to` address cannot be null." );
+  function transfer(Data storage self, string memory currency, address to, uint amount, address sender, bytes memory data) internal returns (bool success) {
+    require(address(to) != address(0), "Error: `to` address cannot be null." );
     require(amount > 0, "Error: `amount` must be greater than zero");
 
-    address feeContract = getFeeContract(self, address(this));
+    address feeContract = getFeeContract(self, self.proxyInstance);
     uint fees = calculateFees(self, feeContract, amount);
 
     require(
-      setAccountSpendingAmount(self, msg.sender, getFxUSDAmount(self, currency, amount)),
+      setAccountSpendingAmount(self, sender, getFxUSDAmount(self, currency, amount)),
       "Error: Unable to set spending amount for account.");
 
     require(
-      forceTransfer(self, currency, msg.sender, to, amount, data),
+      forceTransfer(self, currency, sender, to, amount, data),
       "Error: Unable to transfer funds to account.");
 
     // @dev transfer fees to fee contract
     require(
-      forceTransfer(self, currency, msg.sender, feeContract, fees, getFeeMsg(self, feeContract)),
+      forceTransfer(self, currency, sender, feeContract, fees, getFeeMsg(self, feeContract)),
       "Error: Unable to transfer fees to fee contract.");
 
     return true;
@@ -736,43 +626,43 @@ library TokenIOLib {
    * @dev | This method implements ERC20 transferFrom() method with approved spender behavior
    * @dev | msg.sender == spender; `updateAllowance()` reduces approved limit for account spender
    * @param self Internal storage proxying TokenIOStorage contract
-   * @param  currency Currency symbol of the token (e.g. USDx, JYPx, GBPx)
    * @param from Ethereum address of account to send currency amount from
    * @param to Ethereum address of account to send currency amount to
    * @param amount Value of currency to transfer
    * @param data Arbitrary bytes data to include with the transaction
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function transferFrom(Data storage self, string currency, address from, address to, uint amount, bytes data) internal returns (bool success) {
+  function transferFrom(Data storage self, address from, address to, uint amount, bytes memory data, address sender) internal returns (bool success) {
     require(
-      address(to) != 0x0,
+      address(to) != address(0),
       "Error: `to` address must not be null."
     );
 
-    address feeContract = getFeeContract(self, address(this));
+    address feeContract = getFeeContract(self, self.proxyInstance);
     uint fees = calculateFees(self, feeContract, amount);
 
     /// @dev NOTE: This transaction will fail if the spending amount exceeds the daily limit
     require(
-      setAccountSpendingAmount(self, from, getFxUSDAmount(self, currency, amount)),
+      setAccountSpendingAmount(self, from, getFxUSDAmount(self, getTokenSymbol(self, self.proxyInstance), amount)),
       "Error: Unable to set account spending amount."
     );
 
     /// @dev Attempt to transfer the amount
     require(
-      forceTransfer(self, currency, from, to, amount, data),
+      forceTransfer(self, getTokenSymbol(self, self.proxyInstance), from, to, amount, data),
       "Error: Unable to transfer funds to account."
     );
 
     // @dev transfer fees to fee contract
     require(
-      forceTransfer(self, currency, from, feeContract, fees, getFeeMsg(self, feeContract)),
+      forceTransfer(self, getTokenSymbol(self, self.proxyInstance), from, feeContract, fees, getFeeMsg(self, feeContract)),
       "Error: Unable to transfer fees to fee contract."
     );
 
     /// @dev Attempt to update the spender allowance
+    /// @notice this will throw if the allowance has not been set.
     require(
-      updateAllowance(self, currency, from, amount),
+      updateAllowance(self, getTokenSymbol(self, self.proxyInstance), from, amount, sender),
       "Error: Unable to update allowance for spender."
     );
 
@@ -792,21 +682,19 @@ library TokenIOLib {
    * @param data Arbitrary bytes data to include with the transaction
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function forceTransfer(Data storage self, string currency, address from, address to, uint amount, bytes data) internal returns (bool success) {
+  function forceTransfer(Data storage self, string memory currency, address from, address to, uint amount, bytes memory data) internal returns (bool success) {
     require(
-      address(to) != 0x0,
+      address(to) != address(0),
       "Error: `to` address must not be null."
     );
 
-    bytes32 id_a = keccak256(abi.encodePacked('token.balance', currency, getForwardedAccount(self, from)));
-    bytes32 id_b = keccak256(abi.encodePacked('token.balance', currency, getForwardedAccount(self, to)));
-
     require(
-      self.Storage.setUint(id_a, self.Storage.getUint(id_a).sub(amount)),
-      "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
+     self.Storage.setBalance(getForwardedAccount(self, from), currency, self.Storage.getBalance(from, currency).sub(amount)),
+     "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
     );
+    
     require(
-      self.Storage.setUint(id_b, self.Storage.getUint(id_b).add(amount)),
+      self.Storage.setBalance(getForwardedAccount(self, to), currency, self.Storage.getBalance(to, currency).add(amount)),
       "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
     );
 
@@ -825,8 +713,8 @@ library TokenIOLib {
    * @param amount Value to reduce allowance by (i.e. the amount spent)
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function updateAllowance(Data storage self, string currency, address account, uint amount) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('token.allowance', currency, getForwardedAccount(self, account), getForwardedAccount(self, msg.sender)));
+  function updateAllowance(Data storage self, string memory currency, address account, uint amount, address sender) internal returns (bool success) {
+    bytes32 id = keccak256(abi.encodePacked('token.allowance', currency, getForwardedAccount(self, account), getForwardedAccount(self, sender)));
     require(
       self.Storage.setUint(id, self.Storage.getUint(id).sub(amount)),
       "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract."
@@ -843,32 +731,31 @@ library TokenIOLib {
    * @param amount Value to set for spender allowance
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function approveAllowance(Data storage self, address spender, uint amount) internal returns (bool success) {
-    require(spender != 0x0,
+  function approveAllowance(Data storage self, address spender, uint amount, address sender) internal returns (bool success) {
+    require(spender != address(0),
         "Error: `spender` address cannot be null.");
 
-    string memory currency = getTokenSymbol(self, address(this));
+    string memory currency = getTokenSymbol(self, self.proxyInstance);
 
     require(
       getTokenFrozenBalance(self, currency, getForwardedAccount(self, spender)) == 0,
       "Error: Spender must not have a frozen balance directly");
 
-    bytes32 id_a = keccak256(abi.encodePacked('token.allowance', currency, getForwardedAccount(self, msg.sender), getForwardedAccount(self, spender)));
-    bytes32 id_b = keccak256(abi.encodePacked('token.balance', currency, getForwardedAccount(self, msg.sender)));
+    bytes32 id_a = keccak256(abi.encodePacked('token.allowance', currency, getForwardedAccount(self, sender), getForwardedAccount(self, spender)));
 
     require(
       self.Storage.getUint(id_a) == 0 || amount == 0,
       "Error: Allowance must be zero (0) before setting an updated allowance for spender.");
 
     require(
-      self.Storage.getUint(id_b) >= amount,
+      self.Storage.getBalance(getForwardedAccount(self, sender), currency) >= amount,
       "Error: Allowance cannot exceed msg.sender token balance.");
 
     require(
       self.Storage.setUint(id_a, amount),
       "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
 
-    emit Approval(msg.sender, spender, amount);
+    emit Approval(sender, spender, amount);
 
     return true;
   }
@@ -884,17 +771,17 @@ library TokenIOLib {
    * @param issuerFirm Name of the issuing firm authorizing the deposit
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function deposit(Data storage self, string currency, address account, uint amount, string issuerFirm) internal returns (bool success) {
-    bytes32 id_a = keccak256(abi.encodePacked('token.balance', currency, getForwardedAccount(self, account)));
-    bytes32 id_b = keccak256(abi.encodePacked('token.issued', currency, issuerFirm));
-    bytes32 id_c = keccak256(abi.encodePacked('token.supply', currency));
+  function deposit(Data storage self, string memory currency, address account, uint amount, string memory issuerFirm) internal returns (bool success) {
+    bytes32[2] memory ids = [keccak256(abi.encodePacked('token.issued', currency, issuerFirm)), keccak256(abi.encodePacked('token.supply', currency))];
+
+    address forwardedAccount = getForwardedAccount(self, account);
 
 
-    require(self.Storage.setUint(id_a, self.Storage.getUint(id_a).add(amount)),
+    require(self.Storage.setBalance(forwardedAccount, currency, self.Storage.getBalance(forwardedAccount, currency).add(amount)),
       "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
-    require(self.Storage.setUint(id_b, self.Storage.getUint(id_b).add(amount)),
+    require(self.Storage.setUint(ids[0], self.Storage.getUint(ids[0]).add(amount)),
       "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
-    require(self.Storage.setUint(id_c, self.Storage.getUint(id_c).add(amount)),
+    require(self.Storage.setUint(ids[1], self.Storage.getUint(ids[1]).add(amount)),
       "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
 
     emit Deposit(currency, account, amount, issuerFirm);
@@ -914,19 +801,19 @@ library TokenIOLib {
    * @param issuerFirm Name of the issuing firm authorizing the withdraw
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function withdraw(Data storage self, string currency, address account, uint amount, string issuerFirm) internal returns (bool success) {
-    bytes32 id_a = keccak256(abi.encodePacked('token.balance', currency, getForwardedAccount(self, account)));
-    bytes32 id_b = keccak256(abi.encodePacked('token.issued', currency, issuerFirm)); // possible for issuer to go negative
-    bytes32 id_c = keccak256(abi.encodePacked('token.supply', currency));
+  function withdraw(Data storage self, string memory currency, address account, uint amount, string memory issuerFirm) internal returns (bool success) {
+    bytes32[2] memory ids = [keccak256(abi.encodePacked('token.issued', currency, issuerFirm)), keccak256(abi.encodePacked('token.supply', currency))];
+
+    address forwardedAccount = getForwardedAccount(self, account);
 
     require(
-      self.Storage.setUint(id_a, self.Storage.getUint(id_a).sub(amount)),
+      self.Storage.setBalance(forwardedAccount, currency, self.Storage.getBalance(forwardedAccount, currency).sub(amount)),
       "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
     require(
-      self.Storage.setUint(id_b, self.Storage.getUint(id_b).sub(amount)),
+      self.Storage.setUint(ids[0], self.Storage.getUint(ids[0]).sub(amount)),
       "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
     require(
-      self.Storage.setUint(id_c, self.Storage.getUint(id_c).sub(amount)),
+      self.Storage.setUint(ids[1], self.Storage.getUint(ids[1]).sub(amount)),
       "Error: Unable to set storage value. Please ensure contract has allowed permissions with storage contract.");
 
     emit Withdraw(currency, account, amount, issuerFirm);
@@ -945,7 +832,7 @@ library TokenIOLib {
    * @param approved Approval status to set for the firm (true/false)
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function setRegisteredFirm(Data storage self, string issuerFirm, bool approved) internal returns (bool success) {
+  function setRegisteredFirm(Data storage self, string memory issuerFirm, bool approved) internal returns (bool success) {
     bytes32 id = keccak256(abi.encodePacked('registered.firm', issuerFirm));
     require(
       self.Storage.setBool(id, approved),
@@ -965,7 +852,7 @@ library TokenIOLib {
    * @param approved Approval status to set for the firm authority (true/false)
    * @return { "success" : "Return true if successfully called from another contract" }
    */
-  function setRegisteredAuthority(Data storage self, string issuerFirm, address authorityAddress, bool approved) internal returns (bool success) {
+  function setRegisteredAuthority(Data storage self, string memory issuerFirm, address authorityAddress, bool approved) internal returns (bool success) {
     require(
       isRegisteredFirm(self, issuerFirm),
       "Error: `issuerFirm` must be registered.");
@@ -992,7 +879,7 @@ library TokenIOLib {
    * @param authorityAddress Ethereum address of the firm authority to query
    * @return { "issuerFirm" : "Name of the firm registered to authority" }
    */
-  function getFirmFromAuthority(Data storage self, address authorityAddress) internal view returns (string issuerFirm) {
+  function getFirmFromAuthority(Data storage self, address authorityAddress) internal view returns (string memory issuerFirm) {
     bytes32 id = keccak256(abi.encodePacked('registered.authority.firm', getForwardedAccount(self, authorityAddress)));
     return self.Storage.getString(id);
   }
@@ -1003,7 +890,7 @@ library TokenIOLib {
    * @param issuerFirm Name of the issuer firm
    * @return { "registered" : "Return if the issuer firm has been registered" }
    */
-  function isRegisteredFirm(Data storage self, string issuerFirm) internal view returns (bool registered) {
+  function isRegisteredFirm(Data storage self, string memory issuerFirm) internal view returns (bool registered) {
     bytes32 id = keccak256(abi.encodePacked('registered.firm', issuerFirm));
     return self.Storage.getBool(id);
   }
@@ -1015,7 +902,7 @@ library TokenIOLib {
    * @param authorityAddress Ethereum address of the firm authority to query
    * @return { "registered" : "Return if the authority is registered with the issuer firm" }
    */
-  function isRegisteredToFirm(Data storage self, string issuerFirm, address authorityAddress) internal view returns (bool registered) {
+  function isRegisteredToFirm(Data storage self, string memory issuerFirm, address authorityAddress) internal view returns (bool registered) {
     bytes32 id = keccak256(abi.encodePacked('registered.authority', issuerFirm, getForwardedAccount(self, authorityAddress)));
     return self.Storage.getBool(id);
   }
@@ -1082,14 +969,15 @@ library TokenIOLib {
   function execSwap(
     Data storage self,
     address requester,
-    string symbolA,
-    string symbolB,
+    string memory symbolA,
+    string memory symbolB,
     uint valueA,
     uint valueB,
     uint8 sigV,
     bytes32 sigR,
     bytes32 sigS,
-    uint expiration
+    uint expiration,
+    address sender
   ) internal returns (bool success) {
 
     bytes32 fxTxHash = keccak256(abi.encodePacked(requester, symbolA, symbolB, valueA, valueB, expiration));
@@ -1097,7 +985,7 @@ library TokenIOLib {
     /// @notice check that sender and requester accounts are verified
     /// @notice Only verified accounts can perform currency swaps
     require(
-      verifyAccounts(self, msg.sender, requester),
+      verifyAccounts(self, sender, requester),
       "Error: Only verified accounts can perform currency swaps.");
 
     /// @dev Immediately set this transaction to be confirmed before updating any params;
@@ -1116,11 +1004,11 @@ library TokenIOLib {
 
     /// @dev Transfer funds from each account to another.
     require(
-      forceTransfer(self, symbolA, msg.sender, requester, valueA, "0x0"),
+      forceTransfer(self, symbolA, sender, requester, valueA, "0x0"),
       "Error: Unable to transfer funds to account.");
 
     require(
-      forceTransfer(self, symbolB, requester, msg.sender, valueB, "0x0"),
+      forceTransfer(self, symbolB, requester, sender, valueB, "0x0"),
       "Error: Unable to transfer funds to account.");
 
     emit FxSwap(symbolA, symbolB, valueA, valueB, expiration, fxTxHash);
@@ -1137,7 +1025,7 @@ library TokenIOLib {
    * @return {"success" : "Returns true if successfully called from another contract"}
    */
   function setDeprecatedContract(Data storage self, address contractAddress) internal returns (bool success) {
-    require(contractAddress != 0x0,
+    require(contractAddress != address(0),
         "Error: cannot deprecate a null address.");
 
     bytes32 id = keccak256(abi.encodePacked('depcrecated', contractAddress));
@@ -1155,8 +1043,9 @@ library TokenIOLib {
    * @return {"status" : "Return deprecation status (true/false) of the contract interface"}
    */
   function isContractDeprecated(Data storage self, address contractAddress) internal view returns (bool status) {
-    bytes32 id = keccak256(abi.encodePacked('depcrecated', contractAddress));
-    return self.Storage.getBool(id);
+    //bytes32 id = keccak256(abi.encodePacked('depcrecated', contractAddress));
+    //return self.Storage.getBool(id);
+    return self.Storage.getDeprecated(contractAddress);
   }
 
   /**
@@ -1301,10 +1190,9 @@ library TokenIOLib {
    * @param bpsRate Basis point rate of foreign currency exchange rate to USD
    * @return { "success": "Returns true if successfully called from another contract"}
    */
-  function setFxUSDBPSRate(Data storage self, string currency, uint bpsRate) internal returns (bool success) {
-    bytes32 id = keccak256(abi.encodePacked('fx.usd.rate', currency));
+  function setFxUSDBPSRate(Data storage self, string memory currency, uint bpsRate) internal returns (bool success) {
     require(
-      self.Storage.setUint(id, bpsRate),
+      self.Storage.setTokenfxUSDBPSRate(currency, bpsRate),
       "Error: Unable to update account spending period.");
 
     return true;
@@ -1316,9 +1204,8 @@ library TokenIOLib {
    * @param currency The TokenIO currency symbol (e.g. USDx, JPYx, GBPx)
    * @return {"usdAmount" : "Returns the foreign currency amount in USD"}
    */
-  function getFxUSDBPSRate(Data storage self, string currency) internal view returns (uint bpsRate) {
-    bytes32 id = keccak256(abi.encodePacked('fx.usd.rate', currency));
-    return self.Storage.getUint(id);
+  function getFxUSDBPSRate(Data storage self, string memory currency) internal view returns (uint bpsRate) {
+    return self.Storage.getTokenfxUSDBPSRate(currency);
   }
 
   /**
@@ -1328,7 +1215,7 @@ library TokenIOLib {
    * @param fxAmount Amount of foreign currency to exchange into USD
    * @return {"amount" : "Returns the foreign currency amount in USD"}
    */
-  function getFxUSDAmount(Data storage self, string currency, uint fxAmount) internal view returns (uint amount) {
+  function getFxUSDAmount(Data storage self, string memory currency, uint fxAmount) internal view returns (uint amount) {
     uint usdDecimals = getTokenDecimals(self, 'USDx');
     uint fxDecimals = getTokenDecimals(self, currency);
     /// @dev ensure decimal precision is normalized to USD decimals
