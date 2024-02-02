@@ -38,7 +38,7 @@
     "bluebird": "^3.5.1",
     "ethereumjs-util": "^5.1.5",
     "ethers": "^3.0.15",
-    "web3-provider-engine": "^14.0.6",
+    "web3-provider-engine": "^16.0.1",
     "zeppelin-solidity": "1.8.0"
   },
   "devDependencies": {
